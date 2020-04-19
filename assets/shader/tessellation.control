@@ -1,0 +1,85 @@
+#version 430 core
+
+// specify number of vertices out
+// tessellation only works with GL_PATCHES
+layout(vertices = 4) out;
+
+// get position from vertex shader
+in vec4 vPosition[];
+
+// send position to tessellation evaluation shader
+out vec4 tcPosition[];
+
+uniform vec3 camera_world;
+uniform vec2 screen_size;
+
+
+#define id gl_InvocationID
+
+// min1, max1 = current range
+// min2, max2 = target range
+float map(float value, float min1, float max1, float min2, float max2){
+	
+	// Convert the current value to a percentage
+	// 0% - min1, 100% - max1
+	float perc = (value - min1) / (max1 - min1);
+	
+	// Do the same operation backwards with min2 and max2
+	float newValue = perc * (max2 - min2) + min2;
+	return newValue;
+}
+
+// OpenGL 4 Shading Language Cookbook p. 613
+void main()
+{
+
+	tcPosition[id] = vPosition[id];
+
+	if(id == 0){
+
+		// Distance from camera scaled between 0 and 1
+		vec3 abMidPos = vec3(vPosition[0].xyz + ((vPosition[1].xyz - vPosition[0].xyz) / 2));
+		vec3 adMidPos = vec3(vPosition[0].xyz + ((vPosition[3].xyz - vPosition[0].xyz) / 2));
+		vec3 dcMidPos = vec3(vPosition[3].xyz + ((vPosition[2].xyz - vPosition[3].xyz) / 2));
+		vec3 bcMidPos = vec3(vPosition[1].xyz + ((vPosition[2].xyz - vPosition[1].xyz) / 2));
+
+		float abDistance = (distance(abMidPos.xyz, camera_world.xyz));
+		float adDistance = (distance(adMidPos.xyz, camera_world.xyz));
+		float dcDistance = (distance(dcMidPos.xyz, camera_world.xyz));
+		float bcDistance = (distance(bcMidPos.xyz, camera_world.xyz));
+
+		// Interpolate between min/max tess levels
+		// max = 64, min = 1
+		// apply tess level to the corresponding outer-level parameter
+		// camera distance: 1500
+		float adTessLevel = mix( 32, 1, map(adDistance, 1, 1500, 0, 1) );
+		float dcTessLevel = mix( 32, 1, map(dcDistance, 1, 1500, 0, 1) );
+		float bcTessLevel = mix( 32, 1, map(bcDistance, 1, 1500, 0, 1) );
+		float abTessLevel = mix( 32, 1, map(abDistance, 1, 1500, 0, 1) );
+		
+		//float adTessLevel = mix( 32, 1, (adDistance) );
+		//float dcTessLevel = mix( 32, 1, (dcDistance) );
+		//float bcTessLevel = mix( 32, 1, (bcDistance) );
+		//float abTessLevel = mix( 32, 1, (abDistance) );
+
+		// average of the outer level
+		float innerTessLevel = (abTessLevel + adTessLevel + dcTessLevel + bcTessLevel) / 4;
+		
+		float distanceLevel = 1;
+		gl_TessLevelOuter[0] = max(1, (distanceLevel * float(abTessLevel)));
+		gl_TessLevelOuter[1] = max(1, (distanceLevel * float(adTessLevel)));
+		gl_TessLevelOuter[2] = max(1, (distanceLevel * float(dcTessLevel)));
+		gl_TessLevelOuter[3] = max(1, (distanceLevel * float(bcTessLevel)));
+		gl_TessLevelInner[0] = max(1, (distanceLevel * float(innerTessLevel)));
+		gl_TessLevelInner[1] = max(1, (distanceLevel * float(innerTessLevel)));
+		
+		// no tessellation
+		//gl_TessLevelOuter[0] = 1;
+		//gl_TessLevelOuter[1] = 1;
+		//gl_TessLevelOuter[2] = 1;
+		//gl_TessLevelOuter[3] = 1;
+		//gl_TessLevelInner[0] = 0;
+		//gl_TessLevelInner[1] = 0;
+
+	}
+}

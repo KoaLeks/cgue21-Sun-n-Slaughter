@@ -1,0 +1,23 @@
+#version 430 core
+
+
+uniform vec3 lightPosition;
+uniform vec3 diffuseMaterial;
+uniform vec3 ambientMaterial;
+uniform vec3 specularMeterial;
+uniform float shininess;
+
+out vec4 color;
+
+void main(){
+	
+	vec3 h = normalize(lightPosition + vec3(0, 1, 0));
+	float df = abs(dot(vec3(0, 1, 0), lightPosition));
+	float sf = abs(dot(vec3(0, 1, 0), normalize(lightPosition + vec3(0, 1, 0))));
+	sf = pow(sf, shininess);
+
+	vec3 light = ambientMaterial + df * diffuseMaterial + sf * specularMeterial;
+
+
+	color = vec4(0, 1, 0, 1) * vec4(light, 1);
+}

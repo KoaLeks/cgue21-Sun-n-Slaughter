@@ -1,0 +1,3 @@
+C:/Users/Aleks/Desktop/CGUE_Sun_n_Slaughter/external/include/glm/out/build/x64-Debug/CMakeFiles/glm_dummy.dir
+C:/Users/Aleks/Desktop/CGUE_Sun_n_Slaughter/external/include/glm/out/build/x64-Debug/CMakeFiles/edit_cache.dir
+C:/Users/Aleks/Desktop/CGUE_Sun_n_Slaughter/external/include/glm/out/build/x64-Debug/CMakeFiles/rebuild_cache.dir
