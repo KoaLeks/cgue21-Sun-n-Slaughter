@@ -8,8 +8,9 @@ private:
 	glm::mat4 _modelMatrix;
 	const char* path;
 	int width, height;
-
 	int terrainCount;
+	float scaleXZ;
+	float scaleY;
 
 	GLuint terrainVbo;
 	GLuint terrainVboNorm;
@@ -22,7 +23,7 @@ public:
 
 	Terrain();
 	
-	Terrain(int dimension, int vertexCount, const char* path);
+	Terrain(int dimension, int vertexCount, float height, const char* path);
 
 	~Terrain();
 

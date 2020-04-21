@@ -161,15 +161,15 @@ int main(int argc, char** argv)
 		//std::shared_ptr<MeshMaterial> heightTextureMaterial = std::make_shared<MeshMaterial>(tessellationShader, heightMap, glm::vec3(0.4f, 0.7f, 0.1f), 12.0f);
 		
 		// Create Terrain
-		Terrain plane = Terrain(4000, 100, "assets/terrain/heightmap.png");
+		// heightmap muss ein vielfaches von 20 sein, ansonsten wirds schräg abgebildet
+		Terrain plane = Terrain(4000, 300, 600, "assets/terrain/heightmap.png");
 
 		// Initialize camera
 		Camera camera(fov, float(window_width) / float(window_height), nearZ, farZ);
 		camera.update(window_width, window_height, false, false, false);
 
 		// Initialize lights
-		DirectionalLight dirL(glm::vec3(0.0f), glm::vec3(0.0f, -1.0f, -1.0f));
-		PointLight pointL(glm::vec3(1.0f), glm::vec3(0.0f, 3.0f, 3.0f), glm::vec3(0.08f, 0.05f, 0.01f));
+		PointLight pointL(glm::vec3(1.0f), glm::vec3(2000.0f, 500.0f, 0.0f), glm::vec3(0.08f, 0.05f, 0.01f));
 
 		// Render loop
 		float t = float(glfwGetTime());
@@ -243,7 +243,7 @@ void setPerFrameUniforms(TerrainShader* shader, Camera& camera, PointLight& poin
 	shader->use();
 	shader->setUniform("viewProjMatrix", camera.getViewProjectionMatrix());
 	shader->setUniform("camera_world", camera.getPosition());
-	shader->setUniform("pointL.position", pointL.position);
+	shader->setUniform("lightPosition", pointL.position);
 }
 
 

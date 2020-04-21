@@ -2,9 +2,11 @@
 #include "Terrain.h"
 #include "stb_image.h"
 
-Terrain::Terrain(int dimension, int vertexCount, const char* path) {
+Terrain::Terrain(int dimension, int vertexCount, float height, const char* path) {
 
 	this->path = path;
+	this->scaleXZ = dimension;
+	this->scaleY = height;
 	this->generateTerrain(dimension, vertexCount);
 	this->loadHeightMap();
 	this->initBuffer();
@@ -102,11 +104,17 @@ void Terrain::loadHeightMap() {
 }
 
 void Terrain::draw(TerrainShader* terrainShader) {
-
-	//Shader* shader = &shader1;
 	terrainShader->use();
 
 	terrainShader->setUniform("modelMatrix", _modelMatrix);
+	terrainShader->setUniform("scaleXZ", scaleXZ);
+	terrainShader->setUniform("scaleY", scaleY);
+
+	//terrainShader->setUniform("ambientMaterial", glm::vec3( 0.4, 0.1, 0.1));
+	//terrainShader->setUniform("diffuseMaterial", glm::vec3( 0.1, 0.7, 0.1));
+	//terrainShader->setUniform("specularMeterial", glm::vec3(0.1, 0.1, 0.1));
+	//terrainShader->setUniform("shininess", 2.0f);
+	
 	//terrainShader->setUniform("normalMatrix", glm::mat3(glm::transpose(glm::inverse(_modelMatrix))));
 	
 	//glActiveTexture(GL_TEXTURE0);
