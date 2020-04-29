@@ -8,12 +8,15 @@ in vec4 tcPosition[];
 uniform mat4 modelMatrix;
 uniform mat4 viewProjMatrix;
 uniform sampler2D heightMap;
+uniform sampler2D normalMap;
 uniform float scaleXZ;
 uniform float scaleY;
 
-out vec3 normal;
-out vec3 position;
+out vec3 teNormal;
+out vec4 tePosition;
+out vec2 teTextureCoordinate;
 
+// https://stackoverflow.com/questions/5281261/generating-a-normal-map-from-a-height-map
 void main()
 {
     vec4 adPosition = mix(tcPosition[0], tcPosition[3], gl_TessCoord.x);
@@ -21,30 +24,18 @@ void main()
 
     vec4 position = mix(adPosition, bcPosition, gl_TessCoord.y);
 
-    // je größer die division desto größer die map
     vec2 textureCoordinate = position.xz / scaleXZ - 0.5;
+    teTextureCoordinate = textureCoordinate;
 
     float height = texture(heightMap, textureCoordinate).r * scaleY;
     vec4 newPos = vec4(position.x, height, position.z, 1.0);
 	mat4 mvp = viewProjMatrix * modelMatrix;
 
-    // https://www.leadwerks.com/community/topic/16244-calculate-normals-from-heightmap/
+    // normal map texture
+    // .rbg -> y and z axis are swapped
+    vec3 normal = texture(normalMap, teTextureCoordinate).rbg;
+    teNormal = normalize(normal * 2.0 - 1.0); 
     
-    //vec3 upDown = vec3(    0, (texture(heightMap, vec2(position.x, position.z + 1) / scaleXZ  - 0.5).r - texture(heightMap, vec2(position.x, position.z - 1) / scaleXZ  - 0.5).r) * scaleY , 2 );
-    //vec3 leftRight = vec3( 2, (texture(heightMap, vec2(position.x + 1, position.z) / scaleXZ  - 0.5).r - texture(heightMap, vec2(position.x - 1, position.z) / scaleXZ  - 0.5).r) * scaleY , 0);
-    //normal = normalize(cross(upDown, leftRight));
-
-    vec3 left  = vec3(1, (texture(heightMap, vec2(position.x, position.z)     / scaleXZ  - 0.5).r - texture(heightMap, vec2(position.x - 1, position.z) / scaleXZ  - 0.5).r) * scaleY, 0);
-    vec3 right = vec3(1, (texture(heightMap, vec2(position.x + 1, position.z) / scaleXZ  - 0.5).r - texture(heightMap, vec2(position.x, position.z)     / scaleXZ  - 0.5).r) * scaleY, 0);
-    vec3 up    = vec3(0, (texture(heightMap, vec2(position.x, position.z)     / scaleXZ  - 0.5).r - texture(heightMap, vec2(position.x, position.z - 1) / scaleXZ  - 0.5).r) * scaleY, 1);
-    vec3 down  = vec3(0, (texture(heightMap, vec2(position.x, position.z + 1) / scaleXZ  - 0.5).r - texture(heightMap, vec2(position.x, position.z)     / scaleXZ  - 0.5).r) * scaleY, 1);
-
-    vec3 upLeft    = cross(up,   left);
-    vec3 upRight   = cross(up,   right);
-    vec3 downLeft  = cross(down, left);
-    vec3 downRight = cross(down, right);
-    normal = normalize(upLeft + upRight + downLeft + downRight);
-    
-    position = newPos;
+    tePosition = newPos;
     gl_Position = mvp * newPos;
 }

@@ -2,13 +2,15 @@
 #include "Terrain.h"
 #include "stb_image.h"
 
-Terrain::Terrain(int dimension, int vertexCount, float height, const char* path) {
+Terrain::Terrain(int dimension, int vertexCount, float height, const char* heightMapPath, const char* normalMapPath) {
 
-	this->path = path;
+	this->heightMapPath = heightMapPath;
+	this->normalMapPath = normalMapPath;
 	this->scaleXZ = dimension;
 	this->scaleY = height;
 	this->generateTerrain(dimension, vertexCount);
 	this->loadHeightMap();
+	this->loadNormalMap();
 	this->initBuffer();
 }
 
@@ -83,18 +85,37 @@ void Terrain::initBuffer() {
 
 void Terrain::loadHeightMap() {
 	int width, height, nrChannels;
-	unsigned char* data = stbi_load(path, &width, &height, &nrChannels, 0);
+	unsigned char* data = stbi_load(heightMapPath, &width, &height, &nrChannels, 0);
 
-	glGenTextures(1, &heightmap);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, heightmap);
+	glGenTextures(1, &heightMap);
+	//glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, heightMap);
 
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	if (data) {
 
 		// heightmap = GL_RGB, heihtmap10 = GL_RGBA
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+	}
+	else {
+		std::cout << "Failed to load image" << std::endl;
+	}
+	stbi_image_free(data);
+}
+
+void Terrain::loadNormalMap() {
+	int width, height, nrChannels;
+	unsigned char* data = stbi_load(normalMapPath, &width, &height, &nrChannels, 0);
+
+	glGenTextures(1, &normalMap);
+	//glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, normalMap);
+
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	if (data) {
+
+		// heightmap = GL_RGB, heihtmap10 = GL_RGBA
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
 	}
 	else {
@@ -114,12 +135,15 @@ void Terrain::draw(TerrainShader* terrainShader) {
 	//terrainShader->setUniform("diffuseMaterial", glm::vec3( 0.1, 0.7, 0.1));
 	//terrainShader->setUniform("specularMeterial", glm::vec3(0.1, 0.1, 0.1));
 	//terrainShader->setUniform("shininess", 2.0f);
-	
 	//terrainShader->setUniform("normalMatrix", glm::mat3(glm::transpose(glm::inverse(_modelMatrix))));
 	
-	//glActiveTexture(GL_TEXTURE0);
-	//glBindTexture(GL_TEXTURE_2D, heightmap);
-	//terrainShader->setUniform("heightMap", 0);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, heightMap);
+	terrainShader->setUniform("heightMap", 0);
+
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, normalMap);
+	terrainShader->setUniform("normalMap", 1);
 	
 	glBindVertexArray(terrainVao);
 	//_material->setUniforms();

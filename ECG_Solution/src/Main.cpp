@@ -162,14 +162,14 @@ int main(int argc, char** argv)
 		
 		// Create Terrain
 		// heightmap muss ein vielfaches von 20 sein, ansonsten wirds schräg abgebildet
-		Terrain plane = Terrain(4000, 300, 600, "assets/terrain/heightmap.png");
+		Terrain plane = Terrain(5000, 50, 600, "assets/terrain/heightmap.png", "assets/terrain/normalmap.png");
 
 		// Initialize camera
 		Camera camera(fov, float(window_width) / float(window_height), nearZ, farZ);
 		camera.update(window_width, window_height, false, false, false);
 
 		// Initialize lights
-		PointLight pointL(glm::vec3(1.0f), glm::vec3(2000.0f, 500.0f, 0.0f), glm::vec3(0.08f, 0.05f, 0.01f));
+		PointLight pointL(glm::vec3(1.0f), glm::vec3(-3000.0f, 1000.0f, 0.0f), glm::vec3(0.08f, 0.05f, 0.01f));
 
 		// Render loop
 		float t = float(glfwGetTime());

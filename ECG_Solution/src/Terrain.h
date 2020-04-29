@@ -6,7 +6,8 @@ private:
 
 	MeshData data;
 	glm::mat4 _modelMatrix;
-	const char* path;
+	const char* heightMapPath;
+	const char* normalMapPath;
 	int width, height;
 	int terrainCount;
 	float scaleXZ;
@@ -16,14 +17,15 @@ private:
 	GLuint terrainVboNorm;
 	GLuint terrainEbo;
 	GLuint terrainVao;
-	GLuint heightmap;
+	GLuint heightMap;
+	GLuint normalMap;
 	std::shared_ptr<MeshMaterial> _material;
 
 public:
 
 	Terrain();
 	
-	Terrain(int dimension, int vertexCount, float height, const char* path);
+	Terrain(int dimension, int vertexCount, float height, const char* heightMapPath, const char* normalMapPath);
 
 	~Terrain();
 
@@ -36,5 +38,7 @@ public:
 	void initBuffer();
 
 	void loadHeightMap();
+
+	void loadNormalMap();
 
 };
