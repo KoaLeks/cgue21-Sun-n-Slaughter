@@ -11,6 +11,11 @@ Terrain::Terrain(int dimension, int vertexCount, float height, const char* heigh
 	this->generateTerrain(dimension, vertexCount);
 	this->loadHeightMap();
 	this->loadNormalMap();
+	this->loadTexture(waterTexture, "assets/terrain/textures/water.jpg");
+	this->loadTexture(sandTexture, "assets/terrain/textures/sand.jpg");
+	this->loadTexture(grassTexture, "assets/terrain/textures/grass.jpg");
+	this->loadTexture(stoneTexture, "assets/terrain/textures/stone.jpg");
+	this->loadTexture(snowTexture, "assets/terrain/textures/snow.jpg");
 	this->initBuffer();
 }
 
@@ -124,6 +129,26 @@ void Terrain::loadNormalMap() {
 	stbi_image_free(data);
 }
 
+void Terrain::loadTexture(GLuint& texture, const char* texturePath) {
+	int width, height, nrChannels;
+	unsigned char* data = stbi_load(texturePath, &width, &height, &nrChannels, 0);
+
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	if (data) {
+
+		// heightmap = GL_RGB, heihtmap10 = GL_RGBA
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else {
+		std::cout << "Failed to load image" << std::endl;
+	}
+	stbi_image_free(data);
+}
+
 void Terrain::draw(TerrainShader* terrainShader) {
 	terrainShader->use();
 
@@ -140,10 +165,25 @@ void Terrain::draw(TerrainShader* terrainShader) {
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, heightMap);
 	terrainShader->setUniform("heightMap", 0);
-
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, normalMap);
 	terrainShader->setUniform("normalMap", 1);
+
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, waterTexture);
+	terrainShader->setUniform("waterTexture", 2);
+	glActiveTexture(GL_TEXTURE3);
+	glBindTexture(GL_TEXTURE_2D, sandTexture);
+	terrainShader->setUniform("sandTexture", 3);
+	glActiveTexture(GL_TEXTURE4);
+	glBindTexture(GL_TEXTURE_2D, grassTexture);
+	terrainShader->setUniform("grassTexture", 4);
+	glActiveTexture(GL_TEXTURE5);
+	glBindTexture(GL_TEXTURE_2D, stoneTexture);
+	terrainShader->setUniform("stoneTexture", 5);
+	glActiveTexture(GL_TEXTURE6);
+	glBindTexture(GL_TEXTURE_2D, snowTexture);
+	terrainShader->setUniform("snowTexture", 6);
 	
 	glBindVertexArray(terrainVao);
 	//_material->setUniforms();

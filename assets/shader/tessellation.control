@@ -21,12 +21,11 @@ void main()
 
 	if(id == 0){
 
-		// Distance from camera scaled between 0 and 1
 		vec3 abMidPos = vec3(vPosition[0].xyz + ((vPosition[1].xyz - vPosition[0].xyz) / 2));
 		vec3 adMidPos = vec3(vPosition[0].xyz + ((vPosition[3].xyz - vPosition[0].xyz) / 2));
 		vec3 dcMidPos = vec3(vPosition[3].xyz + ((vPosition[2].xyz - vPosition[3].xyz) / 2));
 		vec3 bcMidPos = vec3(vPosition[1].xyz + ((vPosition[2].xyz - vPosition[1].xyz) / 2));
-
+		
 		float abDistance = (distance(abMidPos.xyz, camera_world.xyz));
 		float adDistance = (distance(adMidPos.xyz, camera_world.xyz));
 		float dcDistance = (distance(dcMidPos.xyz, camera_world.xyz));
@@ -36,22 +35,22 @@ void main()
 		// max = 64, min = 1
 		// apply tess level to the corresponding outer-level parameter
 		// camera distance: 2000
-		float adTessLevel = mix( 32, 1, clamp(adDistance / 2000, 0, 1) );
-		float dcTessLevel = mix( 32, 1, clamp(dcDistance / 2000, 0, 1) );
-		float bcTessLevel = mix( 32, 1, clamp(bcDistance / 2000, 0, 1) );
-		float abTessLevel = mix( 32, 1, clamp(abDistance / 2000, 0, 1) );
+		float adTessLevel = mix( 24, 1, clamp(adDistance / 2000, 0, 1) );
+		float dcTessLevel = mix( 24, 1, clamp(dcDistance / 2000, 0, 1) );
+		float bcTessLevel = mix( 24, 1, clamp(bcDistance / 2000, 0, 1) );
+		float abTessLevel = mix( 24, 1, clamp(abDistance / 2000, 0, 1) );
 		
 		// average of the outer level
 		float innerTessLevel = (abTessLevel + adTessLevel + dcTessLevel + bcTessLevel) / 4;
 		
 		float distanceLevel = 1;
+		// quads
 		gl_TessLevelOuter[0] = max(1, abTessLevel);
 		gl_TessLevelOuter[1] = max(1, adTessLevel);
 		gl_TessLevelOuter[2] = max(1, dcTessLevel);
 		gl_TessLevelOuter[3] = max(1, bcTessLevel);
 		gl_TessLevelInner[0] = max(1, innerTessLevel);
 		gl_TessLevelInner[1] = max(1, innerTessLevel);
-		
 			
 		// no tessellation
 		//gl_TessLevelOuter[0] = 1;

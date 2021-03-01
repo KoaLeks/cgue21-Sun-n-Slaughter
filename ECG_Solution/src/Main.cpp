@@ -162,14 +162,14 @@ int main(int argc, char** argv)
 		
 		// Create Terrain
 		// heightmap muss ein vielfaches von 20 sein, ansonsten wirds schräg abgebildet
-		Terrain plane = Terrain(5000, 50, 600, "assets/terrain/heightmap.png", "assets/terrain/normalmap.png");
+		Terrain plane = Terrain(5000, 50, 800, "assets/terrain/heightmap.png", "assets/terrain/normalmap.png");
 
 		// Initialize camera
 		Camera camera(fov, float(window_width) / float(window_height), nearZ, farZ);
 		camera.update(window_width, window_height, false, false, false);
 
 		// Initialize lights
-		PointLight pointL(glm::vec3(1.0f), glm::vec3(-3000.0f, 1000.0f, 0.0f), glm::vec3(0.08f, 0.05f, 0.01f));
+		PointLight pointL(glm::vec3(.5f), glm::vec3(0.0f, 850.0f, 0.0f), glm::vec3(0.08f, 0.03f, 0.01f));
 
 		// Render loop
 		float t = float(glfwGetTime());
@@ -190,6 +190,9 @@ int main(int argc, char** argv)
 
 			// Set per-frame uniforms
 			//setPerFrameUniforms(textureShader.get(), camera, dirL, pointL);
+
+			//pointL.position.x = sin(glfwGetTime()) * 1250.0f;
+			//pointL.position.z = cos(glfwGetTime()) * 1250.0f;
 			setPerFrameUniforms(tessellationShader.get(), camera, pointL);
 
 			// Render terrain
@@ -239,7 +242,6 @@ void setPerFrameUniforms(Shader* shader, Camera& camera, DirectionalLight& dirL,
 
 void setPerFrameUniforms(TerrainShader* shader, Camera& camera, PointLight& pointL)
 {
-
 	shader->use();
 	shader->setUniform("viewProjMatrix", camera.getViewProjectionMatrix());
 	shader->setUniform("camera_world", camera.getPosition());

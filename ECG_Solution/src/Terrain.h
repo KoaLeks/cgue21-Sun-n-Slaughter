@@ -8,6 +8,11 @@ private:
 	glm::mat4 _modelMatrix;
 	const char* heightMapPath;
 	const char* normalMapPath;
+	const char* waterTexturePath;
+	const char* sandTexturePath;
+	const char* grassTexturePath;
+	const char* stoneTexturePath;
+	const char* snowTexturePath;
 	int width, height;
 	int terrainCount;
 	float scaleXZ;
@@ -19,6 +24,11 @@ private:
 	GLuint terrainVao;
 	GLuint heightMap;
 	GLuint normalMap;
+	GLuint waterTexture;
+	GLuint sandTexture;
+	GLuint grassTexture;
+	GLuint stoneTexture;
+	GLuint snowTexture;
 	std::shared_ptr<MeshMaterial> _material;
 
 public:
@@ -40,5 +50,7 @@ public:
 	void loadHeightMap();
 
 	void loadNormalMap();
+
+	void loadTexture(GLuint& texture, const char* texturePath);
 
 };

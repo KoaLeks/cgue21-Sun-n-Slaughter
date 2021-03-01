@@ -6,7 +6,6 @@ layout(location = 0) in vec3 position;
 // sends vertex position to tessellation controll shader
 out vec4 vPosition;
 
-
 uniform sampler2D heightMap;
 uniform float scaleXZ;
 uniform float scaleY;
