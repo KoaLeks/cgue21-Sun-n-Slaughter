@@ -148,10 +148,10 @@ int main(int argc, char** argv)
 		// Load shader(s)
 		std::shared_ptr<Shader> textureShader = std::make_shared<Shader>("texture.vert", "texture.frag");
 		std::shared_ptr<TerrainShader> tessellationShader = std::make_shared<TerrainShader>(
-			"assets/shader/tessellation.vertex", 
-			"assets/shader/tessellation.control", 
-			"assets/shader/tessellation.evaluation", 
-			"assets/shader/tessellation.fragment");
+			"assets/shader/terrain.vert", 
+			"assets/shader/terrain.tessc", 
+			"assets/shader/terrain.tesse", 
+			"assets/shader/terrain.frag");
 		
 		// Create textures
 		//std::shared_ptr<Texture> woodTexture = std::make_shared<Texture>("wood_texture.dds");
@@ -169,7 +169,7 @@ int main(int argc, char** argv)
 		camera.update(window_width, window_height, false, false, false);
 
 		// Initialize lights
-		PointLight pointL(glm::vec3(.5f), glm::vec3(0.0f, 850.0f, 0.0f), glm::vec3(0.08f, 0.03f, 0.01f));
+		PointLight pointL(glm::vec3(.5f), glm::vec3(0.0f, 2850.0f, 0.0f), glm::vec3(0.08f, 0.03f, 0.01f));
 
 		// Render loop
 		float t = float(glfwGetTime());
