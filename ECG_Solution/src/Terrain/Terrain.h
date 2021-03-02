@@ -1,6 +1,8 @@
 #pragma once
-#include "Mesh.h"
+#include "..\stb_image.h"
+#include "..\Mesh.h"
 #include "TerrainShader.h"
+
 class Terrain {
 private:
 
@@ -43,8 +45,6 @@ public:
 
 	void draw(TerrainShader* terrainShader);
 	
-	void draw(Shader* shader);
-
 	void initBuffer();
 
 	void loadHeightMap();

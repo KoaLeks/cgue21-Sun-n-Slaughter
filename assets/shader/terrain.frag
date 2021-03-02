@@ -1,6 +1,6 @@
 #version 430 core
 
-const float levels = 5.0;
+const float levels = 10.0;
 
 const float regionMinWater = -100;
 const float regionMaxWater = 10;
@@ -12,6 +12,18 @@ const float regionMinStone = 400;
 const float regionMaxStone = 700;
 const float regionMinSnow = 600;
 const float regionMaxSnow = 800;
+
+// big terrain
+//const float regionMinWater = -100;
+//const float regionMaxWater = 100;
+//const float regionMinSand = 100;
+//const float regionMaxSand = 2500;
+//const float regionMinGrass = 2000;
+//const float regionMaxGrass = 4000;
+//const float regionMinStone = 4000;
+//const float regionMaxStone = 7000;
+//const float regionMinSnow = 6000;
+//const float regionMaxSnow = 8000;
 
 uniform float scaleXZ;
 uniform vec3 lightPosition;
@@ -85,7 +97,7 @@ vec4 generateTerrainColor(vec2 texCoord) {
 void main(){
 	vec2 texCoord = tePosition.xz / (scaleXZ / 20);
     
-    vec3 lightColor = vec3(0.5);
+    vec3 lightColor = vec3(0.75);
 	vec3 lightDir = normalize(lightPosition - tePosition.xyz);
     float ambientStrength = 0.3;
     vec3 ambient = ambientStrength * lightColor;

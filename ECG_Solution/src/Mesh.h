@@ -80,6 +80,7 @@ public:
 	 * @param material: material of the Mesh object
 	 */
 	Mesh(glm::mat4 modelMatrix, MeshData& data, std::shared_ptr<MeshMaterial> material, const char* _path);
+	Mesh(glm::mat4 modelMatrix, MeshData& data, std::shared_ptr<MeshMaterial> material);
 	~Mesh();
 
 	/*!
@@ -116,6 +117,16 @@ public:
 	 * @return all cube data
 	 */
 	static MeshData createCubeMesh(float width, float height, float depth);
+
+	/*!
+	 * Creates a cube Mesh
+	 * @param width: width of the cube
+	 * @param height: height of the cube
+	 * @param depth: depth of the cube
+	 * @return all cube data
+	 */
+	static MeshData createSkyboxMesh(float width, float height, float depth);
+
 	/*!
 	 * Creates a cylinder Mesh
 	 * @param segments: number of segments of the cylinder

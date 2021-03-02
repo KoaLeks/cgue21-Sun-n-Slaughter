@@ -19,15 +19,11 @@ uniform mat4 modelMatrix;
 uniform mat4 viewProjMatrix;
 uniform mat3 normalMatrix;
 
-uniform sampler2D heightMap;
-
 void main() {
 	vert.normal_world = normalMatrix * normal;
 	vert.uv = uv;
 	vec4 position_world_ = modelMatrix * vec4(position, 1);
 	vert.position_world = position_world_.xyz;
 
-	vec2 texCoord = position.xy; 
-	float height = texture(heightMap, texCoord).r; 
-	gl_Position = viewProjMatrix * vec4(position.x, position.y, position.z, 1);
+	gl_Position = viewProjMatrix * modelMatrix * vec4(position.x, position.y, position.z, 1);
 }

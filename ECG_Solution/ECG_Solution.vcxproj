@@ -3,9 +3,10 @@
   <ItemGroup>
     <ClCompile Include="src\Mesh.cpp" />
     <ClCompile Include="src\MeshMaterial.cpp" />
+    <ClCompile Include="src\Skybox\Skybox.cpp" />
     <ClCompile Include="src\stb_image.cpp" />
-    <ClCompile Include="src\Terrain.cpp" />
-    <ClCompile Include="src\TerrainShader.cpp" />
+    <ClCompile Include="src\Terrain\Terrain.cpp" />
+    <ClCompile Include="src\Terrain\TerrainShader.cpp" />
     <ClInclude Include="src\Camera.h" />
     <ClInclude Include="src\Geometry.h" />
     <ClInclude Include="src\INIReader.h" />
@@ -15,9 +16,10 @@
     <ClInclude Include="src\Mesh.h" />
     <ClInclude Include="src\MeshMaterial.h" />
     <ClInclude Include="src\Shader.h" />
+    <ClInclude Include="src\Skybox\Skybox.h" />
     <ClInclude Include="src\stb_image.h" />
-    <ClInclude Include="src\Terrain.h" />
-    <ClInclude Include="src\TerrainShader.h" />
+    <ClInclude Include="src\Terrain\Terrain.h" />
+    <ClInclude Include="src\Terrain\TerrainShader.h" />
     <ClInclude Include="src\Texture.h" />
     <ClInclude Include="src\Utils.h" />
   </ItemGroup>

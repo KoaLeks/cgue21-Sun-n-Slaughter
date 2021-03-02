@@ -153,3 +153,6 @@ GLint TerrainShader::getUniformLocation(std::string uniform) {
 void TerrainShader::use() {
 	glUseProgram(ID);
 }
+void TerrainShader::unuse() {
+	glUseProgram(0);
+}

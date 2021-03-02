@@ -1,6 +1,5 @@
 #pragma once
 #include "Terrain.h"
-#include "stb_image.h"
 
 Terrain::Terrain(int dimension, int vertexCount, float height, const char* heightMapPath, const char* normalMapPath) {
 
@@ -10,7 +9,7 @@ Terrain::Terrain(int dimension, int vertexCount, float height, const char* heigh
 	this->scaleY = height;
 	this->generateTerrain(dimension, vertexCount);
 	this->loadHeightMap();
-	this->loadNormalMap();
+	//this->loadNormalMap();
 	this->loadTexture(waterTexture, "assets/terrain/textures/water.jpg");
 	this->loadTexture(sandTexture, "assets/terrain/textures/sand.jpg");
 	this->loadTexture(grassTexture, "assets/terrain/textures/grass.jpg");
@@ -190,4 +189,5 @@ void Terrain::draw(TerrainShader* terrainShader) {
 	glPatchParameteri(GL_PATCH_VERTICES, 4);
 	glDrawElements(GL_PATCHES, terrainCount, GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
+	terrainShader->unuse();
 }

@@ -9,7 +9,7 @@
 #include <glm/glm.hpp>
 #include "Shader.h"
 #include "Texture.h"
-#include "TerrainShader.h"
+#include "Terrain/TerrainShader.h"
 
 
 /*!
@@ -42,7 +42,9 @@ protected:
 public:
 
 	MeshMaterial(const std::shared_ptr<Shader>& shader, const std::shared_ptr<Texture>& texture,
-		const glm::vec3& highp_vec3, float alpha);	
+		const glm::vec3& highp_vec3, float alpha);
+
+	MeshMaterial(const std::shared_ptr<Shader>& shader, const glm::vec3& color, float alpha);
 	
 	MeshMaterial(const std::shared_ptr<TerrainShader>& shader, const std::shared_ptr<Texture>& texture,
 			const glm::vec3& highp_vec3, float alpha);

@@ -14,9 +14,9 @@
 #include "Light.h"
 #include "Texture.h"
 #include "Mesh.h"
-#include "TerrainShader.h"
-#include "TerrainShader.h"
-#include "Terrain.h"
+#include "Terrain/TerrainShader.h"
+#include "Terrain/Terrain.h"
+#include "Skybox/Skybox.h"
 
 
 /* --------------------------------------------- */
@@ -28,7 +28,7 @@ static std::string FormatDebugOutput(GLenum source, GLenum type, GLuint id, GLen
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
-void setPerFrameUniforms(Shader* shader, Camera& camera, DirectionalLight& dirL, PointLight& pointL);
+void setPerFrameUniforms(Shader* shader, Camera& camera, PointLight& pointL);
 void setPerFrameUniforms(TerrainShader* shader, Camera& camera, PointLight& pointL);
 
 
@@ -41,8 +41,8 @@ static bool _culling = true;
 static bool _dragging = false;
 static bool _strafing = false;
 static float _zoom = 5.0f;
-static int sreen_width = 800;
-static int sreen_height= 800;
+static int sreen_width = 1600;
+static int sreen_height= 900;
 
 
 /* --------------------------------------------- */
@@ -57,14 +57,14 @@ int main(int argc, char** argv)
 
 	INIReader reader("assets/settings.ini");
 
-	int window_width = reader.GetInteger("window", "width", 800);
-	int window_height = reader.GetInteger("window", "height", 800);
+	int window_width = reader.GetInteger("window", "width", 1600);
+	int window_height = reader.GetInteger("window", "height", 900);
 	int refresh_rate = reader.GetInteger("window", "refresh_rate", 60);
 	bool fullscreen = reader.GetBoolean("window", "fullscreen", false);
 	std::string window_title = reader.Get("window", "title", "Sun'n'Slaughter");
 	float fov = float(reader.GetReal("camera", "fov", 60.0f));
 	float nearZ = float(reader.GetReal("camera", "near", 0.1f));
-	float farZ = float(reader.GetReal("camera", "far", 10000.0f));
+	float farZ = float(reader.GetReal("camera", "far", 1000000.0f));
 
 	/* --------------------------------------------- */
 	// Create context
@@ -147,29 +147,34 @@ int main(int argc, char** argv)
 	{
 		// Load shader(s)
 		std::shared_ptr<Shader> textureShader = std::make_shared<Shader>("texture.vert", "texture.frag");
+		std::shared_ptr<Shader> skyboxShader = std::make_shared<Shader>("skybox.vert", "skybox.frag");
 		std::shared_ptr<TerrainShader> tessellationShader = std::make_shared<TerrainShader>(
 			"assets/shader/terrain.vert", 
 			"assets/shader/terrain.tessc", 
 			"assets/shader/terrain.tesse", 
-			"assets/shader/terrain.frag");
-		
-		// Create textures
-		//std::shared_ptr<Texture> woodTexture = std::make_shared<Texture>("wood_texture.dds");
-		//std::shared_ptr<Texture> heightMap = std::make_shared<Texture>("assets/terrain/heightmap.png");
+			"assets/shader/terrain.frag"
+			);
 
-		// Create materials
-		//std::shared_ptr<MeshMaterial> heightTextureMaterial = std::make_shared<MeshMaterial>(tessellationShader, heightMap, glm::vec3(0.4f, 0.7f, 0.1f), 12.0f);
-		
+		float terrainPlane = 5000;
+		float lightDistance = 1000.0f;
+
 		// Create Terrain
 		// heightmap muss ein vielfaches von 20 sein, ansonsten wirds schräg abgebildet
-		Terrain plane = Terrain(5000, 50, 800, "assets/terrain/heightmap.png", "assets/terrain/normalmap.png");
+		Terrain plane = Terrain(terrainPlane, 50, 800, "assets/terrain/heightmap.png", "assets/terrain/normalmap.png");
+
+		// Create Skybox
+		Skybox skybox = Skybox(skyboxShader.get());
 
 		// Initialize camera
 		Camera camera(fov, float(window_width) / float(window_height), nearZ, farZ);
 		camera.update(window_width, window_height, false, false, false);
 
 		// Initialize lights
-		PointLight pointL(glm::vec3(.5f), glm::vec3(0.0f, 2850.0f, 0.0f), glm::vec3(0.08f, 0.03f, 0.01f));
+		PointLight pointL(glm::vec3(.5f), glm::vec3(0.0f, lightDistance, 0.0f), glm::vec3(0.08f, 0.03f, 0.01f));
+
+		std::shared_ptr<MeshMaterial> material = std::make_shared<MeshMaterial>(textureShader, glm::vec3(0.5f, 0.7f, 0.3f), 8.0f);
+		Mesh sphere = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 2850.0f, 0.0f)), Mesh::createSphereMesh(12, 12, lightDistance / 10.0f), material, "assets/terrain/heightmaq.png");
+		Mesh sphere2 = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 2850.0f, 0.0f)), Mesh::createSphereMesh(12, 12, lightDistance / 10.0f), material, "assets/terrain/heightmaq.png");
 
 		// Render loop
 		float t = float(glfwGetTime());
@@ -186,17 +191,25 @@ int main(int argc, char** argv)
 
 			// Update camera
 			glfwGetCursorPos(window, &mouse_x, &mouse_y);
-			camera.update(int(mouse_x)*5, int(mouse_y)*5, _zoom, _dragging, _strafing);
+			camera.update(int(mouse_x), int(mouse_y), _zoom, _dragging, _strafing);
+
+			// Update Skybox
+			skybox.draw(camera);
 
 			// Set per-frame uniforms
-			//setPerFrameUniforms(textureShader.get(), camera, dirL, pointL);
+			setPerFrameUniforms(textureShader.get(), camera, pointL);
 
-			//pointL.position.x = sin(glfwGetTime()) * 1250.0f;
-			//pointL.position.z = cos(glfwGetTime()) * 1250.0f;
+			pointL.position.x = cos(glfwGetTime()) * terrainPlane/2;
+			pointL.position.z = sin(glfwGetTime()) * terrainPlane/2;
+			sphere.resetModelMatrix();
+			sphere.transform(glm::translate(glm::mat4(1), glm::vec3(cos(glfwGetTime()) * terrainPlane / 2, lightDistance, sin(glfwGetTime()) * terrainPlane / 2)));
+
 			setPerFrameUniforms(tessellationShader.get(), camera, pointL);
 
 			// Render terrain
 			plane.draw(tessellationShader.get());
+			sphere.draw();
+			//sphere2.draw();
 
 			// Compute frame time
 			dt = t;
@@ -227,14 +240,14 @@ int main(int argc, char** argv)
 }
 
 
-void setPerFrameUniforms(Shader* shader, Camera& camera, DirectionalLight& dirL, PointLight& pointL)
+void setPerFrameUniforms(Shader* shader, Camera& camera, PointLight& pointL)
 {
 	shader->use();
 	shader->setUniform("viewProjMatrix", camera.getViewProjectionMatrix());
 	shader->setUniform("camera_world", camera.getPosition());
 
-	shader->setUniform("dirL.color", dirL.color);
-	shader->setUniform("dirL.direction", dirL.direction);
+	//shader->setUniform("dirL.color", glm::vec3(1));
+	//shader->setUniform("dirL.direction", glm::vec3(1));
 	shader->setUniform("pointL.color", pointL.color);
 	shader->setUniform("pointL.position", pointL.position);
 	shader->setUniform("pointL.attenuation", pointL.attenuation);
@@ -267,7 +280,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	_zoom -= float(yoffset) * 50.f;
+	_zoom -= float(yoffset) * 300.f;
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)

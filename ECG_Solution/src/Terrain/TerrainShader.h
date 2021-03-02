@@ -13,11 +13,11 @@
 #include <glm\glm.hpp>
 #include <glm\gtc\type_ptr.hpp>
 
-#include "Utils.h"
+#include "..\Utils.h"
 
 
 /*!
- * Shader class that encapsulates all shader access
+ * Terrain Shader class that encapsulates all shader access
  */
 class TerrainShader
 {
@@ -81,20 +81,18 @@ public:
 	TerrainShader(std::string vs, std::string fs);
 
 	TerrainShader(std::string vs, std::string tc, std::string te, std::string fs);
-
-	void use();
 	
 	~TerrainShader();
 
 	/*!
 	 * Uses the shader with glUseProgram
 	 */
-	void use() const;
+	void use();
 
 	/*!
 	 * Un-uses the shader
 	 */
-	void unuse() const;
+	void unuse();
 
 	/*!
 	 * Sets an integer uniform in the shader
