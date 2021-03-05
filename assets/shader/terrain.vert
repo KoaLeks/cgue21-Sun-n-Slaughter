@@ -5,10 +5,12 @@ layout(location = 0) in vec3 position;
 
 // sends vertex position to tessellation controll shader
 out vec4 vPosition;
+out vec4 vFragPosLightSpace;
 
 uniform sampler2D heightMap;
 uniform float scaleXZ;
 uniform float scaleY;
+uniform mat4 lightSpaceMatrix;
 
 void main(){
 
@@ -19,6 +21,6 @@ void main(){
 	
 	// new position
 	vec4 newPos = vec4(position.x, height, position.z, 1.0);
-
 	vPosition = vec4(position, 1);
+	vFragPosLightSpace = lightSpaceMatrix * newPos;
 }

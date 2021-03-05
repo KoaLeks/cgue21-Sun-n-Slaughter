@@ -33,4 +33,5 @@ void main()
 	skyColorHSV.z = (skyLevel / levels);
 
     color = vec4(hsv2rgb(skyColorHSV), 1.0);
+    //color = skyColorRGB;
 }

@@ -6,9 +6,11 @@ layout(vertices = 4) out;
 
 // get position from vertex shader
 in vec4 vPosition[];
+in vec4 vFragPosLightSpace[];
 
 // send position to tessellation evaluation shader
 out vec4 tcPosition[];
+out vec4 tcFragPosLightSpace[];
 
 uniform vec3 camera_world;
 
@@ -18,6 +20,7 @@ void main()
 {
 
 	tcPosition[id] = vPosition[id];
+	tcFragPosLightSpace[id] = vFragPosLightSpace[id];
 
 	if(id == 0){
 
@@ -34,11 +37,11 @@ void main()
 		// Interpolate between min/max tess levels
 		// max = 64, min = 1
 		// apply tess level to the corresponding outer-level parameter
-		// camera distance: 2000
-		float adTessLevel = mix( 24, 1, clamp(adDistance / 2000, 0, 1) );
-		float dcTessLevel = mix( 24, 1, clamp(dcDistance / 2000, 0, 1) );
-		float bcTessLevel = mix( 24, 1, clamp(bcDistance / 2000, 0, 1) );
-		float abTessLevel = mix( 24, 1, clamp(abDistance / 2000, 0, 1) );
+		// camera distance: 6000
+		float adTessLevel = mix( 24, 1, clamp(adDistance / 1000, 0, 1) );
+		float dcTessLevel = mix( 24, 1, clamp(dcDistance / 1000, 0, 1) );
+		float bcTessLevel = mix( 24, 1, clamp(bcDistance / 1000, 0, 1) );
+		float abTessLevel = mix( 24, 1, clamp(abDistance / 1000, 0, 1) );
 		
 		// average of the outer level
 		float innerTessLevel = (abTessLevel + adTessLevel + dcTessLevel + bcTessLevel) / 4;

@@ -84,10 +84,7 @@ void Mesh::draw()
 
 	shader->setUniform("modelMatrix", _modelMatrix);
 	shader->setUniform("normalMatrix", glm::mat3(glm::transpose(glm::inverse(_modelMatrix))));
-
-
-	//glBindTexture(GL_TEXTURE_2D, heightmap);
-	//shader->setUniform("heightMap", 0);
+	shader->setUniform("isTerrain", false);
 	glBindVertexArray(_vao);
 	//_material->setUniforms();
 	glDrawElements(GL_TRIANGLES, _elements, GL_UNSIGNED_INT, 0);

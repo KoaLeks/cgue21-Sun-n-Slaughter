@@ -17,6 +17,7 @@
 #include "Terrain/TerrainShader.h"
 #include "Terrain/Terrain.h"
 #include "Skybox/Skybox.h"
+#include "Shadowmap/ShadowMap.h"
 
 
 /* --------------------------------------------- */
@@ -30,6 +31,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void setPerFrameUniforms(Shader* shader, Camera& camera, PointLight& pointL);
 void setPerFrameUniforms(TerrainShader* shader, Camera& camera, PointLight& pointL);
+void renderQuad();
 
 
 /* --------------------------------------------- */
@@ -43,7 +45,6 @@ static bool _strafing = false;
 static float _zoom = 5.0f;
 static int sreen_width = 1600;
 static int sreen_height= 900;
-
 
 /* --------------------------------------------- */
 // Main
@@ -64,7 +65,7 @@ int main(int argc, char** argv)
 	std::string window_title = reader.Get("window", "title", "Sun'n'Slaughter");
 	float fov = float(reader.GetReal("camera", "fov", 60.0f));
 	float nearZ = float(reader.GetReal("camera", "near", 0.1f));
-	float farZ = float(reader.GetReal("camera", "far", 1000000.0f));
+	float farZ = float(reader.GetReal("camera", "far", 100000.0f));
 
 	/* --------------------------------------------- */
 	// Create context
@@ -148,6 +149,8 @@ int main(int argc, char** argv)
 		// Load shader(s)
 		std::shared_ptr<Shader> textureShader = std::make_shared<Shader>("texture.vert", "texture.frag");
 		std::shared_ptr<Shader> skyboxShader = std::make_shared<Shader>("skybox.vert", "skybox.frag");
+		std::shared_ptr<Shader> shadowMapDebugShader = std::make_shared<Shader>("shadowMapQuadDebug.vert", "shadowMapQuadDebug.frag");
+		std::shared_ptr<Shader> shadowMapDepthShader = std::make_shared<Shader>("shadowmap_depth.vert", "shadowmap_depth.frag");
 		std::shared_ptr<TerrainShader> tessellationShader = std::make_shared<TerrainShader>(
 			"assets/shader/terrain.vert", 
 			"assets/shader/terrain.tessc", 
@@ -155,12 +158,14 @@ int main(int argc, char** argv)
 			"assets/shader/terrain.frag"
 			);
 
-		float terrainPlane = 5000;
-		float lightDistance = 1000.0f;
+		float terrainPlane = 10000.0f;
+		float terrainHeight = 2000.0f;
+		float lightDistance = 3500.0f;
 
 		// Create Terrain
 		// heightmap muss ein vielfaches von 20 sein, ansonsten wirds schräg abgebildet
-		Terrain plane = Terrain(terrainPlane, 50, 800, "assets/terrain/heightmap.png", "assets/terrain/normalmap.png");
+		Terrain plane = Terrain(terrainPlane, 50, terrainHeight, "assets/terrain/heightmap.png", false);
+		Terrain planeShadow = Terrain(terrainPlane, 50, terrainHeight, "assets/terrain/heightmap.png", true);
 
 		// Create Skybox
 		Skybox skybox = Skybox(skyboxShader.get());
@@ -170,11 +175,19 @@ int main(int argc, char** argv)
 		camera.update(window_width, window_height, false, false, false);
 
 		// Initialize lights
-		PointLight pointL(glm::vec3(.5f), glm::vec3(0.0f, lightDistance, 0.0f), glm::vec3(0.08f, 0.03f, 0.01f));
+		//PointLight pointL(glm::vec3(.5f), glm::vec3(terrainPlane / 2, lightDistance, 0.0f), glm::vec3(0.08f, 0.03f, 0.01f));
+		PointLight pointL(glm::vec3(.5f), glm::vec3(2500, lightDistance, 0), glm::vec3(0.08f, 0.03f, 0.01f));
+
+		// Shadow Map
+		ShadowMap shadowMap = ShadowMap(shadowMapDepthShader.get(), pointL.position, nearZ, farZ / 10, 4000.0f);
 
 		std::shared_ptr<MeshMaterial> material = std::make_shared<MeshMaterial>(textureShader, glm::vec3(0.5f, 0.7f, 0.3f), 8.0f);
-		Mesh sphere = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 2850.0f, 0.0f)), Mesh::createSphereMesh(12, 12, lightDistance / 10.0f), material, "assets/terrain/heightmaq.png");
-		Mesh sphere2 = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 2850.0f, 0.0f)), Mesh::createSphereMesh(12, 12, lightDistance / 10.0f), material, "assets/terrain/heightmaq.png");
+		std::shared_ptr<MeshMaterial> depth = std::make_shared<MeshMaterial>(shadowMapDepthShader, glm::vec3(0.5f, 0.7f, 0.3f), 8.0f);
+		
+		Mesh light = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(500, 1000, 500)), Mesh::createSphereMesh(12, 12, lightDistance / 10), material, "assets/terrain/heightmaq.png");
+		Mesh sun = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(-30000, 35000, -55000)), Mesh::createSphereMesh(12, 12, 5000), material, "assets/terrain/heightmaq.png");
+		Mesh sphere3Depth = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(-700, 2000, -600)), Mesh::createSphereMesh(12, 12, 450), depth, "assets/terrain/heightmaq.png");
+		Mesh sphere3 = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(-700, 2000, -600)), Mesh::createSphereMesh(12, 12, 450), material, "assets/terrain/heightmaq.png");
 
 		// Render loop
 		float t = float(glfwGetTime());
@@ -193,23 +206,47 @@ int main(int argc, char** argv)
 			glfwGetCursorPos(window, &mouse_x, &mouse_y);
 			camera.update(int(mouse_x), int(mouse_y), _zoom, _dragging, _strafing);
 
-			// Update Skybox
-			skybox.draw(camera);
-
 			// Set per-frame uniforms
 			setPerFrameUniforms(textureShader.get(), camera, pointL);
 
-			pointL.position.x = cos(glfwGetTime()) * terrainPlane/2;
-			pointL.position.z = sin(glfwGetTime()) * terrainPlane/2;
-			sphere.resetModelMatrix();
-			sphere.transform(glm::translate(glm::mat4(1), glm::vec3(cos(glfwGetTime()) * terrainPlane / 2, lightDistance, sin(glfwGetTime()) * terrainPlane / 2)));
-
+			pointL.position.x = cos(t/8) * terrainPlane;
+			pointL.position.z = sin(t/8) * terrainPlane;
+			light.resetModelMatrix();
+			light.transform(glm::translate(glm::mat4(1), glm::vec3(pointL.position.x, pointL.position.y, pointL.position.z)));
 			setPerFrameUniforms(tessellationShader.get(), camera, pointL);
 
+
+			// 1. render depth of scene to texture (from light's perspective)
+			// --------------------------------------------------------------
+			shadowMap.updateLightPos(pointL.position);
+			shadowMap.generateShadowMap();
+			shadowMap.ConfigureShaderAndMatrices();
+			sphere3Depth.draw();
+			planeShadow.draw(shadowMapDepthShader.get());
+			shadowMap.unbindFBO();
+			// reset viewport
+			glViewport(0, 0, sreen_width, sreen_height);
+			glClearColor(0, 0, 0, 1);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			
+			// debug: render shadowMap on quad 
+			//shadowMap.drawDebug(shadowMapDebugShader.get());
+			//renderQuad();
+
+
+			// 2. Render Scene
+			// --------------------------------------------------------------
+			// Render Skybox
+			skybox.draw(camera);
+
 			// Render terrain
-			plane.draw(tessellationShader.get());
-			sphere.draw();
-			//sphere2.draw();
+			plane.draw(tessellationShader.get(), camera, shadowMap);
+			//planeShadow.draw(textureShader.get());
+			
+			// light sphere
+			light.draw();
+			//sun.draw();
+			sphere3.draw();
 
 			// Compute frame time
 			dt = t;
@@ -237,6 +274,37 @@ int main(int argc, char** argv)
 	glfwTerminate();
 
 	return EXIT_SUCCESS;
+}
+
+// renderQuad() renders a 1x1 XY quad in NDC
+// -----------------------------------------
+unsigned int quadVAO = 0;
+unsigned int quadVBO;
+void renderQuad()
+{
+	if (quadVAO == 0)
+	{
+		float quadVertices[] = {
+			// positions        // texture Coords
+			-1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
+			-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+			 1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
+			 1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+		};
+		// setup plane VAO
+		glGenVertexArrays(1, &quadVAO);
+		glGenBuffers(1, &quadVBO);
+		glBindVertexArray(quadVAO);
+		glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	}
+	glBindVertexArray(quadVAO);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glBindVertexArray(0);
 }
 
 

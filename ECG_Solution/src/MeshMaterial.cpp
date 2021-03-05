@@ -46,9 +46,9 @@ TerrainShader* MeshMaterial::getTerrainShader()
 
 void MeshMaterial::setUniforms()
 {
-	_terrainShader->setUniform("ambientMaterial",  glm::vec3( _materialCoefficients.x, 0.5, 0.5));
-	_terrainShader->setUniform("diffuseMaterial",  glm::vec3( 0.1, _materialCoefficients.y, 0.5));
-	_terrainShader->setUniform("specularMeterial", glm::vec3( 0.1, 0.1, _materialCoefficients.z));
-	_terrainShader->setUniform("shininess", _alpha);
-	texture->bind(0);
+	//_shader->setUniform("ambientMaterial",  glm::vec3( _materialCoefficients.x, 0.5, 0.5));
+	//_shader->setUniform("diffuseMaterial",  glm::vec3( 0.1, _materialCoefficients.y, 0.5));
+	//_shader->setUniform("specularMeterial", glm::vec3( 0.1, 0.1, _materialCoefficients.z));
+	//_shader->setUniform("shininess", _alpha);
+	//texture->bind(0);
 }

@@ -22,10 +22,11 @@ protected:
 	glm::mat4 _projMatrix;
 	int _mouseX, _mouseY;
 	float _yaw, _pitch;
-	glm::vec3 _position;
 	glm::vec3 _strafe;
 
 public:
+
+	glm::vec3 _position;
 	/*!
 	 * Camera constructor
 	 * @param fov: field of view, in degrees

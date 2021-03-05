@@ -2,6 +2,8 @@
 #include "..\stb_image.h"
 #include "..\Mesh.h"
 #include "TerrainShader.h"
+#include "../Camera.h"
+#include "../Shadowmap/ShadowMap.h"
 
 class Terrain {
 private:
@@ -25,32 +27,24 @@ private:
 	GLuint terrainEbo;
 	GLuint terrainVao;
 	GLuint heightMap;
-	GLuint normalMap;
 	GLuint waterTexture;
 	GLuint sandTexture;
 	GLuint grassTexture;
 	GLuint stoneTexture;
 	GLuint snowTexture;
-	std::shared_ptr<MeshMaterial> _material;
 
 public:
 
 	Terrain();
-	
-	Terrain(int dimension, int vertexCount, float height, const char* heightMapPath, const char* normalMapPath);
-
+	Terrain(int dimension, int vertexCount, float height, const char* heightMapPath, bool shadowMap);
 	~Terrain();
 
 	void generateTerrain(int dimension, int vertexCount);
-
-	void draw(TerrainShader* terrainShader);
-	
+	void generateTerrainTriangleMesh(int dimesion, int vertexCount);
+	void draw(TerrainShader* terrainShader, Camera& camera, ShadowMap& shadowMap);
+	void draw(Shader* shader);
 	void initBuffer();
-
 	void loadHeightMap();
-
-	void loadNormalMap();
-
 	void loadTexture(GLuint& texture, const char* texturePath);
-
+	glm::mat4 getModelMatrix();
 };

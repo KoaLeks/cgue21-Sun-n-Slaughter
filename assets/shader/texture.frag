@@ -41,13 +41,15 @@ vec3 phong(vec3 n, vec3 l, vec3 v, vec3 diffuseC, float diffuseF, vec3 specularC
 }
 
 void main() {	
-	vec3 n = normalize(vert.normal_world);
-	vec3 v = normalize(camera_world - vert.position_world);
+	//vec3 n = normalize(vert.normal_world);
+	//vec3 v = normalize(camera_world - vert.position_world);
 	
 	//vec3 texColor = vec3(1, 1, 1);//texture(diffuseTexture, vert.uv).rgb;
 
 	//color = vec4(texColor * materialCoefficients.x, 1); // ambient
-	color = vec4(0.8, 0.8, 0.8, 1);
+	
+	color = vec4(0.8, 0.3, 0.6, 1);
+	
 	// add directional light contribution
 	//color.rgb += phong(n, -dirL.direction, v, dirL.color * texColor, materialCoefficients.y, dirL.color, materialCoefficients.z, specularAlpha, false, vec3(0));
 			

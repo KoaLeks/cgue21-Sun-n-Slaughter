@@ -15,15 +15,30 @@ out VertexData {
 	vec2 uv;
 } vert;
 
+uniform sampler2D heightMap;
+uniform float scaleXZ;
+uniform float scaleY;
+
 uniform mat4 modelMatrix;
 uniform mat4 viewProjMatrix;
 uniform mat3 normalMatrix;
+uniform bool isTerrain;
 
 void main() {
-	vert.normal_world = normalMatrix * normal;
-	vert.uv = uv;
-	vec4 position_world_ = modelMatrix * vec4(position, 1);
-	vert.position_world = position_world_.xyz;
+	//vert.normal_world = normalMatrix * normal;
+	//vert.uv = uv;
+	//vec4 position_world_ = modelMatrix * vec4(position, 1);
+	//vert.position_world = position_world_.xyz;
+	
+	// texture coordinates based on position and scale in XZ plane
+	vec3 newPos = position;
+	if(isTerrain){
+		vec2 texCoord = position.xz / scaleXZ - 0.5;
+		float height = texture(heightMap, texCoord).r * scaleY;
+		newPos.y = height;
+	}
+	// new position
+	//vec4 newPos = vec4(position.x, height, position.z, 1.0);
 
-	gl_Position = viewProjMatrix * modelMatrix * vec4(position.x, position.y, position.z, 1);
+	gl_Position = viewProjMatrix * modelMatrix * vec4(newPos.x, newPos.y, newPos.z, 1);
 }

@@ -3,6 +3,7 @@
 layout (quads, fractional_even_spacing, ccw) in;
  
 in vec4 tcPosition[];
+in vec4 tcFragPosLightSpace[];
 
 uniform mat4 modelMatrix;
 uniform mat4 viewProjMatrix;
@@ -14,14 +15,18 @@ uniform float scaleY;
 out vec4 teNormal;
 out vec4 tePosition;
 out vec2 teTextureCoordinate;
+out vec4 teFragPosLightSpace;
 
 // https://stackoverflow.com/questions/5281261/generating-a-normal-map-from-a-height-map
 void main()
 {
     vec4 adPosition = mix(tcPosition[0], tcPosition[3], gl_TessCoord.x);
     vec4 bcPosition = mix(tcPosition[1], tcPosition[2], gl_TessCoord.x);
-
     vec4 position = mix(adPosition, bcPosition, gl_TessCoord.y);
+
+    vec4 adFragPosLightSpace = mix(tcFragPosLightSpace[0], tcFragPosLightSpace[3], gl_TessCoord.x);
+    vec4 bcFragPosLightSpace = mix(tcFragPosLightSpace[1], tcFragPosLightSpace[2], gl_TessCoord.x);
+    teFragPosLightSpace = mix(adFragPosLightSpace, bcFragPosLightSpace, gl_TessCoord.y);
 
     vec2 textureCoordinate = position.xz / scaleXZ - 0.5;
     teTextureCoordinate = textureCoordinate;
