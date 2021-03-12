@@ -18,6 +18,8 @@
 #include "Terrain/Terrain.h"
 #include "Skybox/Skybox.h"
 #include "Shadowmap/ShadowMap.h"
+#include "GUI/GuiTexture.h"
+#include "GUI/GuiRenderer.h"
 
 
 /* --------------------------------------------- */
@@ -151,6 +153,7 @@ int main(int argc, char** argv)
 		std::shared_ptr<Shader> skyboxShader = std::make_shared<Shader>("skybox.vert", "skybox.frag");
 		std::shared_ptr<Shader> shadowMapDebugShader = std::make_shared<Shader>("shadowMapQuadDebug.vert", "shadowMapQuadDebug.frag");
 		std::shared_ptr<Shader> shadowMapDepthShader = std::make_shared<Shader>("shadowmap_depth.vert", "shadowmap_depth.frag");
+		std::shared_ptr<Shader> guiShader = std::make_shared<Shader>("gui.vert", "gui.frag");
 		std::shared_ptr<TerrainShader> tessellationShader = std::make_shared<TerrainShader>(
 			"assets/shader/terrain.vert", 
 			"assets/shader/terrain.tessc", 
@@ -158,8 +161,8 @@ int main(int argc, char** argv)
 			"assets/shader/terrain.frag"
 			);
 
-		float terrainPlane = 10000.0f;
-		float terrainHeight = 2000.0f;
+		int terrainPlane = 10000;
+		int terrainHeight = 2000;
 		float lightDistance = 3500.0f;
 
 		// Create Terrain
@@ -179,15 +182,30 @@ int main(int argc, char** argv)
 		PointLight pointL(glm::vec3(.5f), glm::vec3(2500, lightDistance, 0), glm::vec3(0.08f, 0.03f, 0.01f));
 
 		// Shadow Map
-		ShadowMap shadowMap = ShadowMap(shadowMapDepthShader.get(), pointL.position, nearZ, farZ / 10, 4000.0f);
+		ShadowMap shadowMap = ShadowMap(shadowMapDepthShader.get(), pointL.position, nearZ, farZ / 10, 5000.0f);
 
 		std::shared_ptr<MeshMaterial> material = std::make_shared<MeshMaterial>(textureShader, glm::vec3(0.5f, 0.7f, 0.3f), 8.0f);
 		std::shared_ptr<MeshMaterial> depth = std::make_shared<MeshMaterial>(shadowMapDepthShader, glm::vec3(0.5f, 0.7f, 0.3f), 8.0f);
 		
-		Mesh light = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(500, 1000, 500)), Mesh::createSphereMesh(12, 12, lightDistance / 10), material, "assets/terrain/heightmaq.png");
-		Mesh sun = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(-30000, 35000, -55000)), Mesh::createSphereMesh(12, 12, 5000), material, "assets/terrain/heightmaq.png");
-		Mesh sphere3Depth = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(-700, 2000, -600)), Mesh::createSphereMesh(12, 12, 450), depth, "assets/terrain/heightmaq.png");
-		Mesh sphere3 = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(-700, 2000, -600)), Mesh::createSphereMesh(12, 12, 450), material, "assets/terrain/heightmaq.png");
+		Mesh light = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(500, 1000, 500)), Mesh::createSphereMesh(12, 12, lightDistance / 10), material);
+		Mesh sun = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(-30000, 35000, -55000)), Mesh::createSphereMesh(12, 12, 5000), material);
+		Mesh sphere3Depth = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(-700, 2000, -600)), Mesh::createSphereMesh(12, 12, 450), depth);
+		Mesh sphere3 = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(-700, 2000, -600)), Mesh::createSphereMesh(12, 12, 450), material);
+
+		// GUI
+		std::vector<GuiTexture> guis;
+		Texture heart = Texture("assets/heart.png", true);
+		float scaleFactor = 50.0f;
+		glm::vec2 scale = glm::vec2(scaleFactor * heart.getAspectRatio() / window_width, scaleFactor / window_height);
+		GuiTexture gui =  GuiTexture(heart.getTextureId(), glm::vec2(-0.95f, 0.9f), scale);
+		GuiTexture gui2 = GuiTexture(heart.getTextureId(), glm::vec2(-0.88f, 0.9f), scale);
+		GuiTexture gui3 = GuiTexture(heart.getTextureId(), glm::vec2(-0.81f, 0.9f), scale);
+		GuiTexture gui4 = GuiTexture(heart.getTextureId(), glm::vec2(-0.74f, 0.9f), scale);
+		guis.push_back(gui);
+		guis.push_back(gui2);
+		guis.push_back(gui3);
+		guis.push_back(gui4);
+		GuiRenderer guiRenderer = GuiRenderer(guiShader.get());
 
 		// Render loop
 		float t = float(glfwGetTime());
@@ -208,9 +226,15 @@ int main(int argc, char** argv)
 
 			// Set per-frame uniforms
 			setPerFrameUniforms(textureShader.get(), camera, pointL);
-
-			pointL.position.x = cos(t/8) * terrainPlane;
-			pointL.position.z = sin(t/8) * terrainPlane;
+			
+			pointL.position.x = cos(t / 2) * terrainPlane;
+			if (sin(t / 2) > 0) {
+				pointL.position.y = sin(t / 2) * terrainPlane / 2;
+			}
+			else
+			{
+				pointL.position.y = -sin(t / 2) * terrainPlane / 2;
+			}
 			light.resetModelMatrix();
 			light.transform(glm::translate(glm::mat4(1), glm::vec3(pointL.position.x, pointL.position.y, pointL.position.z)));
 			setPerFrameUniforms(tessellationShader.get(), camera, pointL);
@@ -219,16 +243,16 @@ int main(int argc, char** argv)
 			// 1. render depth of scene to texture (from light's perspective)
 			// --------------------------------------------------------------
 			shadowMap.updateLightPos(pointL.position);
-			shadowMap.generateShadowMap();
-			shadowMap.ConfigureShaderAndMatrices();
+			shadowMap.draw();
 			sphere3Depth.draw();
 			planeShadow.draw(shadowMapDepthShader.get());
 			shadowMap.unbindFBO();
+
 			// reset viewport
-			glViewport(0, 0, sreen_width, sreen_height);
+			glViewport(0, 0, 1600, 900);
 			glClearColor(0, 0, 0, 1);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			
+
 			// debug: render shadowMap on quad 
 			//shadowMap.drawDebug(shadowMapDebugShader.get());
 			//renderQuad();
@@ -247,6 +271,9 @@ int main(int argc, char** argv)
 			light.draw();
 			//sun.draw();
 			sphere3.draw();
+
+			// Render GUI
+			guiRenderer.render(guis);
 
 			// Compute frame time
 			dt = t;

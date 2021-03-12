@@ -7,8 +7,8 @@
 #include "Mesh.h"
 #include "stb_image.h"
 
-Mesh::Mesh(glm::mat4 modelMatrix, MeshData& data, std::shared_ptr<MeshMaterial> material, const char* _path)
-	: _modelMatrix(modelMatrix), _elements(data.indices.size()), _material(material), path(_path)
+Mesh::Mesh(glm::mat4 modelMatrix, MeshData& data, std::shared_ptr<MeshMaterial> material)
+	: _modelMatrix(modelMatrix), _elements(data.indices.size()), _material(material)
 {
 	// create VAO
 	glGenVertexArrays(1, &_vao);
@@ -42,12 +42,53 @@ Mesh::Mesh(glm::mat4 modelMatrix, MeshData& data, std::shared_ptr<MeshMaterial> 
 	glEnableVertexAttribArray(2);
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
+	// create and bind indices VBO
+	glGenBuffers(1, &_vboIndices);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _vboIndices);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, data.indices.size() * sizeof(unsigned int), data.indices.data(), GL_STATIC_DRAW);
+	glBindVertexArray(0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+}
+
+Mesh::Mesh(glm::mat4 modelMatrix, MeshData& data)
+	: _modelMatrix(modelMatrix), _elements(data.indices.size())
+{
+	// create VAO
+	glGenVertexArrays(1, &_vao);
+	glBindVertexArray(_vao);
+
+	// create positions VBO
+	glGenBuffers(1, &_vboPositions);
+	glBindBuffer(GL_ARRAY_BUFFER, _vboPositions);
+	glBufferData(GL_ARRAY_BUFFER, data.positions.size() * sizeof(glm::vec3), data.positions.data(), GL_STATIC_DRAW);
+
+	// bind positions to location 0
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+	// create normals VBO
+	glGenBuffers(1, &_vboNormals);
+	glBindBuffer(GL_ARRAY_BUFFER, _vboNormals);
+	glBufferData(GL_ARRAY_BUFFER, data.normals.size() * sizeof(glm::vec3), data.normals.data(), GL_STATIC_DRAW);
+
+	// bind normals to location 1
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+
+	////create uv vbo
+	glGenBuffers(1, &_vboUV);
+	glBindBuffer(GL_ARRAY_BUFFER, _vboUV);
+	glBufferData(GL_ARRAY_BUFFER, data.uv_coord.size() * sizeof(glm::vec2), data.uv_coord.data(), GL_STATIC_DRAW);
+
+	//bind uv to location 2
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
 	// create and bind indices VBO
 	glGenBuffers(1, &_vboIndices);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _vboIndices);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, data.indices.size() * sizeof(unsigned int), data.indices.data(), GL_STATIC_DRAW);
-	//loadHeightMap();
 	glBindVertexArray(0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
@@ -60,23 +101,13 @@ Mesh::~Mesh()
 	glDeleteVertexArrays(1, &_vao);
 }
 
-void Mesh::loadHeightMap() {
-	int width, height, nrChannels;
-	unsigned char* data = stbi_load(path, &width, &height, &nrChannels, 0);
-
-	glGenTextures(1, &heightmap);
-	//glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, heightmap);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	if (data) {
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_R16, width, height, 0, GL_R16, GL_UNSIGNED_SHORT, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-	}
-	else {
-		std::cout << "Failed to load image" << std::endl;
-	}
-	stbi_image_free(data);
+GLuint Mesh::getVaoID() {
+	return _vao;
 }
+unsigned int Mesh::getVertexCount() {
+	return _elements;
+}
+
 void Mesh::draw()
 {
 	Shader* shader = _material->getShader();
@@ -92,6 +123,16 @@ void Mesh::draw()
 	shader->unuse();
 }
 
+void Mesh::renderQuad() {
+	Shader* shader = _material->getShader();
+	shader->use();
+
+	glBindVertexArray(_vao);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, _elements);
+	glBindVertexArray(0);
+	shader->unuse();
+}
+
 void Mesh::transform(glm::mat4 transformation)
 {
 	_modelMatrix = transformation * _modelMatrix;
@@ -100,6 +141,26 @@ void Mesh::transform(glm::mat4 transformation)
 void Mesh::resetModelMatrix()
 {
 	_modelMatrix = glm::mat4(1);
+}
+
+MeshData Mesh::createQuadMesh() {
+	MeshData data;
+	data.positions = {
+		glm::vec3(-1.0f,  1.0f, 0.0f),
+		glm::vec3(-1.0f, -1.0f, 0.0f),
+		glm::vec3(1.0f,  1.0f, 0.0f),
+		glm::vec3(1.0f, -1.0f, 0.0f) 
+	};
+	data.indices = {
+		0, 1, 2, 3
+	};
+	data.uv_coord = {
+		glm::vec2(0.0f, 1.0f),
+		glm::vec2(0.0f, 0.0f),
+		glm::vec2(1.0f, 1.0f),
+		glm::vec2(1.0f, 0.0f)
+	};
+	return std::move(data);
 }
 
 MeshData Mesh::createPlaneMesh(int dimensions) {
@@ -128,6 +189,7 @@ MeshData Mesh::createPlaneMesh(int dimensions) {
 	}
 	return std::move(data);
 }
+
 MeshData Mesh::createCubeMesh(float width, float height, float depth)
 {
 	MeshData data;
@@ -238,11 +300,7 @@ MeshData Mesh::createCubeMesh(float width, float height, float depth)
 
 MeshData Mesh::createSkyboxMesh(float width, float height, float depth) {
 	MeshData data;
-	// orginal: back, left, right, front, top, bottom 
-	data.positions = {				
-
-
-
+	data.positions = {		
 		// back
 		glm::vec3(-width / 2.0f,  height / 2.0f,  -depth / 2.0f), //top left 
 		glm::vec3(-width / 2.0f, -height / 2.0f,  -depth / 2.0f), //bottom left
@@ -264,7 +322,6 @@ MeshData Mesh::createSkyboxMesh(float width, float height, float depth) {
 		glm::vec3(width / 2.0f,  height / 2.0f,   depth / 2.0f),
 		glm::vec3(width / 2.0f,  height / 2.0f,  -depth / 2.0f),
 		glm::vec3(width / 2.0f, -height / 2.0f,  -depth / 2.0f),
-
 		// front
 		glm::vec3(-width / 2.0f, -height / 2.0f,   depth / 2.0f),
 		glm::vec3(-width / 2.0f,  height / 2.0f,   depth / 2.0f),
@@ -279,7 +336,6 @@ MeshData Mesh::createSkyboxMesh(float width, float height, float depth) {
 		glm::vec3( width / 2.0f,  height / 2.0f,   depth / 2.0f),
 		glm::vec3(-width / 2.0f,  height / 2.0f,   depth / 2.0f),
 		glm::vec3(-width / 2.0f,  height / 2.0f,  -depth / 2.0f),
-
 		// bottom
 		glm::vec3(-width / 2.0f, -height / 2.0f,  -depth / 2.0f),
 		glm::vec3(-width / 2.0f, -height / 2.0f,   depth / 2.0f),
@@ -287,54 +343,7 @@ MeshData Mesh::createSkyboxMesh(float width, float height, float depth) {
 		glm::vec3(width / 2.0f, -height / 2.0f,  -depth / 2.0f),
 		glm::vec3(-width / 2.0f, -height / 2.0f,   depth / 2.0f),
 		glm::vec3(width / 2.0f, -height / 2.0f,   depth / 2.0f)
-
-
 	};
-
-
-
-	//for (int i = 0; i < 6; i++)
-	//{
-	//	data.uv_coord.push_back(glm::vec2(0, 0));
-	//	data.uv_coord.push_back(glm::vec2(1, 0));
-	//	data.uv_coord.push_back(glm::vec2(1, 1));
-	//	data.uv_coord.push_back(glm::vec2(0, 1));
-	//}
-
-
-
-	//data.normals = {
-	//	// front
-	//	glm::vec3(0, 0, 1),
-	//	glm::vec3(0, 0, 1),
-	//	glm::vec3(0, 0, 1),
-	//	glm::vec3(0, 0, 1),
-	//	// back
-	//	glm::vec3(0, 0, -1),
-	//	glm::vec3(0, 0, -1),
-	//	glm::vec3(0, 0, -1),
-	//	glm::vec3(0, 0, -1),
-	//	// right
-	//	glm::vec3(1, 0, 0),
-	//	glm::vec3(1, 0, 0),
-	//	glm::vec3(1, 0, 0),
-	//	glm::vec3(1, 0, 0),
-	//	// left
-	//	glm::vec3(-1, 0, 0),
-	//	glm::vec3(-1, 0, 0),
-	//	glm::vec3(-1, 0, 0),
-	//	glm::vec3(-1, 0, 0),
-	//	// top
-	//	glm::vec3(0, 1, 0),
-	//	glm::vec3(0, 1, 0),
-	//	glm::vec3(0, 1, 0),
-	//	glm::vec3(0, 1, 0),
-	//	// bottom
-	//	glm::vec3(0, -1, 0),
-	//	glm::vec3(0, -1, 0),
-	//	glm::vec3(0, -1, 0),
-	//	glm::vec3(0, -1, 0)
-	//};
 
 	data.indices = {
 		// front
@@ -364,8 +373,6 @@ MeshData Mesh::createSkyboxMesh(float width, float height, float depth) {
 MeshData Mesh::createCylinderMesh(unsigned int segments, float height, float radius)
 {
 	MeshData data;
-
-
 	// center vertices
 	data.positions.push_back(glm::vec3(0, -height / 2.0f, 0));
 	data.normals.push_back(glm::vec3(0, -1, 0));

@@ -13,14 +13,7 @@ Terrain::Terrain(int dimension, int vertexCount, float height, const char* heigh
 	{
 		this->generateTerrain(dimension, vertexCount);
 	}
-	//this->loadHeightMap();
-	this->loadHeightMap();
-	//this->loadTexture(heightMap, heightMapPath);
-	this->loadTexture(waterTexture, "assets/terrain/textures/water.jpg");
-	this->loadTexture(sandTexture, "assets/terrain/textures/sand.jpg");
-	this->loadTexture(grassTexture, "assets/terrain/textures/grass.jpg");
-	this->loadTexture(stoneTexture, "assets/terrain/textures/stone.jpg");
-	this->loadTexture(snowTexture, "assets/terrain/textures/snow.jpg");
+	heightMap.loadTexture(heightMapPath);
 	this->initBuffer();
 }
 
@@ -146,45 +139,6 @@ void Terrain::initBuffer() {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-void Terrain::loadHeightMap() {
-	int width, height, nrChannels;
-	unsigned char* data = stbi_load(heightMapPath, &width, &height, &nrChannels, 0);
-
-	glGenTextures(1, &heightMap);
-	glBindTexture(GL_TEXTURE_2D, heightMap);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	if (data) {
-
-		// heightmap = GL_RGB, heihtmap10 = GL_RGBA
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-	}
-	else {
-		std::cout << "Failed to load image" << std::endl;
-	}
-	stbi_image_free(data);
-}
-
-void Terrain::loadTexture(GLuint& texture, const char* texturePath) {
-	int width, height, nrChannels;
-	unsigned char* data = stbi_load(texturePath, &width, &height, &nrChannels, 0);
-
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	if (data) {
-
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-	}
-	else {
-		std::cout << "Failed to load image" << std::endl;
-	}
-	stbi_image_free(data);
-}
-
 void Terrain::draw(TerrainShader* terrainShader, Camera& camera, ShadowMap& shadowMap) {
 	terrainShader->use();
 
@@ -192,25 +146,21 @@ void Terrain::draw(TerrainShader* terrainShader, Camera& camera, ShadowMap& shad
 	terrainShader->setUniform("scaleXZ", scaleXZ);
 	terrainShader->setUniform("scaleY", scaleY);
 
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, heightMap);
+	//glActiveTexture(GL_TEXTURE0);
+	//glBindTexture(GL_TEXTURE_2D, heightMap);
+	heightMap.bind(0);
 	terrainShader->setUniform("heightMap", 0);
 
 	// terrain textures
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, waterTexture);
+	waterTexture.bind(1);
+	sandTexture.bind(2);
+	grassTexture.bind(3);
+	stoneTexture.bind(4);
+	snowTexture.bind(5);
 	terrainShader->setUniform("waterTexture", 1);
-	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, sandTexture);
 	terrainShader->setUniform("sandTexture", 2);
-	glActiveTexture(GL_TEXTURE3);
-	glBindTexture(GL_TEXTURE_2D, grassTexture);
 	terrainShader->setUniform("grassTexture", 3);
-	glActiveTexture(GL_TEXTURE4);
-	glBindTexture(GL_TEXTURE_2D, stoneTexture);
 	terrainShader->setUniform("stoneTexture", 4);
-	glActiveTexture(GL_TEXTURE5);
-	glBindTexture(GL_TEXTURE_2D, snowTexture);
 	terrainShader->setUniform("snowTexture", 5);
 
 	// shadowMap
@@ -235,12 +185,12 @@ void Terrain::draw(Shader* shader) {
 	shader->setUniform("scaleY", scaleY);
 	shader->setUniform("isTerrain", true);
 
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, heightMap);
+	//glActiveTexture(GL_TEXTURE0);
+	//glBindTexture(GL_TEXTURE_2D, heightMap);
+	heightMap.bind(0);
 	shader->setUniform("heightMap", 0);
 
 	glBindVertexArray(terrainVao);
-	//glPatchParameteri(GL_PATCH_VERTICES, 4);
 	glDrawElements(GL_TRIANGLES, terrainCount, GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
 	shader->unuse();

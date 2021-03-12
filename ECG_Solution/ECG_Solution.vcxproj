@@ -1,6 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <ClCompile Include="src\GUI\GuiRenderer.cpp" />
+    <ClCompile Include="src\GUI\GuiTexture.cpp" />
     <ClCompile Include="src\Mesh.cpp" />
     <ClCompile Include="src\MeshMaterial.cpp" />
     <ClCompile Include="src\Shadowmap\ShadowMap.cpp" />
@@ -8,8 +10,11 @@
     <ClCompile Include="src\stb_image.cpp" />
     <ClCompile Include="src\Terrain\Terrain.cpp" />
     <ClCompile Include="src\Terrain\TerrainShader.cpp" />
+    <ClCompile Include="src\Texture.cpp" />
     <ClInclude Include="src\Camera.h" />
     <ClInclude Include="src\Geometry.h" />
+    <ClInclude Include="src\GUI\GuiRenderer.h" />
+    <ClInclude Include="src\GUI\GuiTexture.h" />
     <ClInclude Include="src\INIReader.h" />
     <ClInclude Include="src\Light.h" />
     <ClCompile Include="src\Main.cpp" />

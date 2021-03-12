@@ -1,6 +1,6 @@
 #pragma once
-#include "..\stb_image.h"
-#include "..\Mesh.h"
+#include "../stb_image.h"
+#include "../Mesh.h"
 #include "TerrainShader.h"
 #include "../Camera.h"
 #include "../Shadowmap/ShadowMap.h"
@@ -11,12 +11,6 @@ private:
 	MeshData data;
 	glm::mat4 _modelMatrix;
 	const char* heightMapPath;
-	const char* normalMapPath;
-	const char* waterTexturePath;
-	const char* sandTexturePath;
-	const char* grassTexturePath;
-	const char* stoneTexturePath;
-	const char* snowTexturePath;
 	int width, height;
 	int terrainCount;
 	float scaleXZ;
@@ -26,12 +20,13 @@ private:
 	GLuint terrainVboNorm;
 	GLuint terrainEbo;
 	GLuint terrainVao;
-	GLuint heightMap;
-	GLuint waterTexture;
-	GLuint sandTexture;
-	GLuint grassTexture;
-	GLuint stoneTexture;
-	GLuint snowTexture;
+
+	Texture heightMap;
+	Texture waterTexture = Texture("assets/terrain/textures/water.jpg", false);
+	Texture sandTexture = Texture("assets/terrain/textures/sand.jpg", false);
+	Texture grassTexture = Texture("assets/terrain/textures/grass.jpg", false);
+	Texture stoneTexture = Texture("assets/terrain/textures/stone.jpg", false);
+	Texture snowTexture = Texture("assets/terrain/textures/snow.jpg", false);
 
 public:
 
@@ -44,7 +39,5 @@ public:
 	void draw(TerrainShader* terrainShader, Camera& camera, ShadowMap& shadowMap);
 	void draw(Shader* shader);
 	void initBuffer();
-	void loadHeightMap();
-	void loadTexture(GLuint& texture, const char* texturePath);
 	glm::mat4 getModelMatrix();
 };

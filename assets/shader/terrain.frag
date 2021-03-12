@@ -120,15 +120,17 @@ float shadowCalculation(vec4 fragPosLightSpace) {
     // transform to [0,1] range
     shadowCoord = shadowCoord * 0.5 + 0.5;
 
+
     vec4 lightDir = vec4(lightPos - vec3(0), 1);
-    float bias = max(0.05 * (1.0 - dot(teNormal, lightDir)), 0.005); 
+    float bias = max(0.005 * (1.0 - dot(teNormal, lightDir)), 0.001); 
     float shadow = 0.0;     
     vec2 texelSize = 1 / vec2(textureSize(shadowMap, 0));
 	
+    // dont shadow if its outside the shadowmap
+    if (shadowCoord.z > 1.0){
+        return 0.0;
+    }
     
-    //float closestDepth   = texture(shadowMap, shadowCoord.xy).r;
-    //shadow = (shadowCoord.z - bias) > closestDepth  ? 1.0 : 0.0;
-      
     int pcfRange = 3;
     for (int y = -pcfRange; y <= pcfRange; y++) {
         for(int x = -pcfRange; x <= pcfRange; x++){
@@ -144,11 +146,6 @@ float shadowCalculation(vec4 fragPosLightSpace) {
 	//	float pcfDepth = (texture( shadowMap, vec2(shadowCoord.xy + poissonDisk[index]/700)).r); 
     //    shadow += 0.2 * ((shadowCoord.z - bias) > pcfDepth ? 1.0 : 0.0);
     //}
-
-    // dont shadow if its outside the shadowmap
-    if (shadowCoord.z > 1.0){
-        shadow = 0.0;
-    }
 
     return shadow;
 }

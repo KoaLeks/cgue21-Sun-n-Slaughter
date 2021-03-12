@@ -30,12 +30,6 @@ struct MeshData {
 class Mesh
 {
 protected:
-
-	GLuint heightmap;
-	const char* path;
-
-	void loadHeightMap();
-
 	/*!
 	 * Vertex array object
 	 */
@@ -79,9 +73,14 @@ public:
 	 * @param data: data for the Mesh object
 	 * @param material: material of the Mesh object
 	 */
-	Mesh(glm::mat4 modelMatrix, MeshData& data, std::shared_ptr<MeshMaterial> material, const char* _path);
 	Mesh(glm::mat4 modelMatrix, MeshData& data, std::shared_ptr<MeshMaterial> material);
+	Mesh(glm::mat4 modelMatrix, MeshData& data);
+	Mesh();
 	~Mesh();
+
+	GLuint getVaoID();
+	unsigned int getVertexCount();
+	void renderQuad();
 
 	/*!
 	 * Draws the object
@@ -135,6 +134,7 @@ public:
 	 * @return all cylinder data
 	 */
 	static MeshData createCylinderMesh(unsigned int segments, float height, float radius);
+
 	/*!
 	 * Creates a sphere Mesh
 	 * @param longitudeSegments: number of longitude segments of the sphere
@@ -143,4 +143,10 @@ public:
 	 * @return all sphere data
 	 */
 	static MeshData createSphereMesh(unsigned int longitudeSegments, unsigned int latitudeSegments, float radius);
+
+	/*!
+	 * Creates a quad Mesh
+	 * @return all quad data
+	 */
+	static MeshData createQuadMesh();
 };

@@ -13,14 +13,14 @@ private:
 	float near_plane;
 	float far_plane;
 	float range;
-	const unsigned int SHADOW_MAP_SIZE = 1024;
+	const unsigned int SHADOW_MAP_SIZE = 2048;
 public:
 	ShadowMap(Shader* shader, glm::vec3 lightPos, float near_plane, float far_plane, float range);
 	~ShadowMap();
 	void initBuffer();
 	void generateShadowMap();
 	void ConfigureShaderAndMatrices();
-	void draw(Shader* shader, Camera& camera, glm::mat4 modelMatrix);
+	void draw();
 	void drawDebug(Shader* shader);
 	void unbindFBO();
 	void updateLightPos(glm::vec3 lightPos);

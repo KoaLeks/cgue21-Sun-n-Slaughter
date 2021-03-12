@@ -22,13 +22,6 @@ MeshMaterial::MeshMaterial(const std::shared_ptr<Shader>& shader, const glm::vec
 	_color(color)
 {
 }
-MeshMaterial::MeshMaterial(const std::shared_ptr<TerrainShader>& shader, const std::shared_ptr<Texture>& texture,
-	const glm::vec3& highp_vec3, float alpha) : _terrainShader(shader),
-	_materialCoefficients(highp_vec3),
-	_alpha(alpha),
-	texture(texture)
-{
-}
 
 MeshMaterial::~MeshMaterial()
 {

@@ -52,24 +52,12 @@ void ShadowMap::initBuffer() {
 }
 
 void ShadowMap::generateShadowMap() {
-	// 1. first render to depth map
-	glViewport(0, 0, SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
-	glBindFramebuffer(GL_FRAMEBUFFER, shadowMapFbo);
-	glClear(GL_DEPTH_BUFFER_BIT);
-	//ConfigureShaderAndMatrices();
 }
 
 void ShadowMap::ConfigureShaderAndMatrices() {
 	glm::mat4 lightProjection = glm::ortho(-range, range, -range, range, near_plane, far_plane);
 	glm::mat4 lightView = glm::lookAt(lightPos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	lightSpaceMatrix = lightProjection * lightView;
-
-	shader->use();
-	shader->setUniform("lightSpaceMatrix", lightSpaceMatrix);
-	glViewport(0, 0, SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
-	glBindFramebuffer(GL_FRAMEBUFFER, shadowMapFbo);
-	glClear(GL_DEPTH_BUFFER_BIT);
-	shader->unuse();
 }
 
 void ShadowMap::updateLightPos(glm::vec3 lightPos) {
@@ -80,22 +68,27 @@ void ShadowMap::unbindFBO() {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void ShadowMap::draw(Shader* shader, Camera& camera, glm::mat4 modelMatrix) {
-	this->unbindFBO();
-	//shader->use();
-	//shader->setUniform("modelMatrix", modelMatrix);
-	//shader->setUniform("viewProjMatrix", camera.getViewProjectionMatrix());
-	//shader->setUniform("lightSpaceMatrix", camera.getViewProjectionMatrix());
-	//shader->setUniform("lightPos", lightPos);
-	//shader->setUniform("viewPos", camera.getPosition());
-	//glActiveTexture(GL_TEXTURE0);
-	//glBindTexture(GL_TEXTURE_2D, shadowMap);
-	//shader->setUniform("shadowMap", shadowMap);
+void ShadowMap::draw() {
+	// first render to depth map
+	glViewport(0, 0, SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
+	glBindFramebuffer(GL_FRAMEBUFFER, shadowMapFbo);
+	glClear(GL_DEPTH_BUFFER_BIT);
 
-	// reset viewport
-	glViewport(0, 0, 1600, 900);
-	glClearColor(0, 0, 0, 1);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	this->ConfigureShaderAndMatrices();
+	shader->use();
+	shader->setUniform("lightSpaceMatrix", lightSpaceMatrix);
+	glViewport(0, 0, SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
+	glBindFramebuffer(GL_FRAMEBUFFER, shadowMapFbo);
+	glClear(GL_DEPTH_BUFFER_BIT);
+	shader->unuse();
+	//TODO: add list parameter and render all elements in the list
+
+	//this->unbindFBO();
+	//
+	//// reset viewport
+	//glViewport(0, 0, 1600, 900);
+	//glClearColor(0, 0, 0, 1);
+	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void ShadowMap::drawDebug(Shader* shader) {

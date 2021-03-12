@@ -45,9 +45,6 @@ public:
 		const glm::vec3& highp_vec3, float alpha);
 
 	MeshMaterial(const std::shared_ptr<Shader>& shader, const glm::vec3& color, float alpha);
-	
-	MeshMaterial(const std::shared_ptr<TerrainShader>& shader, const std::shared_ptr<Texture>& texture,
-			const glm::vec3& highp_vec3, float alpha);
 
 	void set_texture(const std::shared_ptr<Texture>& texture)//TODO: Change to Constructor
 	{
