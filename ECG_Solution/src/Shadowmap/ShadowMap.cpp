@@ -12,6 +12,7 @@ ShadowMap::ShadowMap(Shader* shader, glm::vec3 lightPos, float near_plane, float
 
 ShadowMap::~ShadowMap() {
 	glDeleteFramebuffers(1, &shadowMapFbo);
+	glDeleteTextures(1, &shadowMap);
 }
 
 GLuint ShadowMap::getShadowMapID() {
@@ -51,9 +52,6 @@ void ShadowMap::initBuffer() {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void ShadowMap::generateShadowMap() {
-}
-
 void ShadowMap::ConfigureShaderAndMatrices() {
 	glm::mat4 lightProjection = glm::ortho(-range, range, -range, range, near_plane, far_plane);
 	glm::mat4 lightView = glm::lookAt(lightPos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -77,14 +75,10 @@ void ShadowMap::draw() {
 	this->ConfigureShaderAndMatrices();
 	shader->use();
 	shader->setUniform("lightSpaceMatrix", lightSpaceMatrix);
-	glViewport(0, 0, SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
-	glBindFramebuffer(GL_FRAMEBUFFER, shadowMapFbo);
-	glClear(GL_DEPTH_BUFFER_BIT);
 	shader->unuse();
 	//TODO: add list parameter and render all elements in the list
 
 	//this->unbindFBO();
-	//
 	//// reset viewport
 	//glViewport(0, 0, 1600, 900);
 	//glClearColor(0, 0, 0, 1);
@@ -92,7 +86,6 @@ void ShadowMap::draw() {
 }
 
 void ShadowMap::drawDebug(Shader* shader) {
-	this->unbindFBO();
 	shader->use();
 	shader->setUniform("near_plane", near_plane);
 	shader->setUniform("far_plane", far_plane);

@@ -15,3 +15,7 @@ glm::vec2 GuiTexture::getPosition() {
 glm::vec2 GuiTexture::getScale() {
 	return scale;
 }
+
+void GuiTexture::setPosition(glm::vec2 pos) {
+	position = pos;
+}

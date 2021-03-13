@@ -14,4 +14,5 @@ public:
 	GLuint getTextureId();
 	glm::vec2 getPosition();
 	glm::vec2 getScale();
+	void setPosition(glm::vec2 pos);
 };

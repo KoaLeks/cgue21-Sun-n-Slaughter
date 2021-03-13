@@ -22,6 +22,16 @@ Terrain::~Terrain() {
 	glDeleteBuffers(1, &terrainVboNorm);
 	glDeleteBuffers(1, &terrainEbo);
 	glDeleteVertexArrays(1, &terrainVao);
+	GLuint texture = waterTexture.getTextureId();
+	glDeleteTextures(1, &texture);
+	texture = sandTexture.getTextureId();
+	glDeleteTextures(1, &texture);
+	texture = grassTexture.getTextureId();
+	glDeleteTextures(1, &texture);
+	texture = stoneTexture.getTextureId();
+	glDeleteTextures(1, &texture);
+	texture = snowTexture.getTextureId();
+	glDeleteTextures(1, &texture);
 }
 
 glm::mat4 Terrain::getModelMatrix() {

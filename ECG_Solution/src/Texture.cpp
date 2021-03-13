@@ -6,6 +6,10 @@ Texture::Texture(const char* texturePath, bool isTransparent) : isTransparent(is
 	this->loadTexture(texturePath);
 }
 
+Texture::~Texture() {
+	glDeleteTextures(1, &_handle);
+}
+
 void Texture::loadTexture(const char* texturePath) {
 	int width, height, nrChannels;
 	unsigned char* data = stbi_load(texturePath, &width, &height, &nrChannels, 0);

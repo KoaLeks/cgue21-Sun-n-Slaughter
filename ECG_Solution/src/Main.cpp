@@ -20,6 +20,7 @@
 #include "Shadowmap/ShadowMap.h"
 #include "GUI/GuiTexture.h"
 #include "GUI/GuiRenderer.h"
+#include "Flare/FlareManager.h"
 
 
 /* --------------------------------------------- */
@@ -166,7 +167,7 @@ int main(int argc, char** argv)
 		float lightDistance = 3500.0f;
 
 		// Create Terrain
-		// heightmap muss ein vielfaches von 20 sein, ansonsten wirds schräg abgebildet
+		// heightmap muss ein vielfaches von 20 (oder 2^n?) sein, ansonsten wirds nicht korrekt abgebildet
 		Terrain plane = Terrain(terrainPlane, 50, terrainHeight, "assets/terrain/heightmap.png", false);
 		Terrain planeShadow = Terrain(terrainPlane, 50, terrainHeight, "assets/terrain/heightmap.png", true);
 
@@ -178,8 +179,7 @@ int main(int argc, char** argv)
 		camera.update(window_width, window_height, false, false, false);
 
 		// Initialize lights
-		//PointLight pointL(glm::vec3(.5f), glm::vec3(terrainPlane / 2, lightDistance, 0.0f), glm::vec3(0.08f, 0.03f, 0.01f));
-		PointLight pointL(glm::vec3(.5f), glm::vec3(2500, lightDistance, 0), glm::vec3(0.08f, 0.03f, 0.01f));
+		PointLight pointL(glm::vec3(.5f), glm::vec3(0, lightDistance, 0), glm::vec3(0.08f, 0.03f, 0.01f));
 
 		// Shadow Map
 		ShadowMap shadowMap = ShadowMap(shadowMapDepthShader.get(), pointL.position, nearZ, farZ / 10, 5000.0f);
@@ -195,17 +195,59 @@ int main(int argc, char** argv)
 		// GUI
 		std::vector<GuiTexture> guis;
 		Texture heart = Texture("assets/heart.png", true);
+		Texture flare = Texture("assets/flares/tex1.png", true);
 		float scaleFactor = 50.0f;
 		glm::vec2 scale = glm::vec2(scaleFactor * heart.getAspectRatio() / window_width, scaleFactor / window_height);
-		GuiTexture gui =  GuiTexture(heart.getTextureId(), glm::vec2(-0.95f, 0.9f), scale);
+		GuiTexture gui1 = GuiTexture(heart.getTextureId(), glm::vec2(-0.95f, 0.9f), scale);
 		GuiTexture gui2 = GuiTexture(heart.getTextureId(), glm::vec2(-0.88f, 0.9f), scale);
 		GuiTexture gui3 = GuiTexture(heart.getTextureId(), glm::vec2(-0.81f, 0.9f), scale);
 		GuiTexture gui4 = GuiTexture(heart.getTextureId(), glm::vec2(-0.74f, 0.9f), scale);
-		guis.push_back(gui);
+		guis.push_back(gui1);
 		guis.push_back(gui2);
 		guis.push_back(gui3);
 		guis.push_back(gui4);
 		GuiRenderer guiRenderer = GuiRenderer(guiShader.get());
+
+		// Flare
+		std::vector<GuiTexture> flares;
+		Texture flare1 = Texture("assets/flares/tex1.png", true);
+		Texture flare2 = Texture("assets/flares/tex2.png", true);
+		Texture flare3 = Texture("assets/flares/tex3.png", true);
+		Texture flare4 = Texture("assets/flares/tex4.png", true);
+		Texture flare5 = Texture("assets/flares/tex5.png", true);
+		Texture flare6 = Texture("assets/flares/tex6.png", true);
+		Texture flare7 = Texture("assets/flares/tex7.png", true);
+		Texture flare8 = Texture("assets/flares/tex8.png", true);
+		Texture flare9 = Texture("assets/flares/tex9.png", true);
+		
+		GuiTexture flareGui1 = GuiTexture(flare1.getTextureId(), glm::vec2(0.0f), glm::vec2(1.0f));
+		GuiTexture flareGui2 = GuiTexture(flare2.getTextureId(), glm::vec2(0.0f), glm::vec2(1.0f));
+		GuiTexture flareGui3 = GuiTexture(flare3.getTextureId(), glm::vec2(0.0f), glm::vec2(1.0f));
+		GuiTexture flareGui4 = GuiTexture(flare4.getTextureId(), glm::vec2(0.0f), glm::vec2(1.0f));
+		GuiTexture flareGui5 = GuiTexture(flare5.getTextureId(), glm::vec2(0.0f), glm::vec2(1.0f));
+		GuiTexture flareGui6 = GuiTexture(flare6.getTextureId(), glm::vec2(0.0f), glm::vec2(1.0f));
+		GuiTexture flareGui7 = GuiTexture(flare7.getTextureId(), glm::vec2(0.0f), glm::vec2(1.0f));
+		GuiTexture flareGui8 = GuiTexture(flare8.getTextureId(), glm::vec2(0.0f), glm::vec2(1.0f));
+		GuiTexture flareGui9 = GuiTexture(flare9.getTextureId(), glm::vec2(0.0f), glm::vec2(1.0f));
+			
+		flares.push_back(GuiTexture(flare6.getTextureId(), glm::vec2(0.0f), glm::vec2(0.5f)));
+		flares.push_back(GuiTexture(flare4.getTextureId(), glm::vec2(0.0f), glm::vec2(0.23f)));
+		flares.push_back(GuiTexture(flare2.getTextureId(), glm::vec2(0.0f), glm::vec2(0.1f)));
+		flares.push_back(GuiTexture(flare7.getTextureId(), glm::vec2(0.0f), glm::vec2(0.05f)));
+		flares.push_back(GuiTexture(flare1.getTextureId(), glm::vec2(0.0f), glm::vec2(0.02f)));
+		flares.push_back(GuiTexture(flare3.getTextureId(), glm::vec2(0.0f), glm::vec2(0.06f)));
+		flares.push_back(GuiTexture(flare9.getTextureId(), glm::vec2(0.0f), glm::vec2(0.012f)));
+		flares.push_back(GuiTexture(flare5.getTextureId(), glm::vec2(0.0f), glm::vec2(0.07f)));
+		flares.push_back(GuiTexture(flare1.getTextureId(), glm::vec2(0.0f), glm::vec2(0.012f)));
+		flares.push_back(GuiTexture(flare7.getTextureId(), glm::vec2(0.0f), glm::vec2(0.02f)));
+		flares.push_back(GuiTexture(flare9.getTextureId(), glm::vec2(0.0f), glm::vec2(0.1f)));
+		flares.push_back(GuiTexture(flare3.getTextureId(), glm::vec2(0.0f), glm::vec2(0.07f)));
+		flares.push_back(GuiTexture(flare5.getTextureId(), glm::vec2(0.0f), glm::vec2(0.3f)));
+		flares.push_back(GuiTexture(flare4.getTextureId(), glm::vec2(0.0f), glm::vec2(0.4f)));
+		flares.push_back(GuiTexture(flare8.getTextureId(), glm::vec2(0.0f), glm::vec2(0.6f)));
+
+		FlareManager flareMangaer = FlareManager(guiShader.get(), 0.15f, flares);
+
 
 		// Render loop
 		float t = float(glfwGetTime());
@@ -249,7 +291,7 @@ int main(int argc, char** argv)
 			shadowMap.unbindFBO();
 
 			// reset viewport
-			glViewport(0, 0, 1600, 900);
+			glViewport(0, 0, window_width, window_height);
 			glClearColor(0, 0, 0, 1);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -265,12 +307,14 @@ int main(int argc, char** argv)
 
 			// Render terrain
 			plane.draw(tessellationShader.get(), camera, shadowMap);
-			//planeShadow.draw(textureShader.get());
 			
 			// light sphere
 			light.draw();
 			//sun.draw();
 			sphere3.draw();
+
+			// Render flares
+			flareMangaer.render(camera.getViewProjectionMatrix(), glm::vec3(-30000, 35000, -55000));
 
 			// Render GUI
 			guiRenderer.render(guis);
