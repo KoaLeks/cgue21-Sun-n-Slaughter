@@ -2,11 +2,16 @@
 
 GuiRenderer::GuiRenderer(Shader* shader) {
 	this->shader = shader;
+	this->query.init(GL_SAMPLES_PASSED);
+
 }
 
-GuiRenderer::GuiRenderer() {}
+GuiRenderer::GuiRenderer() {
+	this->query.init(GL_SAMPLES_PASSED);
+}
 
-GuiRenderer::~GuiRenderer() {}
+GuiRenderer::~GuiRenderer() {
+}
 
 void GuiRenderer::setShader(Shader* shader) {
 	this->shader = shader;
@@ -33,13 +38,33 @@ void GuiRenderer::render(std::vector<GuiTexture> guis) {
 	shader->unuse();
 };
 
-void GuiRenderer::render(std::vector<GuiTexture> guis, float brightness) {
+void GuiRenderer::doOcclusionTest(glm::vec2 sunScreenPos) {
+	if (query.isResultReady()) {
+		int visibleSamples = query.getResult();
+		occlusionFactor = min(visibleSamples / total_samples, 1.0f);
+	}
+	if (!query.isInUse()) {
+		glColorMask(false, false, false, false);
+		glDepthMask(false);
+		query.start();
+		transformationMatrix = calculateTransformationMatrix(sunScreenPos, glm::vec2(scale / 16, scale / 9));
+		shader->setUniform("transformationMatrix", transformationMatrix);
+		glEnable(GL_DEPTH_TEST);
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, quad.getVertexCount());
+		query.end();
+		glColorMask(true, true, true, true);
+		glDepthMask(true);
+	}
+}
+
+void GuiRenderer::renderFlares(std::vector<GuiTexture> guis, float brightness, glm::vec2 sunScreenPos) {
 	shader->use();
 	glBindVertexArray(quad.getVaoID());
+	this->doOcclusionTest(sunScreenPos);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	glDisable(GL_DEPTH_TEST);
-	shader->setUniform("brightness", brightness);
+	shader->setUniform("brightness", brightness * occlusionFactor);
 	for (GuiTexture& gui : guis) {
 		transformationMatrix = calculateTransformationMatrix(gui.getPosition(), gui.getScale());
 		shader->setUniform("transformationMatrix", transformationMatrix);

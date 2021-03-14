@@ -11,6 +11,6 @@ public:
 	FlareManager(Shader* shader, float _spacing, std::vector<GuiTexture> _flares);
 	~FlareManager();
 	void calcFlarePos(glm::vec2 sunToCenter, glm::vec2 sunCoords);
-	glm::vec2 convertToScreenSpace(glm::mat4 viewProjMatrix, glm::vec3 worldPos);
+	glm::vec3 convertToScreenSpace(glm::mat4 viewProjMatrix, glm::vec3 sunPos);
 	void render(glm::mat4 viewProjMatrix, glm::vec3 sunPos);
 };

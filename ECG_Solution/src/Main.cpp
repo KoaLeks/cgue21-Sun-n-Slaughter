@@ -179,7 +179,7 @@ int main(int argc, char** argv)
 		camera.update(window_width, window_height, false, false, false);
 
 		// Initialize lights
-		PointLight pointL(glm::vec3(.5f), glm::vec3(0, lightDistance, 0), glm::vec3(0.08f, 0.03f, 0.01f));
+		PointLight pointL(glm::vec3(.5f), glm::vec3(25000, lightDistance*2, 0), glm::vec3(0.08f, 0.03f, 0.01f));
 
 		// Shadow Map
 		ShadowMap shadowMap = ShadowMap(shadowMapDepthShader.get(), pointL.position, nearZ, farZ / 10, 5000.0f);
@@ -187,7 +187,7 @@ int main(int argc, char** argv)
 		std::shared_ptr<MeshMaterial> material = std::make_shared<MeshMaterial>(textureShader, glm::vec3(0.5f, 0.7f, 0.3f), 8.0f);
 		std::shared_ptr<MeshMaterial> depth = std::make_shared<MeshMaterial>(shadowMapDepthShader, glm::vec3(0.5f, 0.7f, 0.3f), 8.0f);
 		
-		Mesh light = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(500, 1000, 500)), Mesh::createSphereMesh(12, 12, lightDistance / 10), material);
+		Mesh light = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(500, 1000, 500)), Mesh::createSphereMesh(12, 12, lightDistance / 3), material);
 		Mesh sun = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(-30000, 35000, -55000)), Mesh::createSphereMesh(12, 12, 5000), material);
 		Mesh sphere3Depth = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(-700, 2000, -600)), Mesh::createSphereMesh(12, 12, 450), depth);
 		Mesh sphere3 = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(-700, 2000, -600)), Mesh::createSphereMesh(12, 12, 450), material);
@@ -195,7 +195,6 @@ int main(int argc, char** argv)
 		// GUI
 		std::vector<GuiTexture> guis;
 		Texture heart = Texture("assets/heart.png", true);
-		Texture flare = Texture("assets/flares/tex1.png", true);
 		float scaleFactor = 50.0f;
 		glm::vec2 scale = glm::vec2(scaleFactor * heart.getAspectRatio() / window_width, scaleFactor / window_height);
 		GuiTexture gui1 = GuiTexture(heart.getTextureId(), glm::vec2(-0.95f, 0.9f), scale);
@@ -269,16 +268,18 @@ int main(int argc, char** argv)
 			// Set per-frame uniforms
 			setPerFrameUniforms(textureShader.get(), camera, pointL);
 			
-			pointL.position.x = cos(t / 2) * terrainPlane;
-			if (sin(t / 2) > 0) {
-				pointL.position.y = sin(t / 2) * terrainPlane / 2;
-			}
-			else
-			{
-				pointL.position.y = -sin(t / 2) * terrainPlane / 2;
-			}
+			// Moving light
+			//pointL.position.x = cos(t / 2) * terrainPlane;
+			//if (sin(t / 2) > 0) {
+			//	pointL.position.y = sin(t / 2) * terrainPlane / 2;
+			//}
+			//else
+			//{
+			//	pointL.position.y = -sin(t / 2) * terrainPlane / 2;
+			//}
 			light.resetModelMatrix();
 			light.transform(glm::translate(glm::mat4(1), glm::vec3(pointL.position.x, pointL.position.y, pointL.position.z)));
+			
 			setPerFrameUniforms(tessellationShader.get(), camera, pointL);
 
 
@@ -310,11 +311,12 @@ int main(int argc, char** argv)
 			
 			// light sphere
 			light.draw();
-			//sun.draw();
+			sun.draw();
 			sphere3.draw();
 
 			// Render flares
-			flareMangaer.render(camera.getViewProjectionMatrix(), glm::vec3(-30000, 35000, -55000));
+			//flareMangaer.render(camera.getViewProjectionMatrix(), glm::vec3(-30000, 35000, -55000));
+			flareMangaer.render(camera.getViewProjectionMatrix(), pointL.position);
 
 			// Render GUI
 			guiRenderer.render(guis);

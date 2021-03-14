@@ -20,12 +20,9 @@ Skybox::~Skybox() {
 
 void Skybox::draw(Camera& camera) {
 
-    glDepthMask(GL_FALSE);
     shader->use();
+    glDepthMask(GL_FALSE);
     glm::mat4 viewProjMatrix = camera.getViewProjectionMatrix();
-    //viewProjMatrix[3].x = 0;
-    //viewProjMatrix[3].y = 0;
-    //viewProjMatrix[3].z = 0;
     shader->setUniform("viewProjMatrix", viewProjMatrix);
     glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
     glBindVertexArray(skyboxVao);

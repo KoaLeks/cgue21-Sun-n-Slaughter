@@ -6,6 +6,7 @@
     <ClCompile Include="src\GUI\GuiTexture.cpp" />
     <ClCompile Include="src\Mesh.cpp" />
     <ClCompile Include="src\MeshMaterial.cpp" />
+    <ClCompile Include="src\Query.cpp" />
     <ClCompile Include="src\Shadowmap\ShadowMap.cpp" />
     <ClCompile Include="src\Skybox\Skybox.cpp" />
     <ClCompile Include="src\stb_image.cpp" />
@@ -23,6 +24,7 @@
     <ClInclude Include="src\Material.h" />
     <ClInclude Include="src\Mesh.h" />
     <ClInclude Include="src\MeshMaterial.h" />
+    <ClInclude Include="src\Query.h" />
     <ClInclude Include="src\Shader.h" />
     <ClInclude Include="src\Shadowmap\ShadowMap.h" />
     <ClInclude Include="src\Skybox\Skybox.h" />
