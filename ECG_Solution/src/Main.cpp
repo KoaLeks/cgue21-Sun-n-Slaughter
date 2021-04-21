@@ -187,7 +187,7 @@ int main(int argc, char** argv)
 		std::shared_ptr<MeshMaterial> material = std::make_shared<MeshMaterial>(textureShader, glm::vec3(0.5f, 0.7f, 0.3f), 8.0f);
 		std::shared_ptr<MeshMaterial> depth = std::make_shared<MeshMaterial>(shadowMapDepthShader, glm::vec3(0.5f, 0.7f, 0.3f), 8.0f);
 		
-		Mesh light = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(500, 1000, 500)), Mesh::createSphereMesh(12, 12, lightDistance / 3), material);
+		Mesh light = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(25000, lightDistance * 2, 0)), Mesh::createSphereMesh(12, 12, lightDistance / 3), material);
 		Mesh sun = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(-30000, 35000, -55000)), Mesh::createSphereMesh(12, 12, 5000), material);
 		Mesh sphere3Depth = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(-700, 2000, -600)), Mesh::createSphereMesh(12, 12, 450), depth);
 		Mesh sphere3 = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(-700, 2000, -600)), Mesh::createSphereMesh(12, 12, 450), material);
@@ -277,8 +277,8 @@ int main(int argc, char** argv)
 			//{
 			//	pointL.position.y = -sin(t / 2) * terrainPlane / 2;
 			//}
-			light.resetModelMatrix();
-			light.transform(glm::translate(glm::mat4(1), glm::vec3(pointL.position.x, pointL.position.y, pointL.position.z)));
+			//light.resetModelMatrix();
+			//light.transform(glm::translate(glm::mat4(1), glm::vec3(pointL.position.x, pointL.position.y, pointL.position.z)));
 			
 			setPerFrameUniforms(tessellationShader.get(), camera, pointL);
 
@@ -311,7 +311,7 @@ int main(int argc, char** argv)
 			
 			// light sphere
 			light.draw();
-			sun.draw();
+			//sun.draw();
 			sphere3.draw();
 
 			// Render flares
