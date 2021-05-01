@@ -367,7 +367,7 @@ inline INIReader::INIReader(string filename)
 {
     _error = ini_parse(filename.c_str(), ValueHandler, this);
 	if (_error < 0) {
-		std::cout << "ERROR: Failed to load '" << filename << "'. Using default values instead." << std::endl;
+		std::cout << "WARNING: " << filename << " not found! Using defaults instead." << std::endl;
 	}
 }
 

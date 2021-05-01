@@ -1,5 +1,5 @@
 /*
-* Copyright 2019 Vienna University of Technology.
+* Copyright 2017 Vienna University of Technology.
 * Institute of Computer Graphics and Algorithms.
 * This file is part of the ECG Lab Framework and must not be redistributed.
 */
@@ -11,9 +11,11 @@
 #include "Utils.h"
 #include "stb_image.h"
 
-/*!
- * 2D texture
- */
+
+/* --------------------------------------------- */
+// 2D texture
+/* --------------------------------------------- */
+
 class Texture
 {
 protected:
@@ -42,7 +44,7 @@ public:
 	 * @param unit: the texture unit
 	 */
 	void bind(int unit);
-	
+
 	/*!
 	 * Returns handle for this texture
 	 */
