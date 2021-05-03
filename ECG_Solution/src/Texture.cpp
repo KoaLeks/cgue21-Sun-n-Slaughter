@@ -36,7 +36,9 @@ void Texture::loadTexture(const char* texturePath) {
 	}
 	stbi_image_free(data);
 }
-
+void Texture::setTransparent(bool transparent) {
+	this->isTransparent = transparent;
+}
 GLuint Texture::getTextureId() {
 	return _handle;
 }
