@@ -56,4 +56,5 @@ public:
 	float getAspectRatio();
 
 	void loadTexture(const char* texturePath);
+	void setTransparent(bool transparent);
 };

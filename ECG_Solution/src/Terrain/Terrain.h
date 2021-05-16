@@ -10,7 +10,6 @@ private:
 
 	MeshData data;
 	glm::mat4 _modelMatrix;
-	const char* heightMapPath;
 	int width, height;
 	int terrainCount;
 	float scaleXZ;

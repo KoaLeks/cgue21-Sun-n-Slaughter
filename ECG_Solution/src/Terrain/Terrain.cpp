@@ -3,7 +3,6 @@
 
 Terrain::Terrain(int dimension, int vertexCount, float height, const char* heightMapPath, bool shadowMap) {
 
-	this->heightMapPath = heightMapPath;
 	this->scaleXZ = dimension;
 	this->scaleY = height;
 	if (shadowMap) {
@@ -13,6 +12,7 @@ Terrain::Terrain(int dimension, int vertexCount, float height, const char* heigh
 	{
 		this->generateTerrain(dimension, vertexCount);
 	}
+	heightMap.setTransparent(true);
 	heightMap.loadTexture(heightMapPath);
 	this->initBuffer();
 }

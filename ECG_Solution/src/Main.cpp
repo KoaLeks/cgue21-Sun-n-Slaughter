@@ -164,12 +164,12 @@ int main(int argc, char** argv)
 
 		int terrainPlane = 10000;
 		int terrainHeight = 2000;
-		float lightDistance = 3500.0f;
+		float lightDistance = 20000.0f;
 
 		// Create Terrain
 		// heightmap muss ein vielfaches von 20 (oder 2^n?) sein, ansonsten wirds nicht korrekt abgebildet
-		Terrain plane = Terrain(terrainPlane, 50, terrainHeight, "assets/terrain/heightmap.png", false);
-		Terrain planeShadow = Terrain(terrainPlane, 50, terrainHeight, "assets/terrain/heightmap.png", true);
+		Terrain plane = Terrain(terrainPlane, 50, terrainHeight, "assets/terrain/heightmap2.png", false);
+		Terrain planeShadow = Terrain(terrainPlane, 50, terrainHeight, "assets/terrain/heightmap2.png", true);
 
 		// Create Skybox
 		Skybox skybox = Skybox(skyboxShader.get());
@@ -179,7 +179,7 @@ int main(int argc, char** argv)
 		camera.update(window_width, window_height, false, false, false);
 
 		// Initialize lights
-		PointLight pointL(glm::vec3(.5f), glm::vec3(25000, lightDistance*2, 0), glm::vec3(0.08f, 0.03f, 0.01f));
+		PointLight pointL(glm::vec3(.5f), glm::vec3(50000, lightDistance, 0), glm::vec3(0.08f, 0.03f, 0.01f));
 
 		// Shadow Map
 		ShadowMap shadowMap = ShadowMap(shadowMapDepthShader.get(), pointL.position, nearZ, farZ / 10, 5000.0f);
@@ -187,7 +187,7 @@ int main(int argc, char** argv)
 		std::shared_ptr<MeshMaterial> material = std::make_shared<MeshMaterial>(textureShader, glm::vec3(0.5f, 0.7f, 0.3f), 8.0f);
 		std::shared_ptr<MeshMaterial> depth = std::make_shared<MeshMaterial>(shadowMapDepthShader, glm::vec3(0.5f, 0.7f, 0.3f), 8.0f);
 		
-		Mesh light = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(25000, lightDistance * 2, 0)), Mesh::createSphereMesh(12, 12, lightDistance / 3), material);
+		Mesh light = Mesh(glm::translate(glm::mat4(1.0f), pointL.position), Mesh::createSphereMesh(12, 12, lightDistance / 15), material);
 		Mesh sun = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(-30000, 35000, -55000)), Mesh::createSphereMesh(12, 12, 5000), material);
 		Mesh sphere3Depth = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(-700, 2000, -600)), Mesh::createSphereMesh(12, 12, 450), depth);
 		Mesh sphere3 = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(-700, 2000, -600)), Mesh::createSphereMesh(12, 12, 450), material);
