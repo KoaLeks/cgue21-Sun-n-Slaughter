@@ -21,6 +21,7 @@
 #include "GUI/GuiTexture.h"
 #include "GUI/GuiRenderer.h"
 #include "Flare/FlareManager.h"
+#include "PoissonDiskSampling.h"
 
 
 /* --------------------------------------------- */
@@ -149,6 +150,7 @@ int main(int argc, char** argv)
 	// Initialize scene and render loop
 	/* --------------------------------------------- */
 	{
+
 		// Load shader(s)
 		std::shared_ptr<Shader> textureShader = std::make_shared<Shader>("texture.vert", "texture.frag");
 		std::shared_ptr<Shader> skyboxShader = std::make_shared<Shader>("skybox.vert", "skybox.frag");
@@ -191,6 +193,17 @@ int main(int argc, char** argv)
 		Mesh sun = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(-30000, 35000, -55000)), Mesh::createSphereMesh(12, 12, 5000), material);
 		Mesh sphere3Depth = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(-700, 2000, -600)), Mesh::createSphereMesh(12, 12, 450), depth);
 		Mesh sphere3 = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(-700, 2000, -600)), Mesh::createSphereMesh(12, 12, 450), material);
+		
+		PossionDiskSampling testSample = PossionDiskSampling(terrainPlane, terrainPlane, 550, 30);
+		std::vector<glm::vec2> points = testSample.getPoints();
+		//std::vector<Mesh> meshes;
+		//for(glm::vec2 pos : points)
+		//{
+		//	meshes.push_back(Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(pos.x, 2000, pos.y)), Mesh::createSphereMesh(12, 12, 200), material));
+		//}
+
+		Mesh testDepth = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(0, 2000, 0)), Mesh::createSphereMesh(4, 4, 100), depth);
+		Mesh test = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(0, 2000, 0)), Mesh::createSphereMesh(4, 4, 100), material);
 
 		// GUI
 		std::vector<GuiTexture> guis;
@@ -287,8 +300,15 @@ int main(int argc, char** argv)
 			// --------------------------------------------------------------
 			shadowMap.updateLightPos(pointL.position);
 			shadowMap.draw();
-			sphere3Depth.draw();
+			//sphere3Depth.draw();
 			planeShadow.draw(shadowMapDepthShader.get());
+			//testDepth.draw();
+			//for (glm::vec2 pos : points)
+			//{
+			//	testDepth.resetModelMatrix();
+			//	testDepth.transform(glm::translate(glm::mat4(1.0f), glm::vec3(pos.x - terrainPlane / 2, 2000, pos.y - terrainPlane / 2)));
+			//	testDepth.draw();
+			//}
 			shadowMap.unbindFBO();
 
 			// reset viewport
@@ -312,7 +332,19 @@ int main(int argc, char** argv)
 			// light sphere
 			light.draw();
 			//sun.draw();
-			sphere3.draw();
+			//sphere3.draw();
+
+			//for (Mesh m : meshes) {
+			//	m.draw();
+			//}
+
+			test.draw();
+			for (glm::vec2 pos : points)
+			{		
+				test.resetModelMatrix();
+				test.transform(glm::translate(glm::mat4(1.0f), glm::vec3(pos.x - terrainPlane/2, 2000, pos.y - terrainPlane/2)));
+				test.draw();
+			}
 
 			// Render flares
 			//flareMangaer.render(camera.getViewProjectionMatrix(), glm::vec3(-30000, 35000, -55000));
@@ -326,7 +358,7 @@ int main(int argc, char** argv)
 			t = float(glfwGetTime());
 			dt = t - dt;
 			t_sum += dt;
-
+			
 			// Swap buffers
 			glfwSwapBuffers(window);
 		}
@@ -386,7 +418,6 @@ void setPerFrameUniforms(Shader* shader, Camera& camera, PointLight& pointL)
 	shader->use();
 	shader->setUniform("viewProjMatrix", camera.getViewProjectionMatrix());
 	shader->setUniform("camera_world", camera.getPosition());
-
 	//shader->setUniform("dirL.color", glm::vec3(1));
 	//shader->setUniform("dirL.direction", glm::vec3(1));
 	shader->setUniform("pointL.color", pointL.color);

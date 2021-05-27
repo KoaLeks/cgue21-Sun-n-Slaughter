@@ -6,6 +6,7 @@
     <ClCompile Include="src\GUI\GuiTexture.cpp" />
     <ClCompile Include="src\Mesh.cpp" />
     <ClCompile Include="src\MeshMaterial.cpp" />
+    <ClCompile Include="src\PoissonDiskSampling.cpp" />
     <ClCompile Include="src\Query.cpp" />
     <ClCompile Include="src\Shadowmap\ShadowMap.cpp" />
     <ClCompile Include="src\Skybox\Skybox.cpp" />
@@ -26,6 +27,7 @@
     <ClInclude Include="src\Material.h" />
     <ClInclude Include="src\Mesh.h" />
     <ClInclude Include="src\MeshMaterial.h" />
+    <ClInclude Include="src\PoissonDiskSampling.h" />
     <ClInclude Include="src\Query.h" />
     <ClInclude Include="src\Shader.h" />
     <ClInclude Include="src\Shadowmap\ShadowMap.h" />
@@ -148,7 +150,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)external\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opengl32.lib;glew32s.lib;glfw3.lib;ECG_Library_Release.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glew32s.lib;glfw3.lib;ECG_Library_Release.lib;assimp-vc142-mtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>LIBCMT</IgnoreSpecificDefaultLibraries>
     </Link>
     <PostBuildEvent>

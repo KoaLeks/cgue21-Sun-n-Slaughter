@@ -2,7 +2,6 @@
 #include "Terrain.h"
 
 Terrain::Terrain(int dimension, int vertexCount, float height, const char* heightMapPath, bool shadowMap) {
-
 	this->scaleXZ = dimension;
 	this->scaleY = height;
 	if (shadowMap) {

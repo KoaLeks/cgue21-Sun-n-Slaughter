@@ -104,6 +104,7 @@ Mesh::~Mesh()
 GLuint Mesh::getVaoID() {
 	return _vao;
 }
+
 unsigned int Mesh::getVertexCount() {
 	return _elements;
 }
@@ -141,6 +142,12 @@ void Mesh::transform(glm::mat4 transformation)
 void Mesh::resetModelMatrix()
 {
 	_modelMatrix = glm::mat4(1);
+}
+
+MeshData Mesh::loadModel() {
+
+	MeshData data;
+	return std::move(data);
 }
 
 MeshData Mesh::createQuadMesh() {

@@ -149,4 +149,6 @@ public:
 	 * @return all quad data
 	 */
 	static MeshData createQuadMesh();
+
+	static MeshData loadModel();
 };
