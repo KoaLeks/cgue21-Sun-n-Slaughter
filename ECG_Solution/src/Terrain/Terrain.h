@@ -9,6 +9,7 @@ class Terrain {
 private:
 
 	MeshData data;
+	std::vector<glm::vec2> treePositions;
 	glm::mat4 _modelMatrix;
 	int width, height;
 	int terrainCount;

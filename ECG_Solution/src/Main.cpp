@@ -33,7 +33,7 @@ static std::string FormatDebugOutput(GLenum source, GLenum type, GLuint id, GLen
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
-void setPerFrameUniforms(Shader* shader, Camera& camera, PointLight& pointL);
+void setPerFrameUniformsNormal(Shader* shader, Camera& camera, PointLight& pointL, Texture& hm);
 void setPerFrameUniforms(TerrainShader* shader, Camera& camera, PointLight& pointL);
 void renderQuad();
 
@@ -145,7 +145,6 @@ int main(int argc, char** argv)
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 
-
 	/* --------------------------------------------- */
 	// Initialize scene and render loop
 	/* --------------------------------------------- */
@@ -181,7 +180,8 @@ int main(int argc, char** argv)
 		camera.update(window_width, window_height, false, false, false);
 
 		// Initialize lights
-		PointLight pointL(glm::vec3(.5f), glm::vec3(50000, lightDistance, 0), glm::vec3(0.08f, 0.03f, 0.01f));
+		//PointLight pointL(glm::vec3(.5f), glm::vec3(50000, lightDistance, 0), glm::vec3(0.08f, 0.03f, 0.01f));
+		PointLight pointL(glm::vec3(.5f), glm::vec3(-15000, 15000, -25000), glm::vec3(0.08f, 0.03f, 0.01f));
 
 		// Shadow Map
 		ShadowMap shadowMap = ShadowMap(shadowMapDepthShader.get(), pointL.position, nearZ, farZ / 10, 5000.0f);
@@ -190,20 +190,19 @@ int main(int argc, char** argv)
 		std::shared_ptr<MeshMaterial> depth = std::make_shared<MeshMaterial>(shadowMapDepthShader, glm::vec3(0.5f, 0.7f, 0.3f), 8.0f);
 		
 		Mesh light = Mesh(glm::translate(glm::mat4(1.0f), pointL.position), Mesh::createSphereMesh(12, 12, lightDistance / 15), material);
-		Mesh sun = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(-30000, 35000, -55000)), Mesh::createSphereMesh(12, 12, 5000), material);
+		Mesh sun = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(-15000, 15000, -25000)), Mesh::createSphereMesh(12, 12, 2500), material);
 		Mesh sphere3Depth = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(-700, 2000, -600)), Mesh::createSphereMesh(12, 12, 450), depth);
-		Mesh sphere3 = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(-700, 2000, -600)), Mesh::createSphereMesh(12, 12, 450), material);
+		Mesh sphere3 = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(2000, 2000, 1200)), Mesh::createSphereMesh(12, 12, 450), material);
 		
-		PossionDiskSampling testSample = PossionDiskSampling(terrainPlane, terrainPlane, 550, 30);
-		std::vector<glm::vec2> points = testSample.getPoints();
-		//std::vector<Mesh> meshes;
-		//for(glm::vec2 pos : points)
-		//{
-		//	meshes.push_back(Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(pos.x, 2000, pos.y)), Mesh::createSphereMesh(12, 12, 200), material));
-		//}
 
-		Mesh testDepth = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(0, 2000, 0)), Mesh::createSphereMesh(4, 4, 100), depth);
-		Mesh test = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(0, 2000, 0)), Mesh::createSphereMesh(4, 4, 100), material);
+		// Tree positions
+		Texture heightMap = Texture("assets/terrain/heightmap2.png", true);
+		PossionDiskSampling treePositions = PossionDiskSampling(terrainPlane, terrainPlane, 350, 30);
+		treePositions.applyMask("assets/terrain/treemask.png");
+		std::vector<glm::vec2> points = treePositions.getPoints();
+		Mesh test = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0)), Mesh::createSphereMesh(12, 12, 150), material);
+		Mesh testDepth = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0)), Mesh::createSphereMesh(12, 12, 150), depth);
+
 
 		// GUI
 		std::vector<GuiTexture> guis;
@@ -279,7 +278,7 @@ int main(int argc, char** argv)
 			camera.update(int(mouse_x), int(mouse_y), _zoom, _dragging, _strafing);
 
 			// Set per-frame uniforms
-			setPerFrameUniforms(textureShader.get(), camera, pointL);
+			setPerFrameUniformsNormal(textureShader.get(), camera, pointL, heightMap);
 			
 			// Moving light
 			//pointL.position.x = cos(t / 2) * terrainPlane;
@@ -300,15 +299,16 @@ int main(int argc, char** argv)
 			// --------------------------------------------------------------
 			shadowMap.updateLightPos(pointL.position);
 			shadowMap.draw();
-			//sphere3Depth.draw();
+			sphere3Depth.draw();
 			planeShadow.draw(shadowMapDepthShader.get());
-			//testDepth.draw();
-			//for (glm::vec2 pos : points)
-			//{
-			//	testDepth.resetModelMatrix();
-			//	testDepth.transform(glm::translate(glm::mat4(1.0f), glm::vec3(pos.x - terrainPlane / 2, 2000, pos.y - terrainPlane / 2)));
-			//	testDepth.draw();
-			//}
+			for (glm::vec2 pos : points)
+			{
+				testDepth.resetModelMatrix();
+				glm::mat4 transformation = glm::translate(glm::mat4(1.0f), glm::vec3(pos.x - terrainPlane / 2, 150, pos.y - terrainPlane / 2));
+				testDepth.transform(transformation);
+				testDepth.draw();
+			}
+			
 			shadowMap.unbindFBO();
 
 			// reset viewport
@@ -330,24 +330,21 @@ int main(int argc, char** argv)
 			plane.draw(tessellationShader.get(), camera, shadowMap);
 			
 			// light sphere
-			light.draw();
+			//light.draw();
 			//sun.draw();
 			//sphere3.draw();
-
-			//for (Mesh m : meshes) {
-			//	m.draw();
-			//}
-
-			test.draw();
-			for (glm::vec2 pos : points)
+			
+			// Render trees
+			for (glm::vec2 pos :points )
 			{		
 				test.resetModelMatrix();
-				test.transform(glm::translate(glm::mat4(1.0f), glm::vec3(pos.x - terrainPlane/2, 2000, pos.y - terrainPlane/2)));
+				glm::mat4 transformation = glm::translate(glm::mat4(1.0f), glm::vec3(pos.x - terrainPlane / 2, 150, pos.y - terrainPlane / 2));
+				test.transform(transformation);
 				test.draw();
+				
 			}
 
 			// Render flares
-			//flareMangaer.render(camera.getViewProjectionMatrix(), glm::vec3(-30000, 35000, -55000));
 			flareMangaer.render(camera.getViewProjectionMatrix(), pointL.position);
 
 			// Render GUI
@@ -413,16 +410,23 @@ void renderQuad()
 }
 
 
-void setPerFrameUniforms(Shader* shader, Camera& camera, PointLight& pointL)
+void setPerFrameUniformsNormal(Shader* shader, Camera& camera, PointLight& pointL, Texture& hm)
 {
 	shader->use();
 	shader->setUniform("viewProjMatrix", camera.getViewProjectionMatrix());
 	shader->setUniform("camera_world", camera.getPosition());
+	shader->setUniform("scaleXZ", 10000.f);
+	shader->setUniform("scaleY", 2000.f);
+
+	hm.bind(7);
+	shader->setUniform("heightMap", 7);
 	//shader->setUniform("dirL.color", glm::vec3(1));
 	//shader->setUniform("dirL.direction", glm::vec3(1));
 	shader->setUniform("pointL.color", pointL.color);
 	shader->setUniform("pointL.position", pointL.position);
 	shader->setUniform("pointL.attenuation", pointL.attenuation);
+	
+	shader->unuse();
 }
 
 void setPerFrameUniforms(TerrainShader* shader, Camera& camera, PointLight& pointL)

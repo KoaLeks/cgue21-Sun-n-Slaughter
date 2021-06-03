@@ -31,7 +31,7 @@ void FlareManager::render(glm::mat4 viewProjMatrix, glm::vec3 sunPos) {
 		return;
 	}
 	glm::vec2 sunToCenter = screen_center - glm::vec2(sunCoords.x, sunCoords.y);
-	float brightness = 1 - (glm::length(sunToCenter) / 0.7f);
+	float brightness = 1 - (glm::length(sunToCenter));
 	if (brightness > 0) {
 		calcFlarePos(sunToCenter, sunCoords);
 		renderer.renderFlares(flares, brightness, sunCoords);

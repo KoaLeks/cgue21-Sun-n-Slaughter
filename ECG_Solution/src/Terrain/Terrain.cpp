@@ -1,5 +1,6 @@
 #pragma once
 #include "Terrain.h"
+#include "../PoissonDiskSampling.h"
 
 Terrain::Terrain(int dimension, int vertexCount, float height, const char* heightMapPath, bool shadowMap) {
 	this->scaleXZ = dimension;
@@ -155,8 +156,6 @@ void Terrain::draw(TerrainShader* terrainShader, Camera& camera, ShadowMap& shad
 	terrainShader->setUniform("scaleXZ", scaleXZ);
 	terrainShader->setUniform("scaleY", scaleY);
 
-	//glActiveTexture(GL_TEXTURE0);
-	//glBindTexture(GL_TEXTURE_2D, heightMap);
 	heightMap.bind(0);
 	terrainShader->setUniform("heightMap", 0);
 
@@ -194,8 +193,6 @@ void Terrain::draw(Shader* shader) {
 	shader->setUniform("scaleY", scaleY);
 	shader->setUniform("isTerrain", true);
 
-	//glActiveTexture(GL_TEXTURE0);
-	//glBindTexture(GL_TEXTURE_2D, heightMap);
 	heightMap.bind(0);
 	shader->setUniform("heightMap", 0);
 

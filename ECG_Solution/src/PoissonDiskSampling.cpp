@@ -1,5 +1,6 @@
 #include "PoissonDiskSampling.h"
 #include <iostream>
+#include "stb_image.h"
 
 PossionDiskSampling::PossionDiskSampling(int width, int height, float minDist, int count)
 {
@@ -18,17 +19,32 @@ std::vector<glm::vec2> PossionDiskSampling::getPoints() {
 	return points;
 }
 
-std::vector<glm::vec2> PossionDiskSampling::generatePossionPoints() {
+void PossionDiskSampling::applyMask(const char* maskPath) {
+	int imgWidth, imgHeight, nrChannels;
+	unsigned char* data = stbi_load(maskPath, &imgWidth, &imgHeight, &nrChannels, 4);
+	for (auto p = points.begin(); p != points.end();) {
+		glm::vec2 pixelPos = glm::vec2(floor(p->x / this->width * imgWidth),floor(p->y / this->height * imgHeight));
+		unsigned char* value = data + 4 * int((pixelPos.y * imgWidth + pixelPos.x));
+		unsigned char r = value[0];
+		if (r == 0) {
+			p = points.erase(p);
+		}
+		else
+		{
+			++p;
+		}
+	}
+	
+}
 
+std::vector<glm::vec2> PossionDiskSampling::generatePossionPoints() {
 	float cellSize = minDist / M_SQRT2;
-	//int* grid = new int[ceil(width * height / cellSize)];
-	// arr[i][j] is then arr[i * sizeY + j]
 	std::vector<std::vector<glm::vec2>> grid(width/cellSize, std::vector<glm::vec2>(height/cellSize, glm::vec2(-1)));
 	
 	std::vector<glm::vec2> processList;
 	std::vector<glm::vec2> spawnPoints;
 	//glm::vec2 firstPoint = glm::vec2(rand() % width, rand() % height);
-	glm::vec2 firstPoint = glm::vec2(width/2, height/2);
+	glm::vec2 firstPoint = glm::vec2(7000, 6200);
 	spawnPoints.push_back(firstPoint);
 	processList.push_back(firstPoint);
 
@@ -105,7 +121,6 @@ std::vector<glm::vec2> PossionDiskSampling::getNeighbours(std::vector<std::vecto
 	int yOffsetStart = std::max(0, (int)gridIndex.y - 2);
 	int yOffsetEnd = std::min((int)gridIndex.y + 2, (int)grid[0].size() - 1);
 
-
 	for (int i = xOffsetStart; i < xOffsetEnd; i++)
 	{
 		for (int j = yOffsetStart; j < yOffsetEnd; j++)
@@ -113,6 +128,5 @@ std::vector<glm::vec2> PossionDiskSampling::getNeighbours(std::vector<std::vecto
 			neighbours.push_back(grid[i][j]);
 		}
 	}
-
 	return neighbours;
 }

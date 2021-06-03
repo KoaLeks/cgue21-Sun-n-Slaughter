@@ -81,6 +81,7 @@ public:
 	GLuint getVaoID();
 	unsigned int getVertexCount();
 	void renderQuad();
+	glm::mat4 getModelMatirx();
 
 	/*!
 	 * Draws the object
@@ -150,5 +151,4 @@ public:
 	 */
 	static MeshData createQuadMesh();
 
-	static MeshData loadModel();
 };

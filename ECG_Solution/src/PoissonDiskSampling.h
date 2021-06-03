@@ -15,6 +15,7 @@ public:
 	PossionDiskSampling(int width, int height, float minDist, int count);
 	~PossionDiskSampling();
 	std::vector<glm::vec2> getPoints();
+	void applyMask(const char* maskPath);
 
 private: 
 	int width;
