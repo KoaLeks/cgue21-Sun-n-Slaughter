@@ -11,8 +11,6 @@ in VertexData {
 	vec2 uv;
 } vert;
 
-in vec2 texCoord;
-
 out vec4 color;
 
 uniform vec3 camera_world;
@@ -48,7 +46,7 @@ void main() {
 	
 	
 	float alpha = 1.0;
-	vec3 texColor = vec3(1);
+	vec3 texColor = vec3(1, 0, 0);
 	
 	color = vec4(texColor, alpha);
 	

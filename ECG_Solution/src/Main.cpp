@@ -33,7 +33,7 @@ static std::string FormatDebugOutput(GLenum source, GLenum type, GLuint id, GLen
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
-void setPerFrameUniformsNormal(Shader* shader, Camera& camera, PointLight& pointL, Texture& hm);
+void setPerFrameUniformsNormal(Shader* shader, Camera& camera, PointLight& pointL);
 void setPerFrameUniforms(TerrainShader* shader, Camera& camera, PointLight& pointL);
 void renderQuad();
 
@@ -49,6 +49,8 @@ static bool _strafing = false;
 static float _zoom = 5.0f;
 static int sreen_width = 1600;
 static int sreen_height= 900;
+static char* heightMapPath = "assets/terrain/hm3.png";
+static char* treeMaskPath = "assets/terrain/mask1.png";
 
 /* --------------------------------------------- */
 // Main
@@ -163,14 +165,14 @@ int main(int argc, char** argv)
 			"assets/shader/terrain.frag"
 			);
 
-		int terrainPlane = 10000;
+		int terrainPlaneSize = 10000;
 		int terrainHeight = 2000;
 		float lightDistance = 20000.0f;
 
 		// Create Terrain
 		// heightmap muss ein vielfaches von 20 (oder 2^n?) sein, ansonsten wirds nicht korrekt abgebildet
-		Terrain plane = Terrain(terrainPlane, 50, terrainHeight, "assets/terrain/heightmap2.png", false);
-		Terrain planeShadow = Terrain(terrainPlane, 50, terrainHeight, "assets/terrain/heightmap2.png", true);
+		Terrain plane = Terrain(terrainPlaneSize, 100, terrainHeight, heightMapPath, false);
+		Terrain planeShadow = Terrain(terrainPlaneSize, 100, terrainHeight, heightMapPath, true);
 
 		// Create Skybox
 		Skybox skybox = Skybox(skyboxShader.get());
@@ -181,27 +183,21 @@ int main(int argc, char** argv)
 
 		// Initialize lights
 		//PointLight pointL(glm::vec3(.5f), glm::vec3(50000, lightDistance, 0), glm::vec3(0.08f, 0.03f, 0.01f));
-		PointLight pointL(glm::vec3(.5f), glm::vec3(-15000, 15000, -25000), glm::vec3(0.08f, 0.03f, 0.01f));
+		PointLight pointL(glm::vec3(.5f), glm::vec3(-15000, 17000, -25000), glm::vec3(0.08f, 0.03f, 0.01f));
 
 		// Shadow Map
-		ShadowMap shadowMap = ShadowMap(shadowMapDepthShader.get(), pointL.position, nearZ, farZ / 10, 5000.0f);
+		ShadowMap shadowMap = ShadowMap(shadowMapDepthShader.get(), pointL.position, nearZ, farZ/10, 7500.0f);
 
 		std::shared_ptr<MeshMaterial> material = std::make_shared<MeshMaterial>(textureShader, glm::vec3(0.5f, 0.7f, 0.3f), 8.0f);
-		std::shared_ptr<MeshMaterial> depth = std::make_shared<MeshMaterial>(shadowMapDepthShader, glm::vec3(0.5f, 0.7f, 0.3f), 8.0f);
-		
-		Mesh light = Mesh(glm::translate(glm::mat4(1.0f), pointL.position), Mesh::createSphereMesh(12, 12, lightDistance / 15), material);
-		Mesh sun = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(-15000, 15000, -25000)), Mesh::createSphereMesh(12, 12, 2500), material);
-		Mesh sphere3Depth = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(-700, 2000, -600)), Mesh::createSphereMesh(12, 12, 450), depth);
-		Mesh sphere3 = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(2000, 2000, 1200)), Mesh::createSphereMesh(12, 12, 450), material);
-		
+		std::shared_ptr<MeshMaterial> depth = std::make_shared<MeshMaterial>(shadowMapDepthShader, glm::vec3(0.5f, 0.7f, 0.3f), 8.0f);		
+
+		Mesh light = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0)), Mesh::createSphereMesh(12, 12, 300), material);
 
 		// Tree positions
-		Texture heightMap = Texture("assets/terrain/heightmap2.png", true);
-		PossionDiskSampling treePositions = PossionDiskSampling(terrainPlane, terrainPlane, 350, 30);
-		treePositions.applyMask("assets/terrain/treemask.png");
-		std::vector<glm::vec2> points = treePositions.getPoints();
-		Mesh test = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0)), Mesh::createSphereMesh(12, 12, 150), material);
-		Mesh testDepth = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0)), Mesh::createSphereMesh(12, 12, 150), depth);
+		PossionDiskSampling treePositions = PossionDiskSampling(terrainPlaneSize, treeMaskPath, heightMapPath, terrainHeight, 450, 20);
+		std::vector<glm::vec3> points = treePositions.getPoints();
+		Mesh treePlaceholder = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0)), Mesh::createSphereMesh(12, 12, 150), material);
+		Mesh treePlaceholderDepth = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0)), Mesh::createSphereMesh(12, 12, 150), depth);
 
 
 		// GUI
@@ -278,7 +274,7 @@ int main(int argc, char** argv)
 			camera.update(int(mouse_x), int(mouse_y), _zoom, _dragging, _strafing);
 
 			// Set per-frame uniforms
-			setPerFrameUniformsNormal(textureShader.get(), camera, pointL, heightMap);
+			setPerFrameUniformsNormal(textureShader.get(), camera, pointL);
 			
 			// Moving light
 			//pointL.position.x = cos(t / 2) * terrainPlane;
@@ -289,8 +285,8 @@ int main(int argc, char** argv)
 			//{
 			//	pointL.position.y = -sin(t / 2) * terrainPlane / 2;
 			//}
-			//light.resetModelMatrix();
-			//light.transform(glm::translate(glm::mat4(1), glm::vec3(pointL.position.x, pointL.position.y, pointL.position.z)));
+			light.resetModelMatrix();
+			light.transform(glm::translate(glm::mat4(1), glm::vec3(pointL.position.x, pointL.position.y, pointL.position.z)));
 			
 			setPerFrameUniforms(tessellationShader.get(), camera, pointL);
 
@@ -299,15 +295,15 @@ int main(int argc, char** argv)
 			// --------------------------------------------------------------
 			shadowMap.updateLightPos(pointL.position);
 			shadowMap.draw();
-			sphere3Depth.draw();
-			planeShadow.draw(shadowMapDepthShader.get());
-			for (glm::vec2 pos : points)
+			for (glm::vec3 pos : points)
 			{
-				testDepth.resetModelMatrix();
-				glm::mat4 transformation = glm::translate(glm::mat4(1.0f), glm::vec3(pos.x - terrainPlane / 2, 150, pos.y - terrainPlane / 2));
-				testDepth.transform(transformation);
-				testDepth.draw();
+				treePlaceholderDepth.resetModelMatrix();
+				glm::mat4 transformation = glm::translate(glm::mat4(1.0f), glm::vec3(pos.x - terrainPlaneSize / 2, pos.y + 150, pos.z - terrainPlaneSize / 2));
+				treePlaceholderDepth.transform(transformation);
+				treePlaceholderDepth.draw();
+				
 			}
+			planeShadow.draw(shadowMapDepthShader.get());
 			
 			shadowMap.unbindFBO();
 
@@ -315,7 +311,6 @@ int main(int argc, char** argv)
 			glViewport(0, 0, window_width, window_height);
 			glClearColor(0, 0, 0, 1);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 			// debug: render shadowMap on quad 
 			//shadowMap.drawDebug(shadowMapDebugShader.get());
 			//renderQuad();
@@ -329,20 +324,18 @@ int main(int argc, char** argv)
 			// Render terrain
 			plane.draw(tessellationShader.get(), camera, shadowMap);
 			
-			// light sphere
-			//light.draw();
-			//sun.draw();
-			//sphere3.draw();
-			
 			// Render trees
-			for (glm::vec2 pos :points )
+			for (glm::vec3 pos : points )
 			{		
-				test.resetModelMatrix();
-				glm::mat4 transformation = glm::translate(glm::mat4(1.0f), glm::vec3(pos.x - terrainPlane / 2, 150, pos.y - terrainPlane / 2));
-				test.transform(transformation);
-				test.draw();
+				treePlaceholder.resetModelMatrix();
+				glm::mat4 transformation = glm::translate(glm::mat4(1.0f), glm::vec3(pos.x - terrainPlaneSize / 2, pos.y + 150, pos.z - terrainPlaneSize / 2));
+				treePlaceholder.transform(transformation);
+				treePlaceholder.draw();
 				
 			}
+
+			// Render sun pos
+			light.draw();
 
 			// Render flares
 			flareMangaer.render(camera.getViewProjectionMatrix(), pointL.position);
@@ -410,16 +403,13 @@ void renderQuad()
 }
 
 
-void setPerFrameUniformsNormal(Shader* shader, Camera& camera, PointLight& pointL, Texture& hm)
+void setPerFrameUniformsNormal(Shader* shader, Camera& camera, PointLight& pointL)
 {
 	shader->use();
 	shader->setUniform("viewProjMatrix", camera.getViewProjectionMatrix());
 	shader->setUniform("camera_world", camera.getPosition());
 	shader->setUniform("scaleXZ", 10000.f);
 	shader->setUniform("scaleY", 2000.f);
-
-	hm.bind(7);
-	shader->setUniform("heightMap", 7);
 	//shader->setUniform("dirL.color", glm::vec3(1));
 	//shader->setUniform("dirL.direction", glm::vec3(1));
 	shader->setUniform("pointL.color", pointL.color);

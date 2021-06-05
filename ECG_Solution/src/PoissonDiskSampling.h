@@ -12,17 +12,19 @@
 class PossionDiskSampling {
 
 public:
-	PossionDiskSampling(int width, int height, float minDist, int count);
+	PossionDiskSampling(int terrainSize, const char* maskPath, const char* heightMapPath, float scaleY, float minDist, int count);
 	~PossionDiskSampling();
-	std::vector<glm::vec2> getPoints();
-	void applyMask(const char* maskPath);
+	std::vector<glm::vec3> getPoints();
+	std::vector<glm::vec2> applyMask(const char* maskPath);
+	std::vector<glm::vec3> applyTerrainHeight(const char* heightMapPath, float scaleY);
 
 private: 
 	int width;
 	int height;
 	float minDist;
 	int count;
-	std::vector<glm::vec2> points;
+	std::vector<glm::vec2> points2D;
+	std::vector<glm::vec3> points3D;
 
 	std::vector<glm::vec2> generatePossionPoints();
 	glm::vec2 imageToGrid(glm::vec2 point, float cellSize);

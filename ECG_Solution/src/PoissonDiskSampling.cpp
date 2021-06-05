@@ -2,39 +2,56 @@
 #include <iostream>
 #include "stb_image.h"
 
-PossionDiskSampling::PossionDiskSampling(int width, int height, float minDist, int count)
+PossionDiskSampling::PossionDiskSampling(int terrainSize, const char* maskPath, const char* heightMapPath, float scaleY, float minDist, int count)
 {
-	this->width = width;
-	this->height = height;
+	this->width = terrainSize;
+	this->height = terrainSize;
 	this->minDist = minDist;
 	this->count = count;
 	srand(time(0));
 	generatePossionPoints();
+	applyMask(maskPath);
+	applyTerrainHeight(heightMapPath, scaleY);
 }
-
 
 PossionDiskSampling::~PossionDiskSampling() {}
 
-std::vector<glm::vec2> PossionDiskSampling::getPoints() {
-	return points;
+std::vector<glm::vec3> PossionDiskSampling::getPoints() {
+	return points3D;
 }
 
-void PossionDiskSampling::applyMask(const char* maskPath) {
+std::vector<glm::vec2> PossionDiskSampling::applyMask(const char* maskPath) {
 	int imgWidth, imgHeight, nrChannels;
 	unsigned char* data = stbi_load(maskPath, &imgWidth, &imgHeight, &nrChannels, 4);
-	for (auto p = points.begin(); p != points.end();) {
+	for (auto p = points2D.begin(); p != points2D.end();) {
 		glm::vec2 pixelPos = glm::vec2(floor(p->x / this->width * imgWidth),floor(p->y / this->height * imgHeight));
 		unsigned char* value = data + 4 * int((pixelPos.y * imgWidth + pixelPos.x));
 		unsigned char r = value[0];
 		if (r == 0) {
-			p = points.erase(p);
+			p = points2D.erase(p);
 		}
 		else
 		{
 			++p;
 		}
 	}
-	
+	return points2D;
+}
+
+std::vector<glm::vec3>  PossionDiskSampling::applyTerrainHeight(const char* heightMapPath, float scaleY) {
+	int imgWidth, imgHeight, nrChannels;
+	unsigned char* data = stbi_load(heightMapPath, &imgWidth, &imgHeight, &nrChannels, 4);
+
+	for (auto p = points2D.begin(); p != points2D.end();) {
+		glm::vec2 pixelPos = glm::vec2(floor(p->x / this->width * imgWidth), floor(p->y / this->height * imgHeight));
+		unsigned char* value = data + 4 * int((pixelPos.y * imgWidth + pixelPos.x));
+		float redChannel = float(value[0]) / 255;
+		float height = redChannel * scaleY;
+		glm::vec3 pos3D = glm::vec3(p->x, height, p->y);
+		points3D.push_back(pos3D);
+		++p;
+	}
+	return points3D;
 }
 
 std::vector<glm::vec2> PossionDiskSampling::generatePossionPoints() {
@@ -67,9 +84,7 @@ std::vector<glm::vec2> PossionDiskSampling::generatePossionPoints() {
 			}
 		}
 	}
-
-	points = spawnPoints;
-
+	points2D = spawnPoints;
 	return spawnPoints;
 }
 
