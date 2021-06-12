@@ -8,6 +8,7 @@
     <ClCompile Include="src\MeshMaterial.cpp" />
     <ClCompile Include="src\Query.cpp" />
     <ClCompile Include="src\Shadowmap\ShadowMap.cpp" />
+    <ClCompile Include="src\SimulationCallback.cpp" />
     <ClCompile Include="src\Skybox\Skybox.cpp" />
     <ClCompile Include="src\stb_image.cpp" />
     <ClCompile Include="src\Terrain\Terrain.cpp" />
@@ -29,6 +30,7 @@
     <ClInclude Include="src\Query.h" />
     <ClInclude Include="src\Shader.h" />
     <ClInclude Include="src\Shadowmap\ShadowMap.h" />
+    <ClInclude Include="src\SimulationCallback.h" />
     <ClInclude Include="src\Skybox\Skybox.h" />
     <ClInclude Include="src\stb_image.h" />
     <ClInclude Include="src\Terrain\Terrain.h" />

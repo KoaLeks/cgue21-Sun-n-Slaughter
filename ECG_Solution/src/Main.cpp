@@ -22,6 +22,12 @@
 #include "GUI/GuiRenderer.h"
 #include "Flare/FlareManager.h"
 
+/* GAMEPLAY */
+#include <PxPhysicsAPI.h>
+#include "SimulationCallback.h"
+using namespace physx;
+/* GAMEPLAY END */
+
 
 /* --------------------------------------------- */
 // Prototypes
@@ -41,13 +47,35 @@ void renderQuad();
 // Global variables
 /* --------------------------------------------- */
 
-static bool _wireframe = false;
-static bool _culling = true;
-static bool _dragging = false;
+//static bool _wireframe = false;
+//static bool _culling = true;
+//static bool _dragging = false;
 static bool _strafing = false;
-static float _zoom = 5.0f;
+//static float _zoom = 5.0f;
 static int sreen_width = 1600;
 static int sreen_height= 900;
+
+/* GAMEPLAY */
+static bool _wireframe = false;
+static bool _culling = true;
+static bool _dragging = true; //= false;
+static bool _draggingCamOnly = false;
+static bool _mouseSelect = false;
+static bool _doBasicAttack = false;
+static bool _doStrongAttack = false;
+static bool _doAreacAttack = false;
+static bool _checkFrustum = true;
+static bool _showHelp = false;
+static float _zoom = -6.0f;
+double lastxpos = 0;
+double lastypos = 0;
+float _brightness = 0;
+static bool _lightmap = true;
+int _selectedFPS = 60;
+static bool _limitFPS = true;
+bool _winCondition = false;
+bool _hitDetection = false;
+/* GAMEPLAY END */
 
 /* --------------------------------------------- */
 // Main
@@ -69,6 +97,11 @@ int main(int argc, char** argv)
 	float fov = float(reader.GetReal("camera", "fov", 60.0f));
 	float nearZ = float(reader.GetReal("camera", "near", 0.1f));
 	float farZ = float(reader.GetReal("camera", "far", 100000.0f));
+
+	/* GAMEPLAY */
+	_brightness = float(reader.GetInteger("window", "brightness", 0)) / 254.0f;
+	_selectedFPS = reader.GetInteger("window", "fps", 60);
+	/* GAMEPLAY END */
 
 	/* --------------------------------------------- */
 	// Create context
@@ -102,6 +135,10 @@ int main(int argc, char** argv)
 		EXIT_WITH_ERROR("Failed to create window");
 	}
 
+	/* GAMEPLAY */
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+	/* GAMEPLAY END */
+
 	// This function makes the context of the specified window current on the calling thread. 
 	glfwMakeContextCurrent(window);
 
@@ -124,6 +161,63 @@ int main(int argc, char** argv)
 		// version.
 		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 	}
+
+	/* GAMEPLAY */
+	// for HUD overlay
+	//glEnable(GL_BLEND);
+	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	/* GAMEPLAY END */
+
+	/* GAMEPLAY */
+
+	/* --------------------------------------------- */
+	// Init Physx
+	/* --------------------------------------------- */
+
+	PxDefaultErrorCallback gDefaultErrorCallback;
+	PxDefaultAllocator gDefaultAllocatorCallback;
+	PxFoundation* gFoundation = nullptr;
+	gFoundation = PxCreateFoundation(PX_FOUNDATION_VERSION, gDefaultAllocatorCallback, gDefaultErrorCallback);
+	/*
+	PxPvd*  pvd = PxCreatePvd(*gFoundation);
+	PxPvdTransport* transport = PxDefaultPvdSocketTransportCreate("localhost", 5425, 10);
+	pvd->connect(*transport, PxPvdInstrumentationFlag::eALL);
+	*/
+	PxPhysics* gPhysicsSDK = nullptr;
+	gPhysicsSDK = PxCreatePhysics(PX_PHYSICS_VERSION, *gFoundation, PxTolerancesScale(), true);
+	if (gPhysicsSDK == nullptr) {
+		EXIT_WITH_ERROR("Failed to init physx")
+	}
+
+	PxCooking* gCooking = PxCreateCooking(PX_PHYSICS_VERSION, *gFoundation, PxCookingParams(PxTolerancesScale()));
+	if (!gCooking) {
+		EXIT_WITH_ERROR("Failed to init cooking")
+	}
+
+	SimulationCallback* simulatonCallback = new SimulationCallback(&_winCondition, &_hitDetection);
+	PxScene* gScene = nullptr;
+	PxSceneDesc sceneDesc(gPhysicsSDK->getTolerancesScale());
+	sceneDesc.gravity = PxVec3(0.0f, -9.8f, 0.0f);
+	sceneDesc.cpuDispatcher = PxDefaultCpuDispatcherCreate(1);
+	sceneDesc.filterShader = PxDefaultSimulationFilterShader;
+	// sceneDesc.simulationEventCallback = simulatonCallback;
+	gScene = gPhysicsSDK->createScene(sceneDesc);
+	PxMaterial* mMaterial = gPhysicsSDK->createMaterial(0.5f, 0.5f, 0.5f);
+
+	PxControllerManager* gManager = PxCreateControllerManager(*gScene);
+
+	PxCapsuleControllerDesc cDesc;
+	cDesc.position = PxExtendedVec3(0.0f, 1.0f, 0.0f);
+	cDesc.contactOffset = 0.05f;
+	cDesc.height = 2.0f;
+	cDesc.radius = 1.0f;
+	cDesc.stepOffset = 0.2f;
+	cDesc.slopeLimit = 0.2f;
+	cDesc.upDirection = PxVec3(0, 1, 0);
+	cDesc.material = mMaterial;
+	cDesc.reportCallback = simulatonCallback;
+	PxController* pxChar = gManager->createController(cDesc);
+	/* GAMEPLAY END */
 
 
 	/* --------------------------------------------- */
