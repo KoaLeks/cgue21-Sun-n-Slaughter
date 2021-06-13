@@ -25,6 +25,7 @@
 /* GAMEPLAY */
 #include <PxPhysicsAPI.h>
 #include "SimulationCallback.h"
+#include <FreeImagePlus.h>
 using namespace physx;
 /* GAMEPLAY END */
 
@@ -228,15 +229,34 @@ int main(int argc, char** argv)
 		EXIT_WITH_ERROR("Failed to init framework");
 	}
 
+	/* GAMEPLAY */
+	FreeImage_Initialise(true);
+	/* GAMEPLAY END */
+
 	// set callbacks
 	glfwSetKeyCallback(window, key_callback);
 	glfwSetMouseButtonCallback(window, mouse_button_callback);
 	glfwSetScrollCallback(window, scroll_callback);
+	/* GAMEPLAY */
+	glfwSetInputMode(window, GLFW_STICKY_KEYS, 1);
+	/* GAMEPLAY END */
 
 	// set GL defaults
 	glClearColor(1, 1, 1, 1);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
+
+	/* GAMEPLAY */
+
+	/* --------------------------------------------- */
+	// Init HUD / Text
+	/* --------------------------------------------- */
+
+	//TextRenderer* text = new TextRenderer(window_width, window_height);
+	//text->Load("assets/fonts/MetalMania-Regular.ttf", 32);
+	//GLuint frameHud = loadTextureFromFile("assets/textures/frame_hud.png");
+
+	/* GAMEPLAY END */
 
 
 	/* --------------------------------------------- */
