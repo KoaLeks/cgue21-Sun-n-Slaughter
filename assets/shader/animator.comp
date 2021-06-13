@@ -1,0 +1,38 @@
+#version 430
+
+layout (local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
+
+layout (std430, binding = 0) buffer Pos1 {
+    vec4 Position_Start[];
+};
+layout (std430, binding = 1) buffer Norm1 {
+    vec4 Norm_Start[];
+};
+layout (std430, binding = 2) buffer Pos2 {
+    vec4 Position_End[];
+};
+layout (std430, binding = 3) buffer Norm2 {
+    vec4 Norm_End[];
+};
+layout (std430, binding = 4) buffer PosOut {
+    vec4 Position_Out[];
+};
+layout (std430, binding = 5) buffer NormOut {
+    vec4 Norm_Out[];
+};
+
+
+uniform uint vector_size;
+uniform float inter;
+
+
+void main() {
+    uint idx = gl_GlobalInvocationID.x + gl_GlobalInvocationID.y * gl_NumWorkGroups.x * gl_WorkGroupSize.x;
+    if (idx >= vector_size) {
+        return;
+    }
+
+    Position_Out[idx] = Position_Start[idx] * (1.0f - inter) + Position_End[idx] * inter;
+    Norm_Out[idx] = Norm_Start[idx] * (1.0f - inter) + Norm_End[idx] * inter;
+}
+

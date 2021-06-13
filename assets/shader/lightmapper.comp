@@ -1,0 +1,96 @@
+#version 430
+
+layout (local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
+
+uniform layout(binding = 0, rgba32f) image2D lightTexture;
+layout (std430, binding = 1) buffer Pos1 {
+    vec4 Position_Buf[];
+};
+layout (std430, binding = 2) buffer Norm1 {
+    vec4 Normal_Buf[];
+};
+layout (std430, binding = 3) buffer UV1 {
+    vec2 UV_Buff[];
+};
+layout (std430, binding = 4) buffer Idx1 {
+    uint Idx_Buff[];
+};
+
+uniform uint width;
+uniform uint height;
+uniform uint dataSize;
+uniform vec3 materialCoefficients; // x = ambient, y = diffuse, z = specular 
+
+uniform struct DirectionalLight {
+	vec3 color;
+	vec3 direction;
+} dirL;
+
+uniform struct PointLight {
+	vec3 color;
+	vec3 position;
+	vec3 attenuation;
+} pointL1, pointL2;
+
+
+vec3 barycentric(vec2 p, vec2 a, vec2 b, vec2 c) {
+    vec2 v0 = b - a;
+    vec2 v1 = c - a;
+    vec2 v2 = p - a;
+    float d00 = dot(v0, v0);
+    float d01 = dot(v0, v1);
+    float d11 = dot(v1, v1);
+    float d20 = dot(v2, v0);
+    float d21 = dot(v2, v1);
+    float denom = d00 * d11 - d01 * d01;
+
+    float v = (d11 * d20 - d01 * d21) / denom;
+	float w = (d00 * d21 - d01 * d20) / denom;
+	float u = 1.0f - v - w;
+
+    return vec3(u, v, w);
+}
+
+vec3 phong(vec3 n, vec3 l, vec3 diffuseC, float diffuseF, bool attenuate, vec3 attenuation) {
+	float d = length(l);
+	l = normalize(l);
+	float att = 1.0;	
+	if(attenuate) {
+        att = 1.0f / (attenuation.x + d * attenuation.y + d * d * attenuation.z);
+    }
+
+	return (diffuseF * diffuseC * max(0, dot(n, l))) * att; 
+}
+
+void main() {
+    ivec2 img_pos = ivec2(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y);
+    vec3 color = vec3(0.0f, 0.0f, 0.0f);
+    if (img_pos.x < width && img_pos.y < height) {
+        vec2 img_uv = vec2(float(img_pos.x) / float(width), float(img_pos.y) / float(height));
+
+        bool found = false;
+        for (int i = 0; i < dataSize-2 && !found; i += 3) {
+                uint posX = i;
+                uint posY = i+1;
+                uint posZ = i+2;
+
+                vec3 bary = barycentric(img_uv, UV_Buff[posX], UV_Buff[posY], UV_Buff[posZ]);
+                
+                if (bary.x >= 0 && bary.y >= 0 && bary.z >= 0) {
+                    vec3 inter_pos =  (Position_Buf[posX] * bary.x + Position_Buf[posY] * bary.y + Position_Buf[posZ] * bary.z).xyz;
+                    vec3 inter_norm = (Normal_Buf[posX] * bary.x + Normal_Buf[posY] * bary.y + Normal_Buf[posZ] * bary.z).xyz;
+                    vec3 n = normalize(inter_norm);
+                    color += phong(n, pointL1.position - inter_pos, pointL1.color, materialCoefficients.y, true, pointL1.attenuation);
+                    color += phong(n, pointL2.position - inter_pos, pointL2.color, materialCoefficients.y, true, pointL2.attenuation);
+                    //color =  bary;
+                    //color = vec3(0.0f, 0.0f, 1.0f);
+                    found = true;
+                }
+        }
+
+        if (found) {
+           imageStore(lightTexture, img_pos, vec4(color * 255.0f, 1.0f));
+        }
+    }
+}
+
