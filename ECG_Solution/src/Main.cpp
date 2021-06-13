@@ -24,8 +24,12 @@
 
 /* GAMEPLAY */
 #include <PxPhysicsAPI.h>
-#include "SimulationCallback.h"
 #include <FreeImagePlus.h>
+#include "SimulationCallback.h"
+#include "PlayerCamera.h"
+#include "Scene.h"
+#include "LightMapper.h"
+#include "FrustumG.h"
 using namespace physx;
 /* GAMEPLAY END */
 
@@ -360,6 +364,50 @@ int main(int argc, char** argv)
 		flares.push_back(GuiTexture(flare8.getTextureId(), glm::vec2(0.0f), glm::vec2(0.6f)));
 
 		FlareManager flareMangaer = FlareManager(guiShader.get(), 0.15f, flares);
+
+		/* GAMEPLAY */
+				/* --------------------------------------------- */
+		// Init Light mapping
+		/* --------------------------------------------- */
+		PointLight pointL1(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.25f, 4.0f, 0.8f), glm::vec3(0.5f, 0.5f, 0.5f));
+		PointLight pointL2(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(-10.0f, -9.0f, -175.0), glm::vec3(0.5f, 0.3f, 0.1f));
+		DirectionalLight dirL(glm::vec3(0), glm::vec3(0));
+
+		GLuint lightmapShader = getComputeShader("assets/shader/lightmapper.comp");
+		std::shared_ptr<LightMapper> lightMapper = std::make_shared<LightMapper>(lightmapShader);
+		lightMapper->init(pointL1, pointL2);
+
+		// Initialize camera
+		PlayerCamera playerCamera(fov, float(window_width) / float(window_height), nearZ, farZ);
+		std::shared_ptr<FrustumG> viewFrustum = std::make_shared<FrustumG>();
+		viewFrustum->setCamInternals(fov, float(window_width) / float(window_height), nearZ, farZ);
+		glm::mat4 camModel = playerCamera.getModel();
+		viewFrustum->setCamDef(getWorldPosition(camModel), getLookVector(camModel), getUpVector(camModel));
+
+		//std::shared_ptr<Shader> textureShader = std::make_shared<Shader>("texture.vert", "texture.frag");
+		Scene level(textureShader, "assets/models/main_scene.obj", gPhysicsSDK, gCooking, gScene, mMaterial, gManager, lightMapper, viewFrustum);
+		//Scene level(textureShader, "assets/models/flat_text_map.obj", gPhysicsSDK, gCooking, gScene, mMaterial, gManager, lightMapper, viewFrustum);
+		simulatonCallback->setWinConditionActor(level.getWinConditionActor());
+
+		// Init main character
+		GLuint animateShader = getComputeShader("assets/shader/animator.comp");
+		Character character(textureShader, "assets/models/main_char_animated_larry_4.obj", gPhysicsSDK, gCooking, gScene, mMaterial, pxChar, &playerCamera, gManager, animateShader, viewFrustum);
+		//Character character(textureShader, "assets/models/uploads_files_1939375_casual_male.fbx", gPhysicsSDK, gCooking, gScene, mMaterial, pxChar, &camera, gManager, animateShader, viewFrustum);
+
+		for (int i = 0; i < character.nodes.size(); i++) {
+			character.nodes[i]->setTransformMatrix(glm::rotate(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -2.0f, 0.0f)), glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
+		}
+		character.init();
+
+
+		///* --------------------------------------------- */
+		//// Init Particle Sahder
+		///* --------------------------------------------- */
+		//GLuint renderProgram = getParticleShader("assets/shader/particle.vert", "assets/shader/particle.geom", "assets/shader/particle.frag");
+		//GLuint computeShader = getComputeShader("assets/shader/particle.comp");
+		//Particle particleShader(computeShader, renderProgram, camera.getProjection());
+		//particleShader.init();
+		/* GAMEPLAY END */
 
 
 		// Render loop
