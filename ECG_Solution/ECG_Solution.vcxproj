@@ -1,12 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <ClCompile Include="src\Enemy.cpp" />
     <ClCompile Include="src\Flare\FlareManager.cpp" />
+    <ClCompile Include="src\FrustumG.cpp" />
     <ClCompile Include="src\GUI\GuiRenderer.cpp" />
     <ClCompile Include="src\GUI\GuiTexture.cpp" />
+    <ClCompile Include="src\LightMapper.cpp" />
     <ClCompile Include="src\Mesh.cpp" />
     <ClCompile Include="src\MeshMaterial.cpp" />
+    <ClCompile Include="src\Node.cpp" />
+    <ClCompile Include="src\PlayerCamera.cpp" />
     <ClCompile Include="src\Query.cpp" />
+    <ClCompile Include="src\Scene.cpp" />
     <ClCompile Include="src\Shadowmap\ShadowMap.cpp" />
     <ClCompile Include="src\SimulationCallback.cpp" />
     <ClCompile Include="src\Skybox\Skybox.cpp" />
@@ -14,9 +20,12 @@
     <ClCompile Include="src\Terrain\Terrain.cpp" />
     <ClCompile Include="src\Terrain\TerrainShader.cpp" />
     <ClCompile Include="src\Texture.cpp" />
+    <ClCompile Include="src\Utils.cpp" />
     <ClInclude Include="src\Camera.h" />
     <ClCompile Include="src\Geometry.cpp" />
+    <ClInclude Include="src\Enemy.h" />
     <ClInclude Include="src\Flare\FlareManager.h" />
+    <ClInclude Include="src\FrustumG.h" />
     <ClInclude Include="src\Geometry.h" />
     <ClInclude Include="src\GUI\GuiRenderer.h" />
     <ClInclude Include="src\GUI\GuiTexture.h" />
@@ -24,10 +33,14 @@
     <ClInclude Include="src\Light.h" />
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\Material.cpp" />
+    <ClInclude Include="src\LightMapper.h" />
     <ClInclude Include="src\Material.h" />
     <ClInclude Include="src\Mesh.h" />
     <ClInclude Include="src\MeshMaterial.h" />
+    <ClInclude Include="src\Node.h" />
+    <ClInclude Include="src\PlayerCamera.h" />
     <ClInclude Include="src\Query.h" />
+    <ClInclude Include="src\Scene.h" />
     <ClInclude Include="src\Shader.h" />
     <ClInclude Include="src\Shadowmap\ShadowMap.h" />
     <ClInclude Include="src\SimulationCallback.h" />

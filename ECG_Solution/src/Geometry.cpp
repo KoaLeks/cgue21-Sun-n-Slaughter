@@ -1,10 +1,56 @@
 /*
-* Copyright 2017 Vienna University of Technology.
-* Institute of Computer Graphics and Algorithms.
-* This file is part of the ECG Lab Framework and must not be redistributed.
-*/
+	* Copyright 2017 Vienna University of Technology.
+	* Institute of Computer Graphics and Algorithms.
+	* This file is part of the ECG Lab Framework and must not be redistributed.
+	*/
 #include "Geometry.h"
 
+
+Geometry::Geometry(glm::mat4 modelMatrix, GeometryData& data, std::shared_ptr<Material> material, physx::PxRigidActor* actor, physx::PxController* pxChar, std::shared_ptr<std::vector<glm::vec3>> boundingBox, std::shared_ptr<FrustumG> viewFrustum, unsigned int* drawnObjects)
+	: _elements(data.indices.size()), _modelMatrix(modelMatrix), _material(material), _actor(actor), _pxChar(pxChar), _boudingBox(boundingBox), _viewFrustum(viewFrustum), _drawnObjects(drawnObjects)
+{
+	// create VAO
+	glGenVertexArrays(1, &_vao);
+	glBindVertexArray(_vao);
+
+	// create positions VBO
+	glGenBuffers(1, &_vboPositions);
+	glBindBuffer(GL_ARRAY_BUFFER, _vboPositions);
+	glBufferData(GL_ARRAY_BUFFER, data.positions.size() * sizeof(glm::vec3), data.positions.data(), GL_STATIC_DRAW);
+
+	// bind positions to location 0
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+	// create normals VBO
+	glGenBuffers(1, &_vboNormals);
+	glBindBuffer(GL_ARRAY_BUFFER, _vboNormals);
+	glBufferData(GL_ARRAY_BUFFER, data.normals.size() * sizeof(glm::vec3), data.normals.data(), GL_STATIC_DRAW);
+
+	// bind normals to location 1
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+	// create uvs VBO
+	glGenBuffers(1, &_vboUVs);
+	glBindBuffer(GL_ARRAY_BUFFER, _vboUVs);
+	glBufferData(GL_ARRAY_BUFFER, data.uvs.size() * sizeof(glm::vec2), data.uvs.data(), GL_STATIC_DRAW);
+
+	// bind uvs to location 3
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, 0);
+
+	// create and bind indices VBO
+	glGenBuffers(1, &_vboIndices);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _vboIndices);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, data.indices.size() * sizeof(unsigned int), data.indices.data(), GL_STATIC_DRAW);
+
+	glBindVertexArray(0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+	vector_size = data.positions.size();
+	_isEmpty = false;
+}
 
 Geometry::Geometry(glm::mat4 modelMatrix, GeometryData& data, std::shared_ptr<Material> material)
 	: _elements(data.indices.size()), _modelMatrix(modelMatrix), _material(material)
@@ -70,23 +116,27 @@ Geometry::~Geometry()
 void Geometry::draw(glm::mat4 matrix)
 {
 	glm::mat4 accumModel = matrix * _transformMatrix * _modelMatrix;
-	if (!_isEmpty) {
-		Shader* shader = _material->getShader();
-		shader->use();
+	if (_isCharacter || _viewFrustum->boxInFrustum(_boudingBox) != 0) {
+		if (!_isEmpty) {
+			Shader* shader = _material->getShader();
+			shader->use();
 
-		shader->setUniform("modelMatrix", accumModel);
-		shader->setUniform("normalMatrix", glm::mat3(glm::transpose(glm::inverse(accumModel))));
-		_material->setUniforms();
+			shader->setUniform("modelMatrix", accumModel);
+			shader->setUniform("normalMatrix", glm::mat3(glm::transpose(glm::inverse(accumModel))));
+			_material->setUniforms();
 
-		glBindVertexArray(_vao);
-		glDrawElements(GL_TRIANGLES, _elements, GL_UNSIGNED_INT, 0);
-		glBindVertexArray(0);
+			glBindVertexArray(_vao);
+			glDrawElements(GL_TRIANGLES, _elements, GL_UNSIGNED_INT, 0);
+			glBindVertexArray(0);
+			(*_drawnObjects)++;
 
+		}
 	}
 
 	for (size_t i = 0; i < _children.size(); i++) {
 		_children[i]->draw(accumModel);
 	}
+
 }
 
 void Geometry::transform(glm::mat4 transformation)
@@ -109,6 +159,16 @@ Geometry* Geometry::addChild(std::unique_ptr<Geometry> child)
 	_children.push_back(std::move(child));
 	return (_children.end() - 1)->get();
 }
+
+
+physx::PxRigidActor* Geometry::getActor() {
+	return _actor;
+}
+
+physx::PxController* Geometry::getCharacterController() {
+	return _pxChar;
+}
+
 
 GeometryData Geometry::createCubeGeometry(float width, float height, float depth)
 {
@@ -232,7 +292,7 @@ GeometryData Geometry::createCubeGeometry(float width, float height, float depth
 		16, 17, 18,
 		18, 19, 16,
 		// bottom
-		20, 21, 22, 
+		20, 21, 22,
 		22, 23, 20
 	};
 
@@ -325,8 +385,8 @@ GeometryData Geometry::createSphereGeometry(unsigned int longitudeSegments, unsi
 		data.indices.push_back(j == longitudeSegments - 1 ? 2 : (j + 3));
 		data.indices.push_back(2 + j);
 
-		data.indices.push_back(2 + (latitudeSegments - 2)*longitudeSegments + j);
-		data.indices.push_back(j == longitudeSegments - 1 ? 2 + (latitudeSegments - 2)*longitudeSegments : 2 + (latitudeSegments - 2)*longitudeSegments + j + 1);
+		data.indices.push_back(2 + (latitudeSegments - 2) * longitudeSegments + j);
+		data.indices.push_back(j == longitudeSegments - 1 ? 2 + (latitudeSegments - 2) * longitudeSegments : 2 + (latitudeSegments - 2) * longitudeSegments + j + 1);
 		data.indices.push_back(1);
 	}
 
@@ -346,13 +406,13 @@ GeometryData Geometry::createSphereGeometry(unsigned int longitudeSegments, unsi
 
 			if (i == 1) continue;
 
-			data.indices.push_back(2 + (i - 1)*longitudeSegments + j);
-			data.indices.push_back(j == longitudeSegments - 1 ? 2 + (i - 2)*longitudeSegments : 2 + (i - 2)*longitudeSegments + j + 1);
-			data.indices.push_back(j == longitudeSegments - 1 ? 2 + (i - 1)*longitudeSegments : 2 + (i - 1)*longitudeSegments + j + 1);
+			data.indices.push_back(2 + (i - 1) * longitudeSegments + j);
+			data.indices.push_back(j == longitudeSegments - 1 ? 2 + (i - 2) * longitudeSegments : 2 + (i - 2) * longitudeSegments + j + 1);
+			data.indices.push_back(j == longitudeSegments - 1 ? 2 + (i - 1) * longitudeSegments : 2 + (i - 1) * longitudeSegments + j + 1);
 
-			data.indices.push_back(j == longitudeSegments - 1 ? 2 + (i - 2)*longitudeSegments : 2 + (i - 2)*longitudeSegments + j + 1);
-			data.indices.push_back(2 + (i - 1)*longitudeSegments + j);
-			data.indices.push_back(2 + (i - 2)*longitudeSegments + j);
+			data.indices.push_back(j == longitudeSegments - 1 ? 2 + (i - 2) * longitudeSegments : 2 + (i - 2) * longitudeSegments + j + 1);
+			data.indices.push_back(2 + (i - 1) * longitudeSegments + j);
+			data.indices.push_back(2 + (i - 2) * longitudeSegments + j);
 		}
 	}
 

@@ -41,7 +41,7 @@ void GuiRenderer::render(std::vector<GuiTexture> guis) {
 void GuiRenderer::doOcclusionTest(glm::vec2 sunScreenPos) {
 	if (query.isResultReady()) {
 		int visibleSamples = query.getResult();
-		occlusionFactor = glm::min(visibleSamples / total_samples, 1.0f);  //TODO: switched min to glm::min
+		occlusionFactor = min(visibleSamples / total_samples, 1.0f);  //TODO: switched min to glm::min and then back (13.6.) haha
 	}
 	if (!query.isInUse()) {
 		glColorMask(false, false, false, false);

@@ -11,6 +11,7 @@
 #include "Shader.h"
 
 #include "Texture.h"
+#include "Utils.h"
 
 
 /* --------------------------------------------- */
@@ -31,6 +32,16 @@ public:
 
 	Shader* getShader();
 	virtual void setUniforms();
+
+	/* GAMEPLAY */
+	GLuint _lightmapTexture;
+	bool hasLightmap = false;
+	void setLightmap(GLuint lightmap);
+	glm::vec3 getCoefficients() {
+		return _materialCoefficients;
+	}
+	/* GAMEPLAY END */
+
 };
 
 /* --------------------------------------------- */
@@ -40,12 +51,19 @@ public:
 class TextureMaterial : public Material
 {
 protected:
-	std::shared_ptr<Texture> _diffuseTexture;
-
+	//std::shared_ptr<Texture> _diffuseTexture;
+	/* GAMEPLAY */
+	GLuint _diffuseTexture;
+	/* GAMEPLAY END */
 public:
-	TextureMaterial(std::shared_ptr<Shader> shader, glm::vec3 materialCoefficients, float specularCoefficient, std::shared_ptr<Texture> diffuseTexture);
+	/* GAMEPLAY */
+	TextureMaterial(std::shared_ptr<Shader> shader, glm::vec3 materialCoefficients, float specularCoefficient, const char* diffuseTexturePath);
+	/* GAMEPLAY END */
+
+	TextureMaterial(std::shared_ptr<Shader> shader, glm::vec3 materialCoefficients, float specularCoefficient, /*std::shared_ptr<Texture>*/ GLuint diffuseTexture);
 	virtual ~TextureMaterial();
 
 	virtual void setUniforms();
+	
 };
 

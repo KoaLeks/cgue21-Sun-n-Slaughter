@@ -1,8 +1,8 @@
 /*
-* Copyright 2017 Vienna University of Technology.
-* Institute of Computer Graphics and Algorithms.
-* This file is part of the ECG Lab Framework and must not be redistributed.
-*/
+	* Copyright 2017 Vienna University of Technology.
+	* Institute of Computer Graphics and Algorithms.
+	* This file is part of the ECG Lab Framework and must not be redistributed.
+	*/
 #pragma once
 
 
@@ -13,10 +13,18 @@
 #include <GLFW\glfw3.h>
 #include <glm\glm.hpp>
 
+/* GAMEPLAY */
+#include <FreeImagePlus.h>
+#include <vector>
+#include <glm/vec3.hpp> // glm::vec3
+#include <glm/vec4.hpp> // glm::vec4
+#include <glm/mat4x4.hpp> // glm::mat4
+/* GAMEPLAY */
+
 #define EXIT_WITH_ERROR(err) \
-	std::cout << "ERROR: " << err << std::endl; \
-	system("PAUSE"); \
-	return EXIT_FAILURE;
+		std::cout << "ERROR: " << err << std::endl; \
+		system("PAUSE"); \
+		return EXIT_FAILURE;
 
 #define FOURCC_DXT1	MAKEFOURCC('D', 'X', 'T', '1')
 #define FOURCC_DXT3	MAKEFOURCC('D', 'X', 'T', '3')
@@ -52,6 +60,17 @@ public:
 
 DDSImage loadDDS(const char* file);
 
+/* GAMEPLAY */
+GLuint loadTextureFromFile(const char* filename);
+GLuint getComputeShader(char* computeshadersource);
+GLuint getParticleShader(char* vertexShaderSource, char* geometryShaderSource, char* fragmentShaderSource);
+char* filetobuf(char* file);
+void enableBlendMode();
+void disableBlendMode();
+glm::vec3 getLookVector(glm::mat4 modelView);
+glm::vec3 getUpVector(glm::mat4 modelView);
+glm::vec3 getWorldPosition(glm::mat4 modelView);
+/* GAMEPLAY END */
 
 /* --------------------------------------------- */
 // Framework functions

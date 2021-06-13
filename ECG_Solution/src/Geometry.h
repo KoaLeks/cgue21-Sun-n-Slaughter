@@ -17,6 +17,12 @@
 #include "Shader.h"
 #include "Material.h"
 
+/* GAMEPLAY */
+#include "FrustumG.h"
+#include <PxPhysicsAPI.h>
+/* GAMEPLAY END */
+
+
 
 
 struct GeometryData {
@@ -31,12 +37,19 @@ class Geometry
 {
 protected:
 
-	GLuint _vao;
-	GLuint _vboPositions;
-	GLuint _vboNormals;
-	GLuint _vboUVs;
-	GLuint _vboIndices;
-	unsigned int _elements;
+	/* GAMEPLAY */
+	physx::PxController* _pxChar;
+	std::shared_ptr<std::vector<glm::vec3>> _boudingBox;
+	std::shared_ptr<FrustumG> _viewFrustum;
+	unsigned int* _drawnObjects;
+	/* GAMEPLAY END*/
+
+	//GLuint _vao;
+	//GLuint _vboPositions;
+	//GLuint _vboNormals;
+	//GLuint _vboUVs;
+	//GLuint _vboIndices;
+	//unsigned int _elements;
 
 	std::shared_ptr<Material> _material;
 
@@ -47,6 +60,24 @@ protected:
 	std::vector<std::unique_ptr<Geometry>> _children;
 
 public:
+
+	/* GAMEPLAY */
+	GLuint _vao;
+	GLuint _vboPositions;
+	GLuint _vboNormals;
+	GLuint _vboUVs;
+	GLuint _vboIndices;
+	unsigned int _elements;
+
+	GLuint vector_size;
+	bool _isCharacter = false;
+	physx::PxRigidActor* _actor;
+
+	physx::PxController* getCharacterController();
+	physx::PxRigidActor* getActor();
+	/* GAMEPLAY END*/
+
+	Geometry(glm::mat4 modelMatrix, GeometryData& data, std::shared_ptr<Material> material, physx::PxRigidActor* actor, physx::PxController* pxChar, std::shared_ptr<std::vector<glm::vec3>> boundingBox, std::shared_ptr<FrustumG> viewFrustum, unsigned int* drawnObjects);
 	Geometry(glm::mat4 modelMatrix, GeometryData& data, std::shared_ptr<Material> material);
 	Geometry(glm::mat4 modelMatrix = glm::mat4(1.0f));
 
