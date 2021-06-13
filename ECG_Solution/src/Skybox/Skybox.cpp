@@ -18,12 +18,13 @@ Skybox::~Skybox() {
     glDeleteVertexArrays(1, &skyboxVao);
 }
 
-void Skybox::draw(Camera& camera) {
+void Skybox::draw(Camera& camera, float brightness) {
 
     shader->use();
     glDepthMask(GL_FALSE);
     glm::mat4 viewProjMatrix = camera.getViewProjectionMatrix();
     shader->setUniform("viewProjMatrix", viewProjMatrix);
+    shader->setUniform("brightness", brightness);
     glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
     glBindVertexArray(skyboxVao);
     glDrawArrays(GL_TRIANGLES, 0, data.indices.size());

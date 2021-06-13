@@ -15,6 +15,7 @@ uniform sampler2D shadowMap;
 uniform vec3 lightPos;
 uniform vec3 viewPos;
 uniform mat4 lightSpaceMatrix;
+uniform float brightness;
 
 const float regionMinWater = -scaleY * 0.125;
 const float regionMaxWater = scaleY * 0.005;
@@ -164,7 +165,7 @@ void main(){
 	//light = floor(light * levels);
 	//light = light / levels;
 	
-    vec3 result = light * terrainColor.rgb;
+    vec3 result = brightness * light * terrainColor.rgb;
 	color = vec4(result, 1.0);
 	//color = vec4(teNormal, 1);
 }

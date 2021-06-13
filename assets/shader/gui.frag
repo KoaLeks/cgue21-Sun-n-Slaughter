@@ -9,5 +9,5 @@ uniform float brightness;
 
 void main(void){
 	color = texture(guiTexture, textureCoords);
-	color.a *= brightness;
+	color *= brightness;
 }

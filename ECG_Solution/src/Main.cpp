@@ -72,6 +72,7 @@ int main(int argc, char** argv)
 	float fov = float(reader.GetReal("camera", "fov", 60.0f));
 	float nearZ = float(reader.GetReal("camera", "near", 0.1f));
 	float farZ = float(reader.GetReal("camera", "far", 100000.0f));
+	float brightness = float(reader.GetReal("window", "brightness", 1.0));
 
 	/* --------------------------------------------- */
 	// Create context
@@ -319,10 +320,10 @@ int main(int argc, char** argv)
 			// 2. Render Scene
 			// --------------------------------------------------------------
 			// Render Skybox
-			skybox.draw(camera);
+			skybox.draw(camera, brightness);
 
 			// Render terrain
-			plane.draw(tessellationShader.get(), camera, shadowMap);
+			plane.draw(tessellationShader.get(), camera, shadowMap, brightness);
 			
 			// Render trees
 			for (glm::vec3 pos : points )
@@ -338,10 +339,10 @@ int main(int argc, char** argv)
 			light.draw();
 
 			// Render flares
-			flareMangaer.render(camera.getViewProjectionMatrix(), pointL.position);
+			flareMangaer.render(camera.getViewProjectionMatrix(), pointL.position, brightness);
 
 			// Render GUI
-			guiRenderer.render(guis);
+			guiRenderer.render(guis, brightness);
 
 			// Compute frame time
 			dt = t;

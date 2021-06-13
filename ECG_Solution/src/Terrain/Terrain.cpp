@@ -149,12 +149,13 @@ void Terrain::initBuffer() {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-void Terrain::draw(TerrainShader* terrainShader, Camera& camera, ShadowMap& shadowMap) {
+void Terrain::draw(TerrainShader* terrainShader, Camera& camera, ShadowMap& shadowMap, float brightness) {
 	terrainShader->use();
 
 	terrainShader->setUniform("modelMatrix", _modelMatrix);
 	terrainShader->setUniform("scaleXZ", scaleXZ);
 	terrainShader->setUniform("scaleY", scaleY);
+	terrainShader->setUniform("brightness", brightness);
 
 	heightMap.bind(0);
 	terrainShader->setUniform("heightMap", 0);

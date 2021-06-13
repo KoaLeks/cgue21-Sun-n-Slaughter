@@ -3,6 +3,7 @@
 const float levels = 15.0;
 
 uniform samplerCube skybox;
+uniform float brightness;
 
 in vec3 TexCoords;
 out vec4 color;
@@ -28,10 +29,10 @@ void main()
 {    
     // cel shading
     vec4 skyColorRGB = texture(skybox, TexCoords);
-    vec3 skyColorHSV = rgb2hsv(skyColorRGB.rgb);
-    float skyLevel = floor(skyColorHSV.z * levels);
-	skyColorHSV.z = (skyLevel / levels);
+    //vec3 skyColorHSV = rgb2hsv(skyColorRGB.rgb);
+    //float skyLevel = floor(skyColorHSV.z * levels);
+	//skyColorHSV.z = (skyLevel / levels);
 
-    color = vec4(hsv2rgb(skyColorHSV), 1.0);
-    //color = skyColorRGB;
+    //color = vec4(hsv2rgb(skyColorHSV), 1.0);
+    color = brightness * skyColorRGB;
 }
