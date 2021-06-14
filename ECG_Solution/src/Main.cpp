@@ -366,7 +366,7 @@ int main(int argc, char** argv)
 		FlareManager flareMangaer = FlareManager(guiShader.get(), 0.15f, flares);
 
 		/* GAMEPLAY */
-				/* --------------------------------------------- */
+		/* --------------------------------------------- */
 		// Init Light mapping
 		/* --------------------------------------------- */
 		PointLight pointL1(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.25f, 4.0f, 0.8f), glm::vec3(0.5f, 0.5f, 0.5f));
