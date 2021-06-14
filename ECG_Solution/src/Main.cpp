@@ -47,8 +47,8 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 /* GAMEPLAY */
 bool move_character(GLFWwindow* window, Character* character, float deltaMovement);
 /* GAMEPLAY END */
-void setPerFrameUniformsNormal(Shader* shader, Camera& camera, PointLight& pointL);
-void setPerFrameUniforms(TerrainShader* shader, Camera& camera, PointLight& pointL);
+void setPerFrameUniformsNormal(Shader* shader, PlayerCamera& camera, PointLight& pointL);
+void setPerFrameUniforms(TerrainShader* shader, PlayerCamera& camera, PointLight& pointL);
 void renderQuad();
 
 
@@ -301,8 +301,8 @@ int main(int argc, char** argv)
 		Skybox skybox = Skybox(skyboxShader.get());
 
 		// Initialize camera
-		Camera camera(fov, float(window_width) / float(window_height), nearZ, farZ);
-		camera.update(window_width, window_height, false, false, false);
+		//Camera camera(fov, float(window_width) / float(window_height), nearZ, farZ);
+		//camera.update(window_width, window_height, false, false, false);
 
 		// Initialize lights
 		//PointLight pointL(glm::vec3(.5f), glm::vec3(50000, lightDistance, 0), glm::vec3(0.08f, 0.03f, 0.01f));
@@ -407,7 +407,7 @@ int main(int argc, char** argv)
 
 
 		for (int i = 0; i < character.nodes.size(); i++) {
-			character.nodes[i]->setTransformMatrix(glm::rotate(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -2.0f, 0.0f)), glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
+			character.nodes[i]->setTransformMatrix(glm::rotate(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)), glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
 		}
 		character.init();
 
@@ -426,7 +426,7 @@ int main(int argc, char** argv)
 		//float t = float(glfwGetTime());
 		//float dt = 0.0f;
 		//float t_sum = 0.0f;
-		double mouse_x, mouse_y;
+		//double mouse_x, mouse_y;
 
 		/* GAMEPLAY */
 		double xpos = 0;
@@ -464,14 +464,31 @@ int main(int argc, char** argv)
 			/* GAMEPLAY */
 			gScene->simulate(timeStep);
 			gScene->fetchResults(true);
+
+			// Update camera
+			playerCamera.updateZoom(_zoom);
+
+			if (_dragging || _draggingCamOnly) {
+				glfwGetCursorPos(window, &xpos, &ypos);
+				xRotate = (xpos - lastxpos) * 0.3333f;
+				yRotate = (ypos - lastypos) * 0.5f;
+
+				lastxpos = xpos;
+				lastypos = ypos;
+
+				playerCamera.rotate(-xRotate, -yRotate);
+				if (!_draggingCamOnly) {
+					character.updateRotation(playerCamera.getYaw());
+				}
+			}
 			/* GAMEPLAY END */
 
 			// Update camera
-			glfwGetCursorPos(window, &mouse_x, &mouse_y);
-			camera.update(int(mouse_x), int(mouse_y), _zoom, _dragging, _strafing);
+			//glfwGetCursorPos(window, &mouse_x, &mouse_y);
+			//camera.update(int(mouse_x), int(mouse_y), _zoom, _dragging, _strafing);
 
 			// Set per-frame uniforms
-			setPerFrameUniformsNormal(textureShader.get(), camera, pointL);
+			setPerFrameUniformsNormal(textureShader.get(), playerCamera, pointL);
 			
 			// Moving light
 			//pointL.position.x = cos(t / 2) * terrainPlane;
@@ -509,7 +526,7 @@ int main(int argc, char** argv)
 
 			/* GAMEPLAY END */
 			
-			setPerFrameUniforms(tessellationShader.get(), camera, pointL);
+			setPerFrameUniforms(tessellationShader.get(), playerCamera, pointL);
 
 
 			// 1. render depth of scene to texture (from light's perspective)
@@ -540,10 +557,10 @@ int main(int argc, char** argv)
 			// 2. Render Scene
 			// --------------------------------------------------------------
 			// Render Skybox
-			skybox.draw(camera, brightness);
+			skybox.draw(playerCamera, brightness);
 
 			// Render terrain
-			plane.draw(tessellationShader.get(), camera, shadowMap, brightness);
+			plane.draw(tessellationShader.get(), playerCamera, shadowMap, brightness);
 
 			/* GAMEPLAY */
 			level.draw();
@@ -564,7 +581,7 @@ int main(int argc, char** argv)
 			light.draw();
 
 			// Render flares
-			flareMangaer.render(camera.getViewProjectionMatrix(), pointL.position, brightness);
+			flareMangaer.render(playerCamera.getViewProjectionMatrix(), pointL.position, brightness);
 
 			// Render GUI
 			guiRenderer.render(guis, brightness);
@@ -658,7 +675,7 @@ void renderQuad()
 }
 
 
-void setPerFrameUniformsNormal(Shader* shader, Camera& camera, PointLight& pointL)
+void setPerFrameUniformsNormal(Shader* shader, PlayerCamera& camera, PointLight& pointL)
 {
 	shader->use();
 	shader->setUniform("viewProjMatrix", camera.getViewProjectionMatrix());
@@ -674,7 +691,7 @@ void setPerFrameUniformsNormal(Shader* shader, Camera& camera, PointLight& point
 	shader->unuse();
 }
 
-void setPerFrameUniforms(TerrainShader* shader, Camera& camera, PointLight& pointL)
+void setPerFrameUniforms(TerrainShader* shader, PlayerCamera& camera, PointLight& pointL)
 {
 	shader->use();
 	shader->setUniform("viewProjMatrix", camera.getViewProjectionMatrix());
@@ -729,29 +746,77 @@ bool move_character(GLFWwindow* window, Character* character, float deltaMovemen
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
-	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
-		_dragging = true;
+	//if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+	//	_dragging = true;
+	//}
+	//else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
+	//	_dragging = false;
+	//}
+	//else if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
+	//	_strafing = true;
+	//}
+	//else if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE) {
+	//	_strafing = false;
+	//}
+	/* GAMEPLAY */
+	{
+		/*	if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
+				glfwGetCursorPos(window, &lastxpos, &lastypos);
+				_dragging = true;
+				_draggingCamOnly = false;
+			} else if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE) {
+				_dragging = false;
+				_draggingCamOnly = false;
+			} else*/ if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+				glfwGetCursorPos(window, &lastxpos, &lastypos);
+				_draggingCamOnly = true;
+				_mouseSelect = true;
+			}
+			else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
+				_draggingCamOnly = false;
+			}
 	}
-	else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
-		_dragging = false;
-	}
-	else if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
-		_strafing = true;
-	}
-	else if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE) {
-		_strafing = false;
-	}
+	/* GAMEPLAY END */
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	_zoom -= float(yoffset) * 300.f;
+	_zoom -= float(yoffset) * 0.5f; //300.0f
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-	// F1 - Wireframe
-	// F2 - Culling
+	//// F1 - Wireframe
+	//// F2 - Culling
+	//// Esc - Exit
+
+	//if (action != GLFW_RELEASE) return;
+
+	//switch (key)
+	//{
+	//case GLFW_KEY_ESCAPE:
+	//	glfwSetWindowShouldClose(window, true);
+	//	break;
+	//case GLFW_KEY_F1:
+	//	_wireframe = !_wireframe;
+	//	glPolygonMode(GL_FRONT_AND_BACK, _wireframe ? GL_LINE : GL_FILL);
+	//	break;
+	//case GLFW_KEY_F2:
+	//	_culling = !_culling;
+	//	if (_culling) glEnable(GL_CULL_FACE);
+	//	else glDisable(GL_CULL_FACE);
+	//	break;
+	//}
+	/* GAMEPLAY */
+	
+	// F2 - FPS Limiter
+	// F3 - Wireframe ON/OFF
+	
+	// F8 - View Frustum ON/OFF
+	// F9 - Backface Culling
+
+
+
 	// Esc - Exit
 
 	if (action != GLFW_RELEASE) return;
@@ -761,16 +826,29 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	case GLFW_KEY_ESCAPE:
 		glfwSetWindowShouldClose(window, true);
 		break;
-	case GLFW_KEY_F1:
+	//case GLFW_KEY_F1:
+	//	_showHelp = !_showHelp;
+	//	break;
+	case GLFW_KEY_F2:
+		_limitFPS = !_limitFPS;
+		break;
+	case GLFW_KEY_F3:
 		_wireframe = !_wireframe;
 		glPolygonMode(GL_FRONT_AND_BACK, _wireframe ? GL_LINE : GL_FILL);
 		break;
-	case GLFW_KEY_F2:
+	//case GLFW_KEY_F4:
+	//	_lightmap = !_lightmap;
+	//	break;
+	case GLFW_KEY_F8:
+		_checkFrustum = !_checkFrustum;
+		break;
+	case GLFW_KEY_F9:
 		_culling = !_culling;
 		if (_culling) glEnable(GL_CULL_FACE);
 		else glDisable(GL_CULL_FACE);
 		break;
 	}
+	/* GAMEPLAY END */
 }
 
 static void APIENTRY DebugCallbackDefault(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const GLvoid* userParam) {

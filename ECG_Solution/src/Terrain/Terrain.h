@@ -2,7 +2,7 @@
 #include "../stb_image.h"
 #include "../Mesh.h"
 #include "TerrainShader.h"
-#include "../Camera.h"
+#include "../PlayerCamera.h"
 #include "../Shadowmap/ShadowMap.h"
 
 class Terrain {
@@ -36,7 +36,7 @@ public:
 
 	void generateTerrain(int dimension, int vertexCount);
 	void generateTerrainTriangleMesh(int dimesion, int vertexCount);
-	void draw(TerrainShader* terrainShader, Camera& camera, ShadowMap& shadowMap, float brightness);
+	void draw(TerrainShader* terrainShader, PlayerCamera& camera, ShadowMap& shadowMap, float brightness);
 	void draw(Shader* shader);
 	void initBuffer();
 	glm::mat4 getModelMatrix();

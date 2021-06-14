@@ -6,7 +6,7 @@
 #include <glm\detail\type_vec.hpp>
 #include <glm\detail\type_mat.hpp>
 #include "..\Mesh.h"
-#include "..\Camera.h"
+#include "..\PlayerCamera.h"
 
 class Skybox {
 
@@ -23,5 +23,5 @@ public:
 	~Skybox();
 	void loadCubemap();
 	void initBuffer();
-	void draw(Camera& camera, float brightness);
+	void draw(PlayerCamera& camera, float brightness);
 };

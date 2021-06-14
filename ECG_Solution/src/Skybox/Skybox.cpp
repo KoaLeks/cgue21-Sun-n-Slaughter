@@ -18,7 +18,7 @@ Skybox::~Skybox() {
     glDeleteVertexArrays(1, &skyboxVao);
 }
 
-void Skybox::draw(Camera& camera, float brightness) {
+void Skybox::draw(PlayerCamera& camera, float brightness) {
 
     shader->use();
     glDepthMask(GL_FALSE);
