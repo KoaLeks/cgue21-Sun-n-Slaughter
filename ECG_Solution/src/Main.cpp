@@ -44,6 +44,9 @@ static std::string FormatDebugOutput(GLenum source, GLenum type, GLuint id, GLen
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+/* GAMEPLAY */
+bool move_character(GLFWwindow* window, Character* character, float deltaMovement);
+/* GAMEPLAY END */
 void setPerFrameUniformsNormal(Shader* shader, Camera& camera, PointLight& pointL);
 void setPerFrameUniforms(TerrainShader* shader, Camera& camera, PointLight& pointL);
 void renderQuad();
@@ -314,10 +317,10 @@ int main(int argc, char** argv)
 		Mesh light = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0)), Mesh::createSphereMesh(12, 12, 300), material);
 
 		// Tree positions
-		PossionDiskSampling treePositions = PossionDiskSampling(terrainPlaneSize, treeMaskPath, heightMapPath, terrainHeight, 450, 20);
-		std::vector<glm::vec3> points = treePositions.getPoints();
-		Mesh treePlaceholder = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0)), Mesh::createSphereMesh(12, 12, 150), material);
-		Mesh treePlaceholderDepth = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0)), Mesh::createSphereMesh(12, 12, 150), depth);
+		//PossionDiskSampling treePositions = PossionDiskSampling(terrainPlaneSize, treeMaskPath, heightMapPath, terrainHeight, 450, 20);
+		//std::vector<glm::vec3> points = treePositions.getPoints();
+		//Mesh treePlaceholder = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0)), Mesh::createSphereMesh(12, 12, 150), material);
+		//Mesh treePlaceholderDepth = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0)), Mesh::createSphereMesh(12, 12, 150), depth);
 
 
 		// GUI
@@ -396,13 +399,12 @@ int main(int argc, char** argv)
 
 		//std::shared_ptr<Shader> textureShader = std::make_shared<Shader>("texture.vert", "texture.frag");
 		Scene level(textureShader, "assets/models/hm3.obj", gPhysicsSDK, gCooking, gScene, mMaterial, gManager, lightMapper, viewFrustum);
-		//Scene level(textureShader, "assets/models/flat_text_map.obj", gPhysicsSDK, gCooking, gScene, mMaterial, gManager, lightMapper, viewFrustum);
 		simulatonCallback->setWinConditionActor(level.getWinConditionActor());
 
-		// Init main character
+		// Init character
 		GLuint animateShader = getComputeShader("assets/shader/animator.comp");
 		Character character(textureShader, "assets/models/main_char_animated_larry_4.obj", gPhysicsSDK, gCooking, gScene, mMaterial, pxChar, &playerCamera, gManager, animateShader, viewFrustum);
-		//Character character(textureShader, "assets/models/uploads_files_1939375_casual_male.fbx", gPhysicsSDK, gCooking, gScene, mMaterial, pxChar, &camera, gManager, animateShader, viewFrustum);
+
 
 		for (int i = 0; i < character.nodes.size(); i++) {
 			character.nodes[i]->setTransformMatrix(glm::rotate(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -2.0f, 0.0f)), glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
@@ -421,17 +423,48 @@ int main(int argc, char** argv)
 
 
 		// Render loop
+		//float t = float(glfwGetTime());
+		//float dt = 0.0f;
+		//float t_sum = 0.0f;
+		double mouse_x, mouse_y;
+
+		/* GAMEPLAY */
+		double xpos = 0;
+		double ypos = 0;
+		double xRotate = 0;
+		double yRotate = 0;
 		float t = float(glfwGetTime());
+		float t2 = t;
 		float dt = 0.0f;
 		float t_sum = 0.0f;
-		double mouse_x, mouse_y;
+		int waitingMS = 0;
+		PxReal timeStep = 1.0f / 60.0f;
+		float timeStepFloat = 1.0f / 60.0f;
+		std::shared_ptr<Enemy> selectedEnemy = nullptr;
+		float strongCD = 0.0f;
+		float areaCD = 0.0f;
+		float topRightScreen = window_width - (window_width / 5.0f);
+		std::string info = "";
+		float infoTime = 0.0f;
+		int fps = 60;
+		int fpsCnt = 0;
+		boolean drawFire = false;
+		float animationStepBuffer = 0.0f;
+		int animationStep = 0;
+		bool is_moving = false;
+		/* GAMEPLAY END */
 
 		while (!glfwWindowShouldClose(window)) {
 			// Clear backbuffer
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-			// Poll events
-			glfwPollEvents();
+			// Poll events -> move to end (GAMEPLAY)
+			//glfwPollEvents();
+
+			/* GAMEPLAY */
+			gScene->simulate(timeStep);
+			gScene->fetchResults(true);
+			/* GAMEPLAY END */
 
 			// Update camera
 			glfwGetCursorPos(window, &mouse_x, &mouse_y);
@@ -451,6 +484,30 @@ int main(int argc, char** argv)
 			//}
 			light.resetModelMatrix();
 			light.transform(glm::translate(glm::mat4(1), glm::vec3(pointL.position.x, pointL.position.y, pointL.position.z)));
+
+			/* GAMEPLAY */
+			// update character and camera position
+			is_moving = move_character(window, &character, dt);
+
+			// update all enemy positions and deaths
+			for (size_t i = 0; i < level.enemies.size(); i++) {
+				level.enemies[i]->updateCharacter(dt);
+			}
+
+			// update view frustum
+			viewFrustum->doCheck = _checkFrustum;
+			if (_checkFrustum) {
+				camModel = playerCamera.getModel();
+				viewFrustum->setCamDef(getWorldPosition(camModel), getLookVector(camModel), getUpVector(camModel));
+			}
+
+			// _hitDetection from physx callback -> locked on 60 fps
+			if (_hitDetection) {
+				character.inflictDamage(1);
+				_hitDetection = false;
+			}
+
+			/* GAMEPLAY END */
 			
 			setPerFrameUniforms(tessellationShader.get(), camera, pointL);
 
@@ -459,14 +516,14 @@ int main(int argc, char** argv)
 			// --------------------------------------------------------------
 			shadowMap.updateLightPos(pointL.position);
 			shadowMap.draw();
-			for (glm::vec3 pos : points)
-			{
-				treePlaceholderDepth.resetModelMatrix();
-				glm::mat4 transformation = glm::translate(glm::mat4(1.0f), glm::vec3(pos.x - terrainPlaneSize / 2, pos.y + 150, pos.z - terrainPlaneSize / 2));
-				treePlaceholderDepth.transform(transformation);
-				treePlaceholderDepth.draw();
-				
-			}
+			//for (glm::vec3 pos : points)
+			//{
+			//	treePlaceholderDepth.resetModelMatrix();
+			//	glm::mat4 transformation = glm::translate(glm::mat4(1.0f), glm::vec3(pos.x - terrainPlaneSize / 2, pos.y + 150, pos.z - terrainPlaneSize / 2));
+			//	treePlaceholderDepth.transform(transformation);
+			//	treePlaceholderDepth.draw();
+			//	
+			//}
 			planeShadow.draw(shadowMapDepthShader.get());
 			
 			shadowMap.unbindFBO();
@@ -487,16 +544,21 @@ int main(int argc, char** argv)
 
 			// Render terrain
 			plane.draw(tessellationShader.get(), camera, shadowMap, brightness);
+
+			/* GAMEPLAY */
+			level.draw();
+			character.animate(animationStep);
+			/* GAMEPLAY END*/
 			
 			// Render trees
-			for (glm::vec3 pos : points )
-			{		
-				treePlaceholder.resetModelMatrix();
-				glm::mat4 transformation = glm::translate(glm::mat4(1.0f), glm::vec3(pos.x - terrainPlaneSize / 2, pos.y + 150, pos.z - terrainPlaneSize / 2));
-				treePlaceholder.transform(transformation);
-				treePlaceholder.draw();
-				
-			}
+			//for (glm::vec3 pos : points )
+			//{		
+			//	treePlaceholder.resetModelMatrix();
+			//	glm::mat4 transformation = glm::translate(glm::mat4(1.0f), glm::vec3(pos.x - terrainPlaneSize / 2, pos.y + 150, pos.z - terrainPlaneSize / 2));
+			//	treePlaceholder.transform(transformation);
+			//	treePlaceholder.draw();
+			//	
+			//}
 
 			// Render sun pos
 			light.draw();
@@ -512,6 +574,30 @@ int main(int argc, char** argv)
 			t = float(glfwGetTime());
 			dt = t - dt;
 			t_sum += dt;
+
+			/* GAMEPLAY */
+			animationStepBuffer += dt;
+			if (animationStepBuffer >= timeStepFloat) {
+				animationStepBuffer = timeStepFloat - animationStepBuffer;
+				if (is_moving) {
+					animationStep = (animationStep + 1); // % 60;
+				}
+				else {
+					animationStep = 0;
+				}
+
+			}
+			if (_limitFPS) {
+				waitingMS = (1000 / _selectedFPS) - (t - t2) * 1000;
+				if (waitingMS > 0) {
+					Sleep(waitingMS);
+				}
+				t2 = float(glfwGetTime());
+			}
+
+			// Poll events
+			glfwPollEvents();
+			/* GAMEPLAY END */
 			
 			// Swap buffers
 			glfwSwapBuffers(window);
@@ -522,7 +608,12 @@ int main(int argc, char** argv)
 	/* --------------------------------------------- */
 	// Destroy framework
 	/* --------------------------------------------- */
-
+	/* GAMEPLAY */
+	gScene->release();
+	gPhysicsSDK->release();
+	gFoundation->release();
+	FreeImage_DeInitialise();
+	/* GAMEPLAY END */
 	destroyFramework();
 
 
@@ -590,6 +681,50 @@ void setPerFrameUniforms(TerrainShader* shader, Camera& camera, PointLight& poin
 	shader->setUniform("camera_world", camera.getPosition());
 	shader->setUniform("lightPosition", pointL.position);
 }
+
+/* GAMEPLAY */
+bool move_character(GLFWwindow* window, Character* character, float deltaMovement) {
+	float forward = 0;
+	float leftStrafe = 0;
+	bool updateForward = false;
+	bool updateStrafe = false;
+
+	int holdingForward = glfwGetKey(window, GLFW_KEY_W);
+	int holdingBackward = glfwGetKey(window, GLFW_KEY_S);
+	int holdingLeftStrafe = glfwGetKey(window, GLFW_KEY_A);
+	int holdingRightStrafe = glfwGetKey(window, GLFW_KEY_D);
+
+	if (holdingForward == GLFW_PRESS) {
+		forward += deltaMovement;
+		updateForward = true;
+	}
+	if (holdingBackward == GLFW_PRESS) {
+		forward -= deltaMovement;
+		updateForward = true;
+	}
+
+	if (holdingLeftStrafe == GLFW_PRESS) {
+		leftStrafe += deltaMovement;
+		updateStrafe = true;
+	}
+	if (holdingRightStrafe == GLFW_PRESS) {
+		leftStrafe -= deltaMovement;
+		updateStrafe = true;
+	}
+
+	if (updateForward || updateStrafe) {
+		if (!updateStrafe) {
+			forward *= 1.414f;
+		}
+		if (!updateForward) {
+			leftStrafe *= 1.414f;
+		}
+		character->move(-forward * 5.0f, -leftStrafe * 5.0f, deltaMovement);
+		return true;
+	}
+	return false;
+}
+/* GAMEPLAY END */
 
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)

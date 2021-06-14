@@ -28,7 +28,7 @@ void main()
     vec4 bcFragPosLightSpace = mix(tcFragPosLightSpace[1], tcFragPosLightSpace[2], gl_TessCoord.x);
     teFragPosLightSpace = mix(adFragPosLightSpace, bcFragPosLightSpace, gl_TessCoord.y);
 
-    vec2 textureCoordinate = position.xz / scaleXZ - 0.5;
+    vec2 textureCoordinate = position.xz / scaleXZ;
     teTextureCoordinate = textureCoordinate;
 
     float height = texture(heightMap, textureCoordinate).r * scaleY;

@@ -54,9 +54,10 @@ void Terrain::generateTerrainTriangleMesh(int dimension, int vertexCount) {
 			glm::vec3 pos = glm::vec3((x) / (float)verticesWidth, -1000, (z) / (float)verticesHeight);
 
 			pos.x *= w;
-			pos.x -= w / 2;
+			//pos.x -= w / 2;
 			pos.z *= h;
-			pos.z -= h / 2;
+			//pos.z -= h / 2;
+			pos.z -= h;
 
 			data.positions.push_back(pos);
 			data.normals.push_back(glm::vec3(0, 1, 0));
@@ -96,9 +97,10 @@ void Terrain::generateTerrain(int dimension, int vertexCount) {
 			glm::vec3 pos = glm::vec3((x) /(float)verticesWidth, -1000, (z) /(float)verticesHeight);
 			
 			pos.x *= w;
-			pos.x -= w/2;
+			//pos.x -= w/2;
 			pos.z *= h;
-			pos.z -= h/2;
+			//pos.z -= h/2;
+			pos.z -= h;
 			
 			data.positions.push_back(pos);
 			data.normals.push_back(glm::vec3(0, 1, 0));

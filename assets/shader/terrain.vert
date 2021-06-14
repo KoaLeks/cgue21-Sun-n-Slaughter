@@ -15,7 +15,7 @@ uniform mat4 lightSpaceMatrix;
 void main(){
 
 	// texture coordinates based on position and scale in XZ plane
-	vec2 texCoord = position.xz / scaleXZ - 0.5;
+	vec2 texCoord = position.xz / scaleXZ;
 
 	float height = texture(heightMap, texCoord).r * scaleY;
 	
