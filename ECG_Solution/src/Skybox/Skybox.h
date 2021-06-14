@@ -23,5 +23,5 @@ public:
 	~Skybox();
 	void loadCubemap();
 	void initBuffer();
-	void draw(Camera& camera);
+	void draw(Camera& camera, float brightness);
 };

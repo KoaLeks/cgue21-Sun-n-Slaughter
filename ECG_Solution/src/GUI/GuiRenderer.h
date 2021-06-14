@@ -22,7 +22,7 @@ public:
 	~GuiRenderer();
 	void initQuery();
 	void setShader(Shader* shader);
-	void render(std::vector<GuiTexture> guis);
+	void render(std::vector<GuiTexture> guis, float brightness);
 	void doOcclusionTest(glm::vec2 sunPos);
 	glm::mat4 calculateTransformationMatrix(glm::vec2 pos, glm::vec2 scale);
 	void renderFlares(std::vector<GuiTexture> guis, float brightness, glm::vec2 sunScreenPos);

@@ -15,10 +15,6 @@ out vec4 color;
 
 uniform vec3 camera_world;
 
-uniform vec3 materialCoefficients; // x = ambient, y = diffuse, z = specular 
-uniform float specularAlpha;
-uniform sampler2D diffuseTexture;
-
 uniform struct DirectionalLight {
 	vec3 color;
 	vec3 direction;
@@ -48,7 +44,11 @@ void main() {
 
 	//color = vec4(texColor * materialCoefficients.x, 1); // ambient
 	
-	color = vec4(0.8, 0.3, 0.6, 1);
+	
+	float alpha = 1.0;
+	vec3 texColor = vec3(1, 0, 0);
+	
+	color = vec4(texColor, alpha);
 	
 	// add directional light contribution
 	//color.rgb += phong(n, -dirL.direction, v, dirL.color * texColor, materialCoefficients.y, dirL.color, materialCoefficients.z, specularAlpha, false, vec3(0));

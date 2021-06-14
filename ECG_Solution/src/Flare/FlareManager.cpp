@@ -25,15 +25,15 @@ glm::vec3 FlareManager::convertToScreenSpace(glm::mat4 viewProjMatrix, glm::vec3
 	return glm::vec3(coords.x, coords.y, coords.w);
 }
 
-void FlareManager::render(glm::mat4 viewProjMatrix, glm::vec3 sunPos) {
+void FlareManager::render(glm::mat4 viewProjMatrix, glm::vec3 sunPos, float overallBrightness) {
 	glm::vec3 sunCoords = convertToScreenSpace(viewProjMatrix, sunPos);
 	if (sunCoords.z <= 0) {
 		return;
 	}
 	glm::vec2 sunToCenter = screen_center - glm::vec2(sunCoords.x, sunCoords.y);
-	float brightness = 1 - (glm::length(sunToCenter) / 0.7f);
+	float brightness = 1 - (glm::length(sunToCenter));
 	if (brightness > 0) {
 		calcFlarePos(sunToCenter, sunCoords);
-		renderer.renderFlares(flares, brightness, sunCoords);
+		renderer.renderFlares(flares, overallBrightness * brightness, sunCoords);
 	}
 }

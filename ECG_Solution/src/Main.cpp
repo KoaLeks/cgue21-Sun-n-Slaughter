@@ -21,6 +21,7 @@
 #include "GUI/GuiTexture.h"
 #include "GUI/GuiRenderer.h"
 #include "Flare/FlareManager.h"
+#include "PoissonDiskSampling.h"
 
 /* GAMEPLAY */
 #include <PxPhysicsAPI.h>
@@ -43,7 +44,7 @@ static std::string FormatDebugOutput(GLenum source, GLenum type, GLuint id, GLen
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
-void setPerFrameUniforms(Shader* shader, Camera& camera, PointLight& pointL);
+void setPerFrameUniformsNormal(Shader* shader, Camera& camera, PointLight& pointL);
 void setPerFrameUniforms(TerrainShader* shader, Camera& camera, PointLight& pointL);
 void renderQuad();
 
@@ -59,6 +60,8 @@ static bool _strafing = false;
 //static float _zoom = 5.0f;
 static int sreen_width = 1600;
 static int sreen_height= 900;
+static char* heightMapPath = "assets/terrain/hm3.png";
+static char* treeMaskPath = "assets/terrain/mask1.png";
 
 /* GAMEPLAY */
 static bool _wireframe = false;
@@ -102,6 +105,7 @@ int main(int argc, char** argv)
 	float fov = float(reader.GetReal("camera", "fov", 60.0f));
 	float nearZ = float(reader.GetReal("camera", "near", 0.1f));
 	float farZ = float(reader.GetReal("camera", "far", 100000.0f));
+	float brightness = float(reader.GetReal("window", "brightness", 1.0));
 
 	/* GAMEPLAY */
 	_brightness = float(reader.GetInteger("window", "brightness", 0)) / 254.0f;
@@ -267,6 +271,7 @@ int main(int argc, char** argv)
 	// Initialize scene and render loop
 	/* --------------------------------------------- */
 	{
+
 		// Load shader(s)
 		std::shared_ptr<Shader> textureShader = std::make_shared<Shader>("texture.vert", "texture.frag");
 		std::shared_ptr<Shader> skyboxShader = std::make_shared<Shader>("skybox.vert", "skybox.frag");
@@ -280,14 +285,14 @@ int main(int argc, char** argv)
 			"assets/shader/terrain.frag"
 			);
 
-		int terrainPlane = 10000;
+		int terrainPlaneSize = 8192; // statt 10000
 		int terrainHeight = 2000;
 		float lightDistance = 20000.0f;
 
 		// Create Terrain
 		// heightmap muss ein vielfaches von 20 (oder 2^n?) sein, ansonsten wirds nicht korrekt abgebildet
-		Terrain plane = Terrain(terrainPlane, 50, terrainHeight, "assets/terrain/heightmap2.png", false);
-		Terrain planeShadow = Terrain(terrainPlane, 50, terrainHeight, "assets/terrain/heightmap2.png", true);
+		Terrain plane = Terrain(terrainPlaneSize, 100, terrainHeight, heightMapPath, false);
+		Terrain planeShadow = Terrain(terrainPlaneSize, 100, terrainHeight, heightMapPath, true);
 
 		// Create Skybox
 		Skybox skybox = Skybox(skyboxShader.get());
@@ -297,18 +302,23 @@ int main(int argc, char** argv)
 		camera.update(window_width, window_height, false, false, false);
 
 		// Initialize lights
-		PointLight pointL(glm::vec3(.5f), glm::vec3(50000, lightDistance, 0), glm::vec3(0.08f, 0.03f, 0.01f));
+		//PointLight pointL(glm::vec3(.5f), glm::vec3(50000, lightDistance, 0), glm::vec3(0.08f, 0.03f, 0.01f));
+		PointLight pointL(glm::vec3(.5f), glm::vec3(-15000, 17000, -25000), glm::vec3(0.08f, 0.03f, 0.01f));
 
 		// Shadow Map
-		ShadowMap shadowMap = ShadowMap(shadowMapDepthShader.get(), pointL.position, nearZ, farZ / 10, 5000.0f);
+		ShadowMap shadowMap = ShadowMap(shadowMapDepthShader.get(), pointL.position, nearZ, farZ/10, 7500.0f);
 
 		std::shared_ptr<MeshMaterial> material = std::make_shared<MeshMaterial>(textureShader, glm::vec3(0.5f, 0.7f, 0.3f), 8.0f);
-		std::shared_ptr<MeshMaterial> depth = std::make_shared<MeshMaterial>(shadowMapDepthShader, glm::vec3(0.5f, 0.7f, 0.3f), 8.0f);
-		
-		Mesh light = Mesh(glm::translate(glm::mat4(1.0f), pointL.position), Mesh::createSphereMesh(12, 12, lightDistance / 15), material);
-		Mesh sun = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(-30000, 35000, -55000)), Mesh::createSphereMesh(12, 12, 5000), material);
-		Mesh sphere3Depth = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(-700, 2000, -600)), Mesh::createSphereMesh(12, 12, 450), depth);
-		Mesh sphere3 = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(-700, 2000, -600)), Mesh::createSphereMesh(12, 12, 450), material);
+		std::shared_ptr<MeshMaterial> depth = std::make_shared<MeshMaterial>(shadowMapDepthShader, glm::vec3(0.5f, 0.7f, 0.3f), 8.0f);		
+
+		Mesh light = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0)), Mesh::createSphereMesh(12, 12, 300), material);
+
+		// Tree positions
+		PossionDiskSampling treePositions = PossionDiskSampling(terrainPlaneSize, treeMaskPath, heightMapPath, terrainHeight, 450, 20);
+		std::vector<glm::vec3> points = treePositions.getPoints();
+		Mesh treePlaceholder = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0)), Mesh::createSphereMesh(12, 12, 150), material);
+		Mesh treePlaceholderDepth = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0)), Mesh::createSphereMesh(12, 12, 150), depth);
+
 
 		// GUI
 		std::vector<GuiTexture> guis;
@@ -385,7 +395,7 @@ int main(int argc, char** argv)
 		viewFrustum->setCamDef(getWorldPosition(camModel), getLookVector(camModel), getUpVector(camModel));
 
 		//std::shared_ptr<Shader> textureShader = std::make_shared<Shader>("texture.vert", "texture.frag");
-		Scene level(textureShader, "assets/models/main_scene.obj", gPhysicsSDK, gCooking, gScene, mMaterial, gManager, lightMapper, viewFrustum);
+		Scene level(textureShader, "assets/models/hm3.obj", gPhysicsSDK, gCooking, gScene, mMaterial, gManager, lightMapper, viewFrustum);
 		//Scene level(textureShader, "assets/models/flat_text_map.obj", gPhysicsSDK, gCooking, gScene, mMaterial, gManager, lightMapper, viewFrustum);
 		simulatonCallback->setWinConditionActor(level.getWinConditionActor());
 
@@ -428,7 +438,7 @@ int main(int argc, char** argv)
 			camera.update(int(mouse_x), int(mouse_y), _zoom, _dragging, _strafing);
 
 			// Set per-frame uniforms
-			setPerFrameUniforms(textureShader.get(), camera, pointL);
+			setPerFrameUniformsNormal(textureShader.get(), camera, pointL);
 			
 			// Moving light
 			//pointL.position.x = cos(t / 2) * terrainPlane;
@@ -439,8 +449,8 @@ int main(int argc, char** argv)
 			//{
 			//	pointL.position.y = -sin(t / 2) * terrainPlane / 2;
 			//}
-			//light.resetModelMatrix();
-			//light.transform(glm::translate(glm::mat4(1), glm::vec3(pointL.position.x, pointL.position.y, pointL.position.z)));
+			light.resetModelMatrix();
+			light.transform(glm::translate(glm::mat4(1), glm::vec3(pointL.position.x, pointL.position.y, pointL.position.z)));
 			
 			setPerFrameUniforms(tessellationShader.get(), camera, pointL);
 
@@ -449,15 +459,22 @@ int main(int argc, char** argv)
 			// --------------------------------------------------------------
 			shadowMap.updateLightPos(pointL.position);
 			shadowMap.draw();
-			sphere3Depth.draw();
+			for (glm::vec3 pos : points)
+			{
+				treePlaceholderDepth.resetModelMatrix();
+				glm::mat4 transformation = glm::translate(glm::mat4(1.0f), glm::vec3(pos.x - terrainPlaneSize / 2, pos.y + 150, pos.z - terrainPlaneSize / 2));
+				treePlaceholderDepth.transform(transformation);
+				treePlaceholderDepth.draw();
+				
+			}
 			planeShadow.draw(shadowMapDepthShader.get());
+			
 			shadowMap.unbindFBO();
 
 			// reset viewport
 			glViewport(0, 0, window_width, window_height);
 			glClearColor(0, 0, 0, 1);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 			// debug: render shadowMap on quad 
 			//shadowMap.drawDebug(shadowMapDebugShader.get());
 			//renderQuad();
@@ -466,29 +483,36 @@ int main(int argc, char** argv)
 			// 2. Render Scene
 			// --------------------------------------------------------------
 			// Render Skybox
-			skybox.draw(camera);
+			skybox.draw(camera, brightness);
 
 			// Render terrain
-			plane.draw(tessellationShader.get(), camera, shadowMap);
+			plane.draw(tessellationShader.get(), camera, shadowMap, brightness);
 			
-			// light sphere
+			// Render trees
+			for (glm::vec3 pos : points )
+			{		
+				treePlaceholder.resetModelMatrix();
+				glm::mat4 transformation = glm::translate(glm::mat4(1.0f), glm::vec3(pos.x - terrainPlaneSize / 2, pos.y + 150, pos.z - terrainPlaneSize / 2));
+				treePlaceholder.transform(transformation);
+				treePlaceholder.draw();
+				
+			}
+
+			// Render sun pos
 			light.draw();
-			//sun.draw();
-			sphere3.draw();
 
 			// Render flares
-			//flareMangaer.render(camera.getViewProjectionMatrix(), glm::vec3(-30000, 35000, -55000));
-			flareMangaer.render(camera.getViewProjectionMatrix(), pointL.position);
+			flareMangaer.render(camera.getViewProjectionMatrix(), pointL.position, brightness);
 
 			// Render GUI
-			guiRenderer.render(guis);
+			guiRenderer.render(guis, brightness);
 
 			// Compute frame time
 			dt = t;
 			t = float(glfwGetTime());
 			dt = t - dt;
 			t_sum += dt;
-
+			
 			// Swap buffers
 			glfwSwapBuffers(window);
 		}
@@ -543,17 +567,20 @@ void renderQuad()
 }
 
 
-void setPerFrameUniforms(Shader* shader, Camera& camera, PointLight& pointL)
+void setPerFrameUniformsNormal(Shader* shader, Camera& camera, PointLight& pointL)
 {
 	shader->use();
 	shader->setUniform("viewProjMatrix", camera.getViewProjectionMatrix());
 	shader->setUniform("camera_world", camera.getPosition());
-
+	shader->setUniform("scaleXZ", 10000.f);
+	shader->setUniform("scaleY", 2000.f);
 	//shader->setUniform("dirL.color", glm::vec3(1));
 	//shader->setUniform("dirL.direction", glm::vec3(1));
 	shader->setUniform("pointL.color", pointL.color);
 	shader->setUniform("pointL.position", pointL.position);
 	shader->setUniform("pointL.attenuation", pointL.attenuation);
+	
+	shader->unuse();
 }
 
 void setPerFrameUniforms(TerrainShader* shader, Camera& camera, PointLight& pointL)

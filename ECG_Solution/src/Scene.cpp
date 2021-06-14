@@ -91,9 +91,17 @@ void Scene::processMesh(aiMesh* mesh, const aiScene* scene, bool cookMesh, bool 
 
 		data.positions.push_back(vector);
 
-		vector.x = mesh->mNormals[i].x;
-		vector.y = mesh->mNormals[i].y;
-		vector.z = mesh->mNormals[i].z;
+		if (mesh->mNormals == nullptr) {
+			vector.x = 0;
+			vector.y = 1;
+			vector.z = 0;
+		}
+		else {
+			vector.x = mesh->mNormals[i].x;
+			vector.y = mesh->mNormals[i].y;
+			vector.z = mesh->mNormals[i].z;
+		}
+
 		data.normals.push_back(vector);
 
 		if (mesh->mTextureCoords[0]) {

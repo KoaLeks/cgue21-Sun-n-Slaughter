@@ -9,6 +9,7 @@ class Terrain {
 private:
 
 	MeshData data;
+	std::vector<glm::vec2> treePositions;
 	glm::mat4 _modelMatrix;
 	int width, height;
 	int terrainCount;
@@ -35,7 +36,7 @@ public:
 
 	void generateTerrain(int dimension, int vertexCount);
 	void generateTerrainTriangleMesh(int dimesion, int vertexCount);
-	void draw(TerrainShader* terrainShader, Camera& camera, ShadowMap& shadowMap);
+	void draw(TerrainShader* terrainShader, Camera& camera, ShadowMap& shadowMap, float brightness);
 	void draw(Shader* shader);
 	void initBuffer();
 	glm::mat4 getModelMatrix();

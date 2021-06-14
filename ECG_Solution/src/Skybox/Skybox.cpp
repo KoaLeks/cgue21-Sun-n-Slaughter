@@ -2,7 +2,7 @@
 
 Skybox::Skybox(Shader* shader) {
     this->shader = shader;
-    this->data = Mesh::createSkyboxMesh(100000, 100000, 100000);
+    this->data = Mesh::createSkyboxMesh(50000, 50000, 50000);
     textureFaces[0] = "assets/skybox/right.jpg";
     textureFaces[1] = "assets/skybox/left.jpg";
     textureFaces[2] = "assets/skybox/top.jpg";
@@ -18,12 +18,13 @@ Skybox::~Skybox() {
     glDeleteVertexArrays(1, &skyboxVao);
 }
 
-void Skybox::draw(Camera& camera) {
+void Skybox::draw(Camera& camera, float brightness) {
 
     shader->use();
     glDepthMask(GL_FALSE);
     glm::mat4 viewProjMatrix = camera.getViewProjectionMatrix();
     shader->setUniform("viewProjMatrix", viewProjMatrix);
+    shader->setUniform("brightness", brightness);
     glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
     glBindVertexArray(skyboxVao);
     glDrawArrays(GL_TRIANGLES, 0, data.indices.size());

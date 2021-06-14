@@ -17,7 +17,7 @@ Mesh::Mesh(glm::mat4 modelMatrix, MeshData& data, std::shared_ptr<MeshMaterial> 
 	// create positions VBO
 	glGenBuffers(1, &_vboPositions);
 	glBindBuffer(GL_ARRAY_BUFFER, _vboPositions);
-	glBufferData(GL_ARRAY_BUFFER, data.positions.size() * sizeof(glm::vec3), data.positions.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, data.positions.size() * sizeof(glm::vec3), data.positions.data(), GL_DYNAMIC_DRAW);
 
 	// bind positions to location 0
 	glEnableVertexAttribArray(0);
@@ -104,6 +104,7 @@ Mesh::~Mesh()
 GLuint Mesh::getVaoID() {
 	return _vao;
 }
+
 unsigned int Mesh::getVertexCount() {
 	return _elements;
 }
@@ -111,13 +112,12 @@ unsigned int Mesh::getVertexCount() {
 void Mesh::draw()
 {
 	Shader* shader = _material->getShader();
-	shader->use();
 
+	shader->use();
 	shader->setUniform("modelMatrix", _modelMatrix);
 	shader->setUniform("normalMatrix", glm::mat3(glm::transpose(glm::inverse(_modelMatrix))));
-	shader->setUniform("isTerrain", false);
 	glBindVertexArray(_vao);
-	//_material->setUniforms();
+	_material->setUniforms();
 	glDrawElements(GL_TRIANGLES, _elements, GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
 	shader->unuse();
@@ -141,6 +141,11 @@ void Mesh::transform(glm::mat4 transformation)
 void Mesh::resetModelMatrix()
 {
 	_modelMatrix = glm::mat4(1);
+}
+
+glm::mat4 Mesh::getModelMatirx() {
+
+	return this->_modelMatrix;
 }
 
 MeshData Mesh::createQuadMesh() {

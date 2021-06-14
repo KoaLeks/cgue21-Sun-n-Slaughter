@@ -76,7 +76,6 @@ void ShadowMap::draw() {
 	shader->use();
 	shader->setUniform("lightSpaceMatrix", lightSpaceMatrix);
 	shader->unuse();
-	//TODO: add list parameter and render all elements in the list
 
 	//this->unbindFBO();
 	//// reset viewport

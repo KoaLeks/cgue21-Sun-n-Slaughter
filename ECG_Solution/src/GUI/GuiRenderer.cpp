@@ -17,13 +17,13 @@ void GuiRenderer::setShader(Shader* shader) {
 	this->shader = shader;
 }
 
-void GuiRenderer::render(std::vector<GuiTexture> guis) {
+void GuiRenderer::render(std::vector<GuiTexture> guis, float brightness) {
 	shader->use();
 	glBindVertexArray(quad.getVaoID());
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glDisable(GL_DEPTH_TEST);
-	shader->setUniform("brightness", 1.0f);
+	shader->setUniform("brightness", brightness);
 	for (GuiTexture& gui : guis) {
 		transformationMatrix = calculateTransformationMatrix(gui.getPosition(), gui.getScale());
 		shader->setUniform("transformationMatrix", transformationMatrix);
