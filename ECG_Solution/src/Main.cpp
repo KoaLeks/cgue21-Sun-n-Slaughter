@@ -538,7 +538,7 @@ int main(int argc, char** argv)
 			plane.draw(tessellationShader.get(), playerCamera, shadowMap, brightness);
 
 			/* GAMEPLAY */
-			//level.draw();
+			level.draw();
 			character.animate(animationStep);
 			/* GAMEPLAY END*/
 			

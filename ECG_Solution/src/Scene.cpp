@@ -4,7 +4,9 @@
 void Scene::draw() {
 	_drawnObjects = 0;
 	for (unsigned int i = 0; i < nodes.size(); i++) {
-		nodes[i]->draw();
+		if (nodes[i]->name.compare(0, floorPrefix.size(), floorPrefix)) {
+			nodes[i]->draw();
+		}
 	}
 }
 
