@@ -183,12 +183,6 @@ void Scene::processMesh(aiMesh* mesh, const aiScene* scene, bool cookMesh, bool 
 			enemyNode->_startingPosition = -middlePos;
 		}
 	}
-
-	if (cookMesh) {
-		GLuint lightmapTexturePos = _lightmapper->calculateLightMap(data, mat);
-
-		mat->setLightmap(lightmapTexturePos);
-	}
 	std::shared_ptr<std::vector<glm::vec3>> boundingBox = std::make_shared<std::vector<glm::vec3>>();
 	lenVec = lenVec / 2.0f;
 	boundingBox->push_back(middlePos + glm::vec3(lenVec.x, lenVec.y, lenVec.z));

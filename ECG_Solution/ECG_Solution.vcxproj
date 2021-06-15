@@ -6,7 +6,6 @@
     <ClCompile Include="src\FrustumG.cpp" />
     <ClCompile Include="src\GUI\GuiRenderer.cpp" />
     <ClCompile Include="src\GUI\GuiTexture.cpp" />
-    <ClCompile Include="src\LightMapper.cpp" />
     <ClCompile Include="src\Mesh.cpp" />
     <ClCompile Include="src\MeshMaterial.cpp" />
     <ClCompile Include="src\Node.cpp" />
@@ -34,7 +33,6 @@
     <ClInclude Include="src\Light.h" />
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\Material.cpp" />
-    <ClInclude Include="src\LightMapper.h" />
     <ClInclude Include="src\Material.h" />
     <ClInclude Include="src\Mesh.h" />
     <ClInclude Include="src\MeshMaterial.h" />
