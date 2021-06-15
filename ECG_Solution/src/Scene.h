@@ -19,7 +19,7 @@ class Scene {
 protected:
 	std::shared_ptr<Shader> _shader;
 	std::shared_ptr<Material> _missingMaterial;
-	void loadScene(string path);
+	std::shared_ptr<Node> loadScene(string path);
 	std::string _directory;
 	physx::PxPhysics* _physics;
 	physx::PxCooking* _cooking;
@@ -50,6 +50,9 @@ public:
 	unsigned int getDrawnObjects() {
 		return _drawnObjects;
 	}
+
+	void addStaticObject(string path, physx::PxExtendedVec3 position);
+
 private:
 	std::string floorPrefix = "cook_";
 	std::string enemyPrefix = "mob_";

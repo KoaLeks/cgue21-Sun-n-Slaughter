@@ -9,16 +9,16 @@ void Scene::draw() {
 }
 
 
-void Scene::loadScene(string path) {
+std::shared_ptr<Node> Scene::loadScene(string path) {
 	Assimp::Importer import;
 	const aiScene* scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
 
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
 		std::cout << "ERROR::ASSIMP::" << import.GetErrorString() << std::endl;
-		return;
+		return nullptr;
 	}
 	//directory = path.substr(0, path.find_last_of('/'));
-	processNode(scene->mRootNode, scene, 0);
+	return processNode(scene->mRootNode, scene, 0);
 }
 
 
@@ -361,4 +361,10 @@ void Character::animate(int step) {
 
 physx::PxRigidActor* Scene::getWinConditionActor() {
 	return winConditionActor;
+}
+
+void Scene::addStaticObject(string path, physx::PxExtendedVec3 position)
+{
+	std::shared_ptr<Node> newNode = loadScene(path);
+	newNode->setPosition(position);
 }
