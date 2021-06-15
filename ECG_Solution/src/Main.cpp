@@ -405,11 +405,14 @@ int main(int argc, char** argv)
 		GLuint animateShader = getComputeShader("assets/shader/animator.comp");
 		Character character(textureShader, "assets/models/main_char_animated_larry_4.obj", gPhysicsSDK, gCooking, gScene, mMaterial, pxChar, &playerCamera, gManager, animateShader, viewFrustum);
 
-
+		// Adjust character to 3d person cam
 		for (int i = 0; i < character.nodes.size(); i++) {
-			character.nodes[i]->setTransformMatrix(glm::rotate(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)), glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
+			character.nodes[i]->setTransformMatrix(glm::rotate(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -2.0f, 0.0f)), glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
 		}
 		character.init();
+
+		//Relocate the character & camera
+		character.relocate(physx::PxExtendedVec3(4096.0f, 500.0f, -4096.0f));
 
 
 		///* --------------------------------------------- */

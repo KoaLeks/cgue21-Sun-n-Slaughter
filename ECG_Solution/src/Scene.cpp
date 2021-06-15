@@ -231,7 +231,17 @@ void Character::move(float forward, float strafeLeft, float dt) {
 
 
 	_pxController->move(physx::PxVec3(addY, -1.0f, addX), 0.001f, dt, physx::PxControllerFilters());
-	 std::cout << "x: " << _pxController->getPosition().x << ", y: " << _pxController->getPosition().y << ", z: " << _pxController->getPosition().z << std::endl;
+	std::cout << "x: " << _pxController->getPosition().x << ", y: " << _pxController->getPosition().y << ", z: " << _pxController->getPosition().z << std::endl;
+	for (unsigned int i = 0; i < nodes.size(); i++) {
+		nodes[i]->setPosition(_pxController->getPosition());
+	}
+	setPosition(_pxController->getPosition());
+	_camera->setPosition(_pxController->getPosition());
+}
+
+void Character::relocate(physx::PxExtendedVec3 pos) {
+	_pxController->setPosition(pos);
+	std::cout << "x: " << _pxController->getPosition().x << ", y: " << _pxController->getPosition().y << ", z: " << _pxController->getPosition().z << std::endl;
 	for (unsigned int i = 0; i < nodes.size(); i++) {
 		nodes[i]->setPosition(_pxController->getPosition());
 	}

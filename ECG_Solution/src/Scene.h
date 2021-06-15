@@ -95,6 +95,7 @@ public:
 	void init();
 
 	void move(float forward, float strafeLeft, float dt);
+	void relocate(physx::PxExtendedVec3 pos);
 	void updateRotation(float angle);
 	glm::vec3 getPosition() {
 		return _position;
