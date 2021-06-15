@@ -85,6 +85,8 @@ public:
 
 	void draw(glm::mat4 matrix = glm::mat4(1.0f));
 
+	void draw(Shader* shader, glm::mat4 matrix);
+
 	void transform(glm::mat4 transformation);
 	void setTransformMatrix(glm::mat4 transformMatrix);
 	void resetModelMatrix();

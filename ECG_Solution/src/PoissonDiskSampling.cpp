@@ -61,7 +61,7 @@ std::vector<glm::vec2> PossionDiskSampling::generatePossionPoints() {
 	std::vector<glm::vec2> processList;
 	std::vector<glm::vec2> spawnPoints;
 	//glm::vec2 firstPoint = glm::vec2(rand() % width, rand() % height);
-	glm::vec2 firstPoint = glm::vec2(7000, 6200);
+	glm::vec2 firstPoint = glm::vec2(512, 512);
 	spawnPoints.push_back(firstPoint);
 	processList.push_back(firstPoint);
 

@@ -28,6 +28,22 @@ void Node::draw(glm::mat4 matrix)
 	}
 }
 
+
+void Node::drawDepth(Shader* shader, glm::mat4 matrix)
+{
+	if (_enabled) {
+		glm::mat4 accumModel = matrix * glm::translate(glm::mat4(1), _position) * glm::rotate(glm::mat4(1), glm::radians(_angle), glm::vec3(0, 1, 0)) * glm::translate(glm::mat4(1), _startingPosition) * _transformMatrix * _modelMatrix;
+
+		for (size_t i = 0; i < _meshes.size(); i++) {
+			_meshes[i]->draw(shader, accumModel);
+		}
+
+		for (size_t i = 0; i < _children.size(); i++) {
+			_children[i]->drawDepth(shader, accumModel);
+		}
+	}
+}
+
 void Node::transform(glm::mat4 transformation)
 {
 	_modelMatrix = transformation * _modelMatrix;

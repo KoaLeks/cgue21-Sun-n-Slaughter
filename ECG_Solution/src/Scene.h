@@ -41,6 +41,7 @@ public:
 	}
 
 	void draw();
+	void drawDepth(Shader* shader);
 	std::vector<std::shared_ptr<Node>> nodes;
 	std::vector<std::shared_ptr<Enemy>> enemies;
 	std::shared_ptr<Node> getNodeWithName(std::string name);
@@ -51,7 +52,7 @@ public:
 		return _drawnObjects;
 	}
 
-	void addStaticObject(string path, physx::PxExtendedVec3 position);
+	void addStaticObject(string path, physx::PxExtendedVec3 position, float scale);
 
 private:
 	std::string floorPrefix = "cook_";

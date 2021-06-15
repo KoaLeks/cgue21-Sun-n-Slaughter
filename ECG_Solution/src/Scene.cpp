@@ -4,8 +4,17 @@
 void Scene::draw() {
 	_drawnObjects = 0;
 	for (unsigned int i = 0; i < nodes.size(); i++) {
-		if (nodes[i]->name.compare(0, floorPrefix.size(), floorPrefix)) {
+		if (nodes[i]->name.compare("cook_map_cook_Plane_Plane")) {
 			nodes[i]->draw();
+		}
+	}
+}
+
+void Scene::drawDepth(Shader* shader) {
+	_drawnObjects = 0;
+	for (unsigned int i = 0; i < nodes.size(); i++) {
+		if (nodes[i]->name.compare(0, floorPrefix.size(), floorPrefix)) {
+			nodes[i]->drawDepth(shader);
 		}
 	}
 }
@@ -365,8 +374,10 @@ physx::PxRigidActor* Scene::getWinConditionActor() {
 	return winConditionActor;
 }
 
-void Scene::addStaticObject(string path, physx::PxExtendedVec3 position)
+void Scene::addStaticObject(string path, physx::PxExtendedVec3 position, float scale)
 {
 	std::shared_ptr<Node> newNode = loadScene(path);
-	newNode->setPosition(position);
+	nodes[nodes.size() - 1]->setPosition(position);
+	nodes[nodes.size() - 1]->transform(glm::scale(glm::mat4(1), glm::vec3(scale)));
+
 }

@@ -139,6 +139,31 @@ void Geometry::draw(glm::mat4 matrix)
 
 }
 
+void Geometry::draw(Shader* shader, glm::mat4 matrix)
+{
+	glm::mat4 accumModel = matrix * _transformMatrix * _modelMatrix;
+	if (_isCharacter || _viewFrustum->boxInFrustum(_boudingBox) != 0) {
+		if (!_isEmpty) {
+			shader->use();
+
+			shader->setUniform("modelMatrix", accumModel);
+			shader->setUniform("normalMatrix", glm::mat3(glm::transpose(glm::inverse(accumModel))));
+			shader->setUniform("isTerrain", false);
+
+			glBindVertexArray(_vao);
+			glDrawElements(GL_TRIANGLES, _elements, GL_UNSIGNED_INT, 0);
+			glBindVertexArray(0);
+			(*_drawnObjects)++;
+
+		}
+	}
+
+	for (size_t i = 0; i < _children.size(); i++) {
+		_children[i]->draw(shader, accumModel);
+	}
+
+}
+
 void Geometry::transform(glm::mat4 transformation)
 {
 	_modelMatrix = transformation * _modelMatrix;

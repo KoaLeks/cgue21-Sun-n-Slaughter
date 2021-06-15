@@ -314,9 +314,9 @@ int main(int argc, char** argv)
 		std::shared_ptr<MeshMaterial> depth = std::make_shared<MeshMaterial>(shadowMapDepthShader, glm::vec3(0.5f, 0.7f, 0.3f), 8.0f);		
 
 		// Tree positions
-		//PossionDiskSampling treePositions = PossionDiskSampling(terrainPlaneSize, treeMaskPath, heightMapPath, terrainHeight, 450, 20);
-		//std::vector<glm::vec3> points = treePositions.getPoints();
-		//Mesh treePlaceholder = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0)), Mesh::createSphereMesh(12, 12, 150), material);
+		PossionDiskSampling treePositions = PossionDiskSampling(terrainPlaneSize, treeMaskPath, heightMapPath, terrainHeight, 80, 20);
+		std::vector<glm::vec3> points = treePositions.getPoints();
+		Mesh treePlaceholder = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0)), Mesh::createSphereMesh(12, 12, 15), material);
 		//Mesh treePlaceholderDepth = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0)), Mesh::createSphereMesh(12, 12, 150), depth);
 
 
@@ -390,6 +390,12 @@ int main(int argc, char** argv)
 		//std::shared_ptr<Shader> textureShader = std::make_shared<Shader>("texture.vert", "texture.frag");
 		Scene level(textureShader, "assets/models/cook_map_detailed.obj", gPhysicsSDK, gCooking, gScene, mMaterial, gManager, viewFrustum);
 		simulatonCallback->setWinConditionActor(level.getWinConditionActor());
+		
+		for (glm::vec3 pos : points)
+		{
+			pos.z -= terrainPlaneSize;
+			level.addStaticObject("assets/models/trees/cook_baum.obj", PxExtendedVec3(pos.x, pos.y, pos.z), 5);
+		}
 
 		// Init character
 		GLuint animateShader = getComputeShader("assets/shader/animator.comp");
@@ -508,6 +514,7 @@ int main(int argc, char** argv)
 			// --------------------------------------------------------------
 			shadowMap.updateLightPos(pointL.position);
 			shadowMap.draw();
+			level.drawDepth(shadowMapDepthShader.get());
 			//for (glm::vec3 pos : points)
 			//{
 			//	treePlaceholderDepth.resetModelMatrix();
@@ -541,16 +548,6 @@ int main(int argc, char** argv)
 			level.draw();
 			character.animate(animationStep);
 			/* GAMEPLAY END*/
-			
-			// Render trees
-			//for (glm::vec3 pos : points )
-			//{		
-			//	treePlaceholder.resetModelMatrix();
-			//	glm::mat4 transformation = glm::translate(glm::mat4(1.0f), glm::vec3(pos.x - terrainPlaneSize / 2, pos.y + 150, pos.z - terrainPlaneSize / 2));
-			//	treePlaceholder.transform(transformation);
-			//	treePlaceholder.draw();
-			//	
-			//}
 
 			// Render flares
 			flareMangaer.render(playerCamera.getViewProjectionMatrix(), pointL.position, brightness);
