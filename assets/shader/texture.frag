@@ -18,11 +18,7 @@ uniform vec3 camera_world;
 uniform vec3 materialCoefficients; // x = ambient, y = diffuse, z = specular 
 uniform float specularAlpha;
 uniform sampler2D diffuseTexture;
-
-uniform struct DirectionalLight {
-	vec3 color;
-	vec3 direction;
-} dirL;
+uniform float brightness;
 
 uniform struct PointLight {
 	vec3 color;
@@ -48,11 +44,22 @@ void main() {
 
 	//color = vec4(texColor * materialCoefficients.x, 1); // ambient
 	
-	color = vec4(0.8, 0.3, 0.6, 1);
+	//color = vec4(0.8, 0.3, 0.6, 1);
 	
 	// add directional light contribution
 	//color.rgb += phong(n, -dirL.direction, v, dirL.color * texColor, materialCoefficients.y, dirL.color, materialCoefficients.z, specularAlpha, false, vec3(0));
 			
 	// add point light contribution
 	//color.rgb += phong(n, pointL.position - vert.position_world, v, pointL.color * texColor, materialCoefficients.y, pointL.color, materialCoefficients.z, specularAlpha, true, pointL.attenuation);
+	
+	
+	vec3 n = normalize(vert.normal_world);
+	vec3 v = normalize(camera_world - vert.position_world);
+	
+	vec3 texColor = texture(diffuseTexture, vert.uv).rgb;
+	color = vec4(texColor * materialCoefficients.x, 1); // ambient
+
+	color.rgb += phong(n, pointL.position - vert.position_world, v, pointL.color * texColor, materialCoefficients.y, pointL.color, materialCoefficients.z, specularAlpha, true, pointL.attenuation);
+
+	color.rgb *= brightness;
 }

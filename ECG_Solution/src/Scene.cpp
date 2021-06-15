@@ -224,8 +224,8 @@ void Character::move(float forward, float strafeLeft, float dt) {
 	float addY = forward * glm::sin(glm::radians(_angle)) + strafeLeft * glm::cos(-glm::radians(_angle));
 
 
-	_pxController->move(physx::PxVec3(addY, /*-1.0f*/-1.0f, addX), 0.001f, dt, physx::PxControllerFilters());
-	std::cout << "x: " << _pxController->getPosition().x << ", y: " << _pxController->getPosition().y << ", z: " << _pxController->getPosition().z << std::endl;
+	_pxController->move(physx::PxVec3(addY, -10.0f, addX), 0.001f, dt, physx::PxControllerFilters());
+	//std::cout << "x: " << _pxController->getPosition().x << ", y: " << _pxController->getPosition().y << ", z: " << _pxController->getPosition().z << std::endl;
 	for (unsigned int i = 0; i < nodes.size(); i++) {
 		nodes[i]->setPosition(_pxController->getPosition());
 	}

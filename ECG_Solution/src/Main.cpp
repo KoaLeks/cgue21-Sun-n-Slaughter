@@ -79,11 +79,12 @@ static bool _showHelp = false;
 static float _zoom = -6.0f;
 double lastxpos = 0;
 double lastypos = 0;
-float _brightness = 0;
 int _selectedFPS = 60;
 static bool _limitFPS = true;
 bool _winCondition = false;
 bool _hitDetection = false;
+
+float brightness = 1.0;
 /* GAMEPLAY END */
 
 /* --------------------------------------------- */
@@ -106,10 +107,9 @@ int main(int argc, char** argv)
 	float fov = float(reader.GetReal("camera", "fov", 60.0f));
 	float nearZ = float(reader.GetReal("camera", "near", 0.1f));
 	float farZ = float(reader.GetReal("camera", "far", 100000.0f));
-	float brightness = float(reader.GetReal("window", "brightness", 1.0));
+	brightness = float(reader.GetReal("window", "brightness", 1.0));
 
 	/* GAMEPLAY */
-	_brightness = float(reader.GetInteger("window", "brightness", 0)) / 254.0f;
 	_selectedFPS = reader.GetInteger("window", "fps", 60);
 	/* GAMEPLAY END */
 
@@ -654,11 +654,10 @@ void setPerFrameUniformsNormal(Shader* shader, PlayerCamera& camera, PointLight&
 	shader->use();
 	shader->setUniform("viewProjMatrix", camera.getViewProjectionMatrix());
 	shader->setUniform("camera_world", camera.getPosition());
-	shader->setUniform("scaleXZ", 1024.f);
-	shader->setUniform("scaleY", 250.f);
 	shader->setUniform("pointL.color", pointL.color);
 	shader->setUniform("pointL.position", pointL.position);
 	shader->setUniform("pointL.attenuation", pointL.attenuation);
+	shader->setUniform("brightness", brightness);
 	
 	shader->unuse();
 }
