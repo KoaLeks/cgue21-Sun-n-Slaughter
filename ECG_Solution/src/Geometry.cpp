@@ -154,7 +154,7 @@ void Geometry::resetModelMatrix()
 	_modelMatrix = glm::mat4(1);
 }
 
-Geometry* Geometry::addChild(std::unique_ptr<Geometry> child)
+Geometry* Geometry::addChild(std::shared_ptr<Geometry> child)
 {
 	_children.push_back(std::move(child));
 	return (_children.end() - 1)->get();

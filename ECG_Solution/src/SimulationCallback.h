@@ -2,7 +2,7 @@
 
 #include <PxPhysicsAPI.h>
 #include <iostream>
-//#include "Utils.h"
+#include "Utils.h"
 
 class SimulationCallback : public physx::PxUserControllerHitReport {
 private:

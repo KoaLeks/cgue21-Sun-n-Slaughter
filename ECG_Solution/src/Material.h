@@ -36,7 +36,6 @@ public:
 	/* GAMEPLAY */
 	GLuint _lightmapTexture;
 	bool hasLightmap = false;
-	void setLightmap(GLuint lightmap);
 	glm::vec3 getCoefficients() {
 		return _materialCoefficients;
 	}

@@ -17,7 +17,7 @@ uniform vec3 camera_world;
 
 uniform vec3 materialCoefficients; // x = ambient, y = diffuse, z = specular 
 uniform float specularAlpha;
-uniform sampler2D diffuseTexture;
+uniform layout(binding = 0) sampler2D diffuseTexture;
 uniform float brightness;
 
 uniform struct PointLight {

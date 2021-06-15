@@ -217,7 +217,7 @@ int main(int argc, char** argv)
 	PxControllerManager* gManager = PxCreateControllerManager(*gScene);
 
 	PxCapsuleControllerDesc cDesc;
-	cDesc.position = PxExtendedVec3(4096.0f, 1.0f, -4096.0f);
+	cDesc.position = PxExtendedVec3(1024 / 2, 100.0f, -1024 / 2);
 	cDesc.contactOffset = 0.05f;
 	cDesc.height = 2.0f;
 	cDesc.radius = 1.0f;

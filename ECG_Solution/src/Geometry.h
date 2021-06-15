@@ -57,7 +57,7 @@ protected:
 	glm::mat4 _transformMatrix;
 
 	bool _isEmpty;
-	std::vector<std::unique_ptr<Geometry>> _children;
+	std::vector<std::shared_ptr<Geometry>> _children;
 
 public:
 
@@ -89,7 +89,7 @@ public:
 	void setTransformMatrix(glm::mat4 transformMatrix);
 	void resetModelMatrix();
 
-	Geometry* addChild(std::unique_ptr<Geometry> child);
+	Geometry* addChild(std::shared_ptr<Geometry> child);
 
 	static GeometryData createCubeGeometry(float width, float height, float depth);
 	static GeometryData createCylinderGeometry(unsigned int segments, float height, float radius);
