@@ -190,13 +190,13 @@ int main(int argc, char** argv)
 	PxDefaultAllocator gDefaultAllocatorCallback;
 	PxFoundation* gFoundation = nullptr;
 	gFoundation = PxCreateFoundation(PX_FOUNDATION_VERSION, gDefaultAllocatorCallback, gDefaultErrorCallback);
-	/*
+	
 	PxPvd*  pvd = PxCreatePvd(*gFoundation);
-	PxPvdTransport* transport = PxDefaultPvdSocketTransportCreate("localhost", 5425, 10);
+	PxPvdTransport* transport = PxDefaultPvdSocketTransportCreate("localhost", 5425, 10000);
 	pvd->connect(*transport, PxPvdInstrumentationFlag::eALL);
-	*/
+	
 	PxPhysics* gPhysicsSDK = nullptr;
-	gPhysicsSDK = PxCreatePhysics(PX_PHYSICS_VERSION, *gFoundation, PxTolerancesScale(), true);
+	gPhysicsSDK = PxCreatePhysics(PX_PHYSICS_VERSION, *gFoundation, PxTolerancesScale(), true, pvd);
 	if (gPhysicsSDK == nullptr) {
 		EXIT_WITH_ERROR("Failed to init physx")
 	}
@@ -219,7 +219,7 @@ int main(int argc, char** argv)
 	PxControllerManager* gManager = PxCreateControllerManager(*gScene);
 
 	PxCapsuleControllerDesc cDesc;
-	cDesc.position = PxExtendedVec3(0.0f, 1.0f, 0.0f);
+	cDesc.position = PxExtendedVec3(4096.0f, 1.0f, -4096.0f);
 	cDesc.contactOffset = 0.05f;
 	cDesc.height = 2.0f;
 	cDesc.radius = 1.0f;
@@ -229,6 +229,7 @@ int main(int argc, char** argv)
 	cDesc.material = mMaterial;
 	cDesc.reportCallback = simulatonCallback;
 	PxController* pxChar = gManager->createController(cDesc);
+
 	/* GAMEPLAY END */
 
 
@@ -288,8 +289,8 @@ int main(int argc, char** argv)
 			"assets/shader/terrain.frag"
 			);
 
-		int terrainPlaneSize = 8192; // statt 10000
-		int terrainHeight = 2000;
+		int terrainPlaneSize = 1024; // statt 10000
+		int terrainHeight = 250;
 		float lightDistance = 20000.0f;
 
 		// Create Terrain
@@ -398,7 +399,7 @@ int main(int argc, char** argv)
 		viewFrustum->setCamDef(getWorldPosition(camModel), getLookVector(camModel), getUpVector(camModel));
 
 		//std::shared_ptr<Shader> textureShader = std::make_shared<Shader>("texture.vert", "texture.frag");
-		Scene level(textureShader, "assets/models/hm3.obj", gPhysicsSDK, gCooking, gScene, mMaterial, gManager, lightMapper, viewFrustum);
+		Scene level(textureShader, "assets/models/cook_map.obj", gPhysicsSDK, gCooking, gScene, mMaterial, gManager, lightMapper, viewFrustum);
 		simulatonCallback->setWinConditionActor(level.getWinConditionActor());
 
 		// Init character
@@ -412,7 +413,7 @@ int main(int argc, char** argv)
 		character.init();
 
 		//Relocate the character & camera
-		character.relocate(physx::PxExtendedVec3(4096.0f, 500.0f, -4096.0f));
+		character.relocate(physx::PxExtendedVec3(terrainPlaneSize / 2, 100.0f, -terrainPlaneSize / 2));
 
 
 		///* --------------------------------------------- */
@@ -632,6 +633,8 @@ int main(int argc, char** argv)
 	gScene->release();
 	gPhysicsSDK->release();
 	gFoundation->release();
+	pvd->release();
+	transport->release();
 	FreeImage_DeInitialise();
 	/* GAMEPLAY END */
 	destroyFramework();
