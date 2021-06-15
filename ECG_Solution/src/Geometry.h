@@ -26,9 +26,9 @@
 
 
 struct GeometryData {
-	std::vector<glm::vec3> positions;
+	std::vector<glm::vec4> positions;
 	std::vector<unsigned int> indices;
-	std::vector<glm::vec3> normals;
+	std::vector<glm::vec4> normals;
 	std::vector<glm::vec2> uvs;
 };
 
@@ -90,8 +90,4 @@ public:
 	void resetModelMatrix();
 
 	Geometry* addChild(std::shared_ptr<Geometry> child);
-
-	static GeometryData createCubeGeometry(float width, float height, float depth);
-	static GeometryData createCylinderGeometry(unsigned int segments, float height, float radius);
-	static GeometryData createSphereGeometry(unsigned int longitudeSegments, unsigned int latitudeSegments, float radius);
 };
