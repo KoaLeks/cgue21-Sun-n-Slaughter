@@ -412,7 +412,7 @@ int main(int argc, char** argv)
 		character.init();
 
 		//Relocate the character & camera
-		character.relocate(physx::PxExtendedVec3(terrainPlaneSize/2, 50.0f, -terrainPlaneSize/2));
+		character.relocate(physx::PxExtendedVec3(terrainPlaneSize/2, 150.0f, -terrainPlaneSize/2));
 
 
 		///* --------------------------------------------- */
@@ -700,7 +700,6 @@ void setPerFrameUniforms(TerrainShader* shader, PlayerCamera& camera, PointLight
 	shader->setUniform("viewProjMatrix", camera.getViewProjectionMatrix());
 	shader->setUniform("camera_world", camera.getPosition());
 	shader->setUniform("lightPosition", pointL.position);
-	std::cout << camera.getPosition().x << std::endl;
 }
 
 /* GAMEPLAY */
@@ -740,7 +739,7 @@ bool move_character(GLFWwindow* window, Character* character, float deltaMovemen
 		if (!updateForward) {
 			leftStrafe *= 1.414f;
 		}
-		character->move(-forward * 5.0f, -leftStrafe * 5.0f, deltaMovement);
+		character->move(-forward * 35.0f, -leftStrafe * 35.0f, deltaMovement);
 		return true;
 	}
 	return false;
