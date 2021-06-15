@@ -399,7 +399,7 @@ int main(int argc, char** argv)
 		viewFrustum->setCamDef(getWorldPosition(camModel), getLookVector(camModel), getUpVector(camModel));
 
 		//std::shared_ptr<Shader> textureShader = std::make_shared<Shader>("texture.vert", "texture.frag");
-		Scene level(textureShader, "assets/models/cook_map.obj", gPhysicsSDK, gCooking, gScene, mMaterial, gManager, lightMapper, viewFrustum);
+		Scene level(textureShader, "assets/models/cook_map_big.obj", gPhysicsSDK, gCooking, gScene, mMaterial, gManager, lightMapper, viewFrustum);
 		simulatonCallback->setWinConditionActor(level.getWinConditionActor());
 
 		// Init character
@@ -567,7 +567,7 @@ int main(int argc, char** argv)
 			plane.draw(tessellationShader.get(), playerCamera, shadowMap, brightness);
 
 			/* GAMEPLAY */
-			level.draw();
+			//level.draw();
 			character.animate(animationStep);
 			/* GAMEPLAY END*/
 			
