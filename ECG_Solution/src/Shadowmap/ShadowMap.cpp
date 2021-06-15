@@ -1,11 +1,12 @@
 #include "ShadowMap.h"
 
-ShadowMap::ShadowMap(Shader* shader, glm::vec3 lightPos, float near_plane, float far_plane, float range) {
+ShadowMap::ShadowMap(Shader* shader, glm::vec3 lightPos, float near_plane, float far_plane, float range, glm::vec3 midPos) {
 	this->shader = shader;
 	this->lightPos = lightPos;
 	this->near_plane = near_plane;
 	this->far_plane = far_plane;
 	this->range = range;
+	this->midPos = midPos;
 	this->initBuffer();
 	//this->generateShadowMap();
 }
@@ -54,7 +55,7 @@ void ShadowMap::initBuffer() {
 
 void ShadowMap::ConfigureShaderAndMatrices() {
 	glm::mat4 lightProjection = glm::ortho(-range, range, -range, range, near_plane, far_plane);
-	glm::mat4 lightView = glm::lookAt(lightPos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	glm::mat4 lightView = glm::lookAt(lightPos, midPos, glm::vec3(0.0f, 1.0f, 0.0f));
 	lightSpaceMatrix = lightProjection * lightView;
 }
 

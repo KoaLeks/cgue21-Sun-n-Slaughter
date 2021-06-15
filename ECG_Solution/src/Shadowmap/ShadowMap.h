@@ -15,9 +15,10 @@ private:
 	float near_plane;
 	float far_plane;
 	float range;
-	const unsigned int SHADOW_MAP_SIZE = 4096;
+	glm::vec3 midPos;
+	const unsigned int SHADOW_MAP_SIZE = 1024;
 public:
-	ShadowMap(Shader* shader, glm::vec3 lightPos, float near_plane, float far_plane, float range);
+	ShadowMap(Shader* shader, glm::vec3 lightPos, float near_plane, float far_plane, float range, glm::vec3 midPos);
 	~ShadowMap();
 	void initBuffer();
 	void generateShadowMap();

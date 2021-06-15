@@ -295,8 +295,8 @@ int main(int argc, char** argv)
 
 		// Create Terrain
 		// heightmap muss ein vielfaches von 20 (oder 2^n?) sein, ansonsten wirds nicht korrekt abgebildet
-		Terrain plane = Terrain(terrainPlaneSize, 100, terrainHeight, heightMapPath, false);
-		Terrain planeShadow = Terrain(terrainPlaneSize, 100, terrainHeight, heightMapPath, true);
+		Terrain plane = Terrain(terrainPlaneSize, 50, terrainHeight, heightMapPath, false);
+		Terrain planeShadow = Terrain(terrainPlaneSize, 50, terrainHeight, heightMapPath, true);
 
 		// Create Skybox
 		Skybox skybox = Skybox(skyboxShader.get());
@@ -307,15 +307,15 @@ int main(int argc, char** argv)
 
 		// Initialize lights
 		//PointLight pointL(glm::vec3(.5f), glm::vec3(50000, lightDistance, 0), glm::vec3(0.08f, 0.03f, 0.01f));
-		PointLight pointL(glm::vec3(.5f), glm::vec3(-15000, 17000, -25000), glm::vec3(0.08f, 0.03f, 0.01f));
+		PointLight pointL(glm::vec3(.5f), glm::vec3(-1500, 1700, -2500), glm::vec3(0.08f, 0.03f, 0.01f));
 
 		// Shadow Map
-		ShadowMap shadowMap = ShadowMap(shadowMapDepthShader.get(), pointL.position, nearZ, farZ/10, 7500.0f);
+		ShadowMap shadowMap = ShadowMap(shadowMapDepthShader.get(), pointL.position, nearZ/10, farZ/100, 1250.0f, glm::vec3(terrainPlaneSize/2, 0, -terrainPlaneSize/2));
 
 		std::shared_ptr<MeshMaterial> material = std::make_shared<MeshMaterial>(textureShader, glm::vec3(0.5f, 0.7f, 0.3f), 8.0f);
 		std::shared_ptr<MeshMaterial> depth = std::make_shared<MeshMaterial>(shadowMapDepthShader, glm::vec3(0.5f, 0.7f, 0.3f), 8.0f);		
 
-		Mesh light = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0)), Mesh::createSphereMesh(12, 12, 300), material);
+		Mesh light = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0)), Mesh::createSphereMesh(12, 12, 30), material);
 
 		// Tree positions
 		//PossionDiskSampling treePositions = PossionDiskSampling(terrainPlaneSize, treeMaskPath, heightMapPath, terrainHeight, 450, 20);
@@ -742,7 +742,7 @@ bool move_character(GLFWwindow* window, Character* character, float deltaMovemen
 		if (!updateForward) {
 			leftStrafe *= 1.414f;
 		}
-		character->move(-forward * 5.0f, -leftStrafe * 5.0f, deltaMovement);
+		character->move(-forward * 35.0f, -leftStrafe * 35.0f, deltaMovement);
 		return true;
 	}
 	return false;
@@ -787,7 +787,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	_zoom -= float(yoffset) * 0.5f; //300.0f
+	_zoom -= float(yoffset) * 20.5f; //300.0f
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
