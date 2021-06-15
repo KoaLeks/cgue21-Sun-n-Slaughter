@@ -38,10 +38,10 @@ void main()
 		// max = 64, min = 1
 		// apply tess level to the corresponding outer-level parameter
 		// camera distance: 6000
-		float adTessLevel = mix( 24, 1, clamp(adDistance / 6000, 0, 1) );
-		float dcTessLevel = mix( 24, 1, clamp(dcDistance / 6000, 0, 1) );
-		float bcTessLevel = mix( 24, 1, clamp(bcDistance / 6000, 0, 1) );
-		float abTessLevel = mix( 24, 1, clamp(abDistance / 6000, 0, 1) );
+		float adTessLevel = mix( 24, 1, clamp(adDistance / 2000, 0, 1) );
+		float dcTessLevel = mix( 24, 1, clamp(dcDistance / 2000, 0, 1) );
+		float bcTessLevel = mix( 24, 1, clamp(bcDistance / 2000, 0, 1) );
+		float abTessLevel = mix( 24, 1, clamp(abDistance / 2000, 0, 1) );
 		
 		// average of the outer level
 		float innerTessLevel = (abTessLevel + adTessLevel + dcTessLevel + bcTessLevel) / 4;

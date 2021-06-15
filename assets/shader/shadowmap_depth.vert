@@ -12,7 +12,7 @@ void main()
 {
 	vec3 newPos = aPos;
 	if(isTerrain){
-		vec2 texCoord = aPos.xz / scaleXZ - 0.5;
+		vec2 texCoord = aPos.xz / scaleXZ;
 		float height = texture(heightMap, texCoord).r * scaleY;
 		newPos.y = height;
 	}

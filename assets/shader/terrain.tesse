@@ -8,7 +8,6 @@ in vec4 tcFragPosLightSpace[];
 uniform mat4 modelMatrix;
 uniform mat4 viewProjMatrix;
 uniform sampler2D heightMap;
-uniform sampler2D normalMap;
 uniform float scaleXZ;
 uniform float scaleY;
 
@@ -34,11 +33,6 @@ void main()
     float height = texture(heightMap, textureCoordinate).r * scaleY;
     vec4 newPos = vec4(position.x, height, position.z, 1.0);
 	mat4 mvp = viewProjMatrix * modelMatrix;
-
-    // normal map texture
-    // .rbg -> y and z axis are swapped
-    //vec3 normal = texture(normalMap, teTextureCoordinate).rbg;
-    //teNormal = normalize(normal * 2.0 - 1.0); 
 
     const ivec3 off = ivec3(-0.1, 0, 0.1);
 

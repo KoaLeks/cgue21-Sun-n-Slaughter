@@ -100,11 +100,10 @@ float shadowCalculation(vec4 fragPosLightSpace) {
     vec3 shadowCoord = fragPosLightSpace.xyz / fragPosLightSpace.w;
     
     // transform to [0,1] range
-    shadowCoord = shadowCoord * 0.5 + 0.5;
-
+    shadowCoord = 0.5 * (shadowCoord + 1.0);
 
     vec4 lightDir = vec4(lightPos - vec3(0), 1);
-    float bias = max(0.005 * (1.0 - dot(teNormal, lightDir)), 0.001); 
+    float bias = max(0.005 * (1.0 - dot(teNormal, lightDir)), 0.003); 
     float shadow = 0.0;     
     vec2 texelSize = 1 / vec2(textureSize(shadowMap, 0));
 	
