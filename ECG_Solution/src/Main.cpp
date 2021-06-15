@@ -29,7 +29,6 @@
 #include "SimulationCallback.h"
 #include "PlayerCamera.h"
 #include "Scene.h"
-#include "LightMapper.h"
 #include "FrustumG.h"
 using namespace physx;
 /* GAMEPLAY END */
@@ -81,7 +80,6 @@ static float _zoom = -6.0f;
 double lastxpos = 0;
 double lastypos = 0;
 float _brightness = 0;
-static bool _lightmap = true;
 int _selectedFPS = 60;
 static bool _limitFPS = true;
 bool _winCondition = false;
@@ -315,8 +313,6 @@ int main(int argc, char** argv)
 		std::shared_ptr<MeshMaterial> material = std::make_shared<MeshMaterial>(textureShader, glm::vec3(0.5f, 0.7f, 0.3f), 8.0f);
 		std::shared_ptr<MeshMaterial> depth = std::make_shared<MeshMaterial>(shadowMapDepthShader, glm::vec3(0.5f, 0.7f, 0.3f), 8.0f);		
 
-		Mesh light = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0)), Mesh::createSphereMesh(12, 12, 30), material);
-
 		// Tree positions
 		//PossionDiskSampling treePositions = PossionDiskSampling(terrainPlaneSize, treeMaskPath, heightMapPath, terrainHeight, 450, 20);
 		//std::vector<glm::vec3> points = treePositions.getPoints();
@@ -383,13 +379,6 @@ int main(int argc, char** argv)
 		/* --------------------------------------------- */
 		// Init Light mapping
 		/* --------------------------------------------- */
-		PointLight pointL1(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.25f, 4.0f, 0.8f), glm::vec3(0.5f, 0.5f, 0.5f));
-		PointLight pointL2(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(-10.0f, -9.0f, -175.0), glm::vec3(0.5f, 0.3f, 0.1f));
-		DirectionalLight dirL(glm::vec3(0), glm::vec3(0));
-
-		GLuint lightmapShader = getComputeShader("assets/shader/lightmapper.comp");
-		std::shared_ptr<LightMapper> lightMapper = std::make_shared<LightMapper>(lightmapShader);
-		lightMapper->init(pointL1, pointL2);
 
 		// Initialize camera
 		PlayerCamera playerCamera(fov, float(window_width) / float(window_height), nearZ, farZ);
@@ -399,7 +388,7 @@ int main(int argc, char** argv)
 		viewFrustum->setCamDef(getWorldPosition(camModel), getLookVector(camModel), getUpVector(camModel));
 
 		//std::shared_ptr<Shader> textureShader = std::make_shared<Shader>("texture.vert", "texture.frag");
-		Scene level(textureShader, "assets/models/cook_map_big.obj", gPhysicsSDK, gCooking, gScene, mMaterial, gManager, lightMapper, viewFrustum);
+		Scene level(textureShader, "assets/models/cook_map_detailed.obj", gPhysicsSDK, gCooking, gScene, mMaterial, gManager, viewFrustum);
 		simulatonCallback->setWinConditionActor(level.getWinConditionActor());
 
 		// Init character
@@ -425,12 +414,6 @@ int main(int argc, char** argv)
 		//particleShader.init();
 		/* GAMEPLAY END */
 
-
-		// Render loop
-		//float t = float(glfwGetTime());
-		//float dt = 0.0f;
-		//float t_sum = 0.0f;
-		//double mouse_x, mouse_y;
 
 		/* GAMEPLAY */
 		double xpos = 0;
@@ -493,18 +476,6 @@ int main(int argc, char** argv)
 
 			// Set per-frame uniforms
 			setPerFrameUniformsNormal(textureShader.get(), playerCamera, pointL);
-			
-			// Moving light
-			//pointL.position.x = cos(t / 2) * terrainPlane;
-			//if (sin(t / 2) > 0) {
-			//	pointL.position.y = sin(t / 2) * terrainPlane / 2;
-			//}
-			//else
-			//{
-			//	pointL.position.y = -sin(t / 2) * terrainPlane / 2;
-			//}
-			light.resetModelMatrix();
-			light.transform(glm::translate(glm::mat4(1), glm::vec3(pointL.position.x, pointL.position.y, pointL.position.z)));
 
 			/* GAMEPLAY */
 			// update character and camera position
@@ -580,9 +551,6 @@ int main(int argc, char** argv)
 			//	treePlaceholder.draw();
 			//	
 			//}
-
-			// Render sun pos
-			light.draw();
 
 			// Render flares
 			flareMangaer.render(playerCamera.getViewProjectionMatrix(), pointL.position, brightness);
@@ -686,10 +654,8 @@ void setPerFrameUniformsNormal(Shader* shader, PlayerCamera& camera, PointLight&
 	shader->use();
 	shader->setUniform("viewProjMatrix", camera.getViewProjectionMatrix());
 	shader->setUniform("camera_world", camera.getPosition());
-	shader->setUniform("scaleXZ", 10000.f);
-	shader->setUniform("scaleY", 2000.f);
-	//shader->setUniform("dirL.color", glm::vec3(1));
-	//shader->setUniform("dirL.direction", glm::vec3(1));
+	shader->setUniform("scaleXZ", 1024.f);
+	shader->setUniform("scaleY", 250.f);
 	shader->setUniform("pointL.color", pointL.color);
 	shader->setUniform("pointL.position", pointL.position);
 	shader->setUniform("pointL.attenuation", pointL.attenuation);
@@ -842,9 +808,6 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		_wireframe = !_wireframe;
 		glPolygonMode(GL_FRONT_AND_BACK, _wireframe ? GL_LINE : GL_FILL);
 		break;
-	//case GLFW_KEY_F4:
-	//	_lightmap = !_lightmap;
-	//	break;
 	case GLFW_KEY_F8:
 		_checkFrustum = !_checkFrustum;
 		break;
