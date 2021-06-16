@@ -20,6 +20,7 @@ protected:
 	std::shared_ptr<Shader> _shader;
 	std::shared_ptr<Material> _missingMaterial;
 	std::shared_ptr<Node> loadScene(string path);
+	std::shared_ptr<Node> loadScene(string path, float scale, physx::PxExtendedVec3 position);
 	std::string _directory;
 	physx::PxPhysics* _physics;
 	physx::PxCooking* _cooking;
@@ -58,7 +59,7 @@ private:
 	std::string floorPrefix = "cook_";
 	std::string enemyPrefix = "mob_";
 	std::string winConditionPrefeix = "cook_endWall";
-	std::shared_ptr<Node> processNode(aiNode *node, const aiScene *scene, int level);
+	std::shared_ptr<Node> processNode(aiNode *node, const aiScene *scene, int level, bool transformation, float scale, physx::PxExtendedVec3 position);
 	void processMesh(aiMesh *mesh, const aiScene *scene, bool cookMesh, bool isEnemy, bool isWinCondition, std::shared_ptr<Node> newNode);
 	std::shared_ptr<Material> loadMaterialTextures(aiMaterial *mat, aiTextureType type,
 		string typeName);

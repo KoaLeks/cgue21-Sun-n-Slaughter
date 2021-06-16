@@ -29,11 +29,22 @@ std::shared_ptr<Node> Scene::loadScene(string path) {
 		return nullptr;
 	}
 	//directory = path.substr(0, path.find_last_of('/'));
-	return processNode(scene->mRootNode, scene, 0);
+	return processNode(scene->mRootNode, scene, 0, false, 0, physx::PxExtendedVec3(0, 0, 0));
 }
 
+std::shared_ptr<Node> Scene::loadScene(string path, float scale, physx::PxExtendedVec3 position) {
+	Assimp::Importer import;
+	const aiScene* scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
 
-std::shared_ptr<Node> Scene::processNode(aiNode* node, const aiScene* scene, int level) {
+	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
+		std::cout << "ERROR::ASSIMP::" << import.GetErrorString() << std::endl;
+		return nullptr;
+	}
+	//directory = path.substr(0, path.find_last_of('/'));
+	return processNode(scene->mRootNode, scene, 0, true, scale, position);
+}
+
+std::shared_ptr<Node> Scene::processNode(aiNode* node, const aiScene* scene, int level, bool transformation, float scale, physx::PxExtendedVec3 position) {
 	// process all the node's meshes (if any)
 	std::string tmpnam = node->mName.C_Str();
 	bool isEnemy = false;
@@ -57,6 +68,11 @@ std::shared_ptr<Node> Scene::processNode(aiNode* node, const aiScene* scene, int
 	}
 	newNode->name = tmpnam;
 
+	if (transformation) {
+		newNode->setPosition(position);
+		newNode->transform(glm::scale(glm::mat4(1), glm::vec3(scale)));
+	}
+
 	for (unsigned int i = 0; i < node->mNumMeshes; i++) {
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
 		processMesh(mesh, scene, cookMesh, isEnemy, isWinCondition, newNode);
@@ -71,7 +87,7 @@ std::shared_ptr<Node> Scene::processNode(aiNode* node, const aiScene* scene, int
 	level++;
 	// then do the same for each of its children
 	for (unsigned int i = 0; i < node->mNumChildren; i++) {
-		newNode->addChild(processNode(node->mChildren[i], scene, level));
+		newNode->addChild(processNode(node->mChildren[i], scene, level, transformation, scale, position));
 	}
 
 	return newNode;
@@ -376,8 +392,8 @@ physx::PxRigidActor* Scene::getWinConditionActor() {
 
 void Scene::addStaticObject(string path, physx::PxExtendedVec3 position, float scale)
 {
-	std::shared_ptr<Node> newNode = loadScene(path);
-	nodes[nodes.size() - 1]->setPosition(position);
-	nodes[nodes.size() - 1]->transform(glm::scale(glm::mat4(1), glm::vec3(scale)));
+	std::shared_ptr<Node> newNode = loadScene(path, scale, position);
+	//nodes[nodes.size() - 1]->setPosition(position);
+	//nodes[nodes.size() - 1]->transform(glm::scale(glm::mat4(1), glm::vec3(scale)));
 
 }
