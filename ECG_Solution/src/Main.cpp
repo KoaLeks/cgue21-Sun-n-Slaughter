@@ -48,6 +48,7 @@ bool move_character(GLFWwindow* window, Character* character, float deltaMovemen
 /* GAMEPLAY END */
 void setPerFrameUniformsNormal(Shader* shader, PlayerCamera& camera, PointLight& pointL);
 void setPerFrameUniforms(TerrainShader* shader, PlayerCamera& camera, PointLight& pointL);
+float getYPosition(float x, float z);
 void renderQuad();
 
 
@@ -83,8 +84,13 @@ int _selectedFPS = 60;
 static bool _limitFPS = true;
 bool _winCondition = false;
 bool _hitDetection = false;
-
 float brightness = 1.0;
+int imgWidth, imgHeight, nrChannels;
+unsigned char* data;
+
+int terrainPlaneSize = 1024;
+int terrainHeight = 250;
+float lightDistance = 20000.0f;
 /* GAMEPLAY END */
 
 /* --------------------------------------------- */
@@ -287,9 +293,6 @@ int main(int argc, char** argv)
 			"assets/shader/terrain.frag"
 			);
 
-		int terrainPlaneSize = 1024; // statt 10000
-		int terrainHeight = 250;
-		float lightDistance = 20000.0f;
 
 		// Create Terrain
 		// heightmap muss ein vielfaches von 20 (oder 2^n?) sein, ansonsten wirds nicht korrekt abgebildet
@@ -316,9 +319,6 @@ int main(int argc, char** argv)
 		// Tree positions
 		PossionDiskSampling treePositions = PossionDiskSampling(terrainPlaneSize, treeMaskPath, heightMapPath, terrainHeight, 80, 20);
 		std::vector<glm::vec3> points = treePositions.getPoints();
-		Mesh treePlaceholder = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0)), Mesh::createSphereMesh(12, 12, 15), material);
-		//Mesh treePlaceholderDepth = Mesh(glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0)), Mesh::createSphereMesh(12, 12, 150), depth);
-
 
 		// GUI
 		std::vector<GuiTexture> guis;
@@ -390,12 +390,19 @@ int main(int argc, char** argv)
 		//std::shared_ptr<Shader> textureShader = std::make_shared<Shader>("texture.vert", "texture.frag");
 		Scene level(textureShader, "assets/models/cook_map_detailed.obj", gPhysicsSDK, gCooking, gScene, mMaterial, gManager, viewFrustum);
 		simulatonCallback->setWinConditionActor(level.getWinConditionActor());
+
+		// Load heightmap
+		data = stbi_load(heightMapPath, &imgWidth, &imgHeight, &nrChannels, 4);
 		
+		// Load trees
 		for (glm::vec3 pos : points)
 		{
 			pos.z -= terrainPlaneSize;
 			level.addStaticObject("assets/models/trees/cook_baum.obj", PxExtendedVec3(pos.x, pos.y, pos.z), 5);
 		}
+
+		// Load sunbed
+		level.addStaticObject("assets/models/sunbed.obj", PxExtendedVec3(375, getYPosition(375, -220) - 5, -220), 5);
 
 		// Init character
 		GLuint animateShader = getComputeShader("assets/shader/animator.comp");
@@ -612,6 +619,14 @@ int main(int argc, char** argv)
 	glfwTerminate();
 
 	return EXIT_SUCCESS;
+}
+
+float getYPosition(float x, float z) {
+
+	glm::vec2 pixelPos = glm::vec2(floor(x / terrainPlaneSize * imgWidth), floor(-(z) / terrainPlaneSize * imgHeight));
+	unsigned char* value = data + 4 * int((pixelPos.y * imgWidth + pixelPos.x));
+	float redChannel = float(value[0]) / 255;
+	return redChannel * terrainHeight;
 }
 
 // renderQuad() renders a 1x1 XY quad in NDC
