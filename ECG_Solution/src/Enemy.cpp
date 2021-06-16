@@ -75,3 +75,10 @@ void Enemy::updateCharacter(float dt) {
 	this->updateRotation(30.0f * dt);
 	this->move(1.8f * dt, 0.0f, dt);
 }
+
+void Enemy::chase(glm::vec3 playerPos, float dt) {
+	glm::vec3 enemyPos = glm::vec3(_pxChar->getPosition().x, _pxChar->getPosition().y, _pxChar->getPosition().z);
+	float angle = std::acos(glm::dot(playerPos, enemyPos) / glm::length(playerPos) * glm::length(enemyPos));
+	this->updateRotation(angle * dt);
+	this->move(1.5f * dt, 1.5f, dt);
+}

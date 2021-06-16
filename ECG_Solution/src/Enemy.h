@@ -26,4 +26,5 @@ public:
 	void move(float forward, float strafeLeft, float dt);
 	void updateRotation(float angle);
 	void updateCharacter(float dt);
+	void chase(glm::vec3 playerPos, float dt);
 };

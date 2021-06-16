@@ -496,7 +496,7 @@ int main(int argc, char** argv)
 
 			// update all enemy positions and deaths
 			for (size_t i = 0; i < level.enemies.size(); i++) {
-				level.enemies[i]->updateCharacter(dt);
+				level.enemies[i]->chase(character.getPosition(), dt);
 			}
 
 			// update view frustum
