@@ -71,6 +71,7 @@ std::shared_ptr<Node> Scene::processNode(aiNode* node, const aiScene* scene, int
 	if (transformation) {
 		newNode->setPosition(position);
 		newNode->transform(glm::scale(glm::mat4(1), glm::vec3(scale)));
+
 	}
 
 	for (unsigned int i = 0; i < node->mNumMeshes; i++) {
@@ -396,4 +397,18 @@ void Scene::addStaticObject(string path, physx::PxExtendedVec3 position, float s
 	//nodes[nodes.size() - 1]->setPosition(position);
 	//nodes[nodes.size() - 1]->transform(glm::scale(glm::mat4(1), glm::vec3(scale)));
 
+}
+
+void Scene::addEnemy(physx::PxExtendedVec3 position, float scale) {
+	if (enemyMaster == nullptr) {
+		Assimp::Importer import;
+		enemyMaster = import.ReadFile("assets/models/Cubex.obj", aiProcess_Triangulate | aiProcess_FlipUVs);
+
+		if (!enemyMaster || enemyMaster->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !enemyMaster->mRootNode) {
+			std::cout << "ERROR::ASSIMP::" << import.GetErrorString() << std::endl;
+			return;
+		}
+	}
+
+	processNode(enemyMaster->mRootNode, enemyMaster, 0, true, scale, position);
 }

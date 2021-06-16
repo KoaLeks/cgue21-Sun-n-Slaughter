@@ -75,7 +75,7 @@ static bool _mouseSelect = false;
 static bool _doBasicAttack = false;
 static bool _doStrongAttack = false;
 static bool _doAreacAttack = false;
-static bool _checkFrustum = true;
+static bool _checkFrustum = false;
 static bool _showHelp = false;
 static float _zoom = -6.0f;
 double lastxpos = 0;
@@ -404,6 +404,9 @@ int main(int argc, char** argv)
 		// Load sunbed
 		level.addStaticObject("assets/models/sunbed.obj", PxExtendedVec3(375, getYPosition(375, -220) - 5, -220), 5);
 
+		// TEST ENEMY
+		//level.addEnemy(physx::PxExtendedVec3(terrainPlaneSize / 2, getYPosition(terrainPlaneSize / 2, -terrainPlaneSize / 2) + 20, -terrainPlaneSize / 2), 1);
+
 		// Init character
 		GLuint animateShader = getComputeShader("assets/shader/animator.comp");
 		Character character(textureShader, "assets/models/main_char_animated_larry_4.obj", gPhysicsSDK, gCooking, gScene, mMaterial, pxChar, &playerCamera, gManager, animateShader, viewFrustum);
@@ -415,7 +418,7 @@ int main(int argc, char** argv)
 		character.init();
 
 		//Relocate the character & camera
-		character.relocate(physx::PxExtendedVec3(terrainPlaneSize / 2, 100.0f, -terrainPlaneSize / 2));
+		character.relocate(physx::PxExtendedVec3(terrainPlaneSize / 2, getYPosition(terrainPlaneSize / 2, -terrainPlaneSize / 2) + 5, -terrainPlaneSize / 2));
 
 
 		///* --------------------------------------------- */
