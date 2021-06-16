@@ -398,7 +398,7 @@ int main(int argc, char** argv)
 		for (glm::vec3 pos : points)
 		{
 			pos.z -= terrainPlaneSize;
-			level.addStaticObject("assets/models/trees/cook_baum.obj", PxExtendedVec3(pos.x, pos.y, pos.z), 5);
+			level.addStaticObject("assets/models/trees/palmTree.obj", PxExtendedVec3(pos.x, pos.y, pos.z), 5);
 		}
 
 		// Load sunbed
