@@ -317,7 +317,7 @@ int main(int argc, char** argv)
 		std::shared_ptr<MeshMaterial> depth = std::make_shared<MeshMaterial>(shadowMapDepthShader, glm::vec3(0.5f, 0.7f, 0.3f), 8.0f);		
 
 		// Tree positions
-		PossionDiskSampling treePositions = PossionDiskSampling(terrainPlaneSize, treeMaskPath, heightMapPath, terrainHeight, 80, 20);
+		PossionDiskSampling treePositions = PossionDiskSampling(terrainPlaneSize, treeMaskPath, heightMapPath, terrainHeight, 50, 10);
 		std::vector<glm::vec3> points = treePositions.getPoints();
 
 		// GUI
