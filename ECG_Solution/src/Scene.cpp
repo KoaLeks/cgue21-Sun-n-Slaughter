@@ -29,7 +29,7 @@ std::shared_ptr<Node> Scene::loadScene(string path) {
 		return nullptr;
 	}
 	//directory = path.substr(0, path.find_last_of('/'));
-	return processNode(scene->mRootNode, scene, 0, false, 0, physx::PxExtendedVec3(0, 0, 0));
+	return processNode(scene->mRootNode, scene, 0, false, 1, physx::PxExtendedVec3(0, 0, 0));
 }
 
 std::shared_ptr<Node> Scene::loadScene(string path, float scale, physx::PxExtendedVec3 position) {
@@ -76,7 +76,7 @@ std::shared_ptr<Node> Scene::processNode(aiNode* node, const aiScene* scene, int
 
 	for (unsigned int i = 0; i < node->mNumMeshes; i++) {
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-		processMesh(mesh, scene, cookMesh, isEnemy, isWinCondition, newNode);
+		processMesh(mesh, scene, cookMesh, isEnemy, isWinCondition, newNode, scale, position);
 	}
 
 	if (level == 1 && node->mNumMeshes > 0) {
@@ -95,7 +95,7 @@ std::shared_ptr<Node> Scene::processNode(aiNode* node, const aiScene* scene, int
 }
 
 
-void Scene::processMesh(aiMesh* mesh, const aiScene* scene, bool cookMesh, bool isEnemy, bool isWinCondition, std::shared_ptr<Node> newNode) {
+void Scene::processMesh(aiMesh* mesh, const aiScene* scene, bool cookMesh, bool isEnemy, bool isWinCondition, std::shared_ptr<Node> newNode, float scale, physx::PxExtendedVec3 position) {
 	GeometryData data;
 	glm::vec3 maxVert(-300.0f, -300.0f, -300.0f);
 	glm::vec3 minVert(300.0f, 300.0f, 300.0f);
@@ -181,9 +181,9 @@ void Scene::processMesh(aiMesh* mesh, const aiScene* scene, bool cookMesh, bool 
 		physx::PxDefaultMemoryInputData readBuffer(writeBuffer.getData(), writeBuffer.getSize());
 		physx::PxTriangleMesh* triangleMesh = _physics->createTriangleMesh(readBuffer);
 
-		physx::PxTransform floorPos = physx::PxTransform(physx::PxVec3(0.0f, 0.0f, 0.0f));
+		physx::PxTransform floorPos = physx::PxTransform(/*physx::PxVec3(0.0f, 0.0f, 0.0f)*/position.x, position.y, position.z);
 		meshActor = _physics->createRigidStatic(floorPos);
-		physx::PxTriangleMeshGeometry geom(triangleMesh);
+		physx::PxTriangleMeshGeometry geom(triangleMesh, physx::PxMeshScale(scale));
 		physx::PxShape* floorShape = physx::PxRigidActorExt::createExclusiveShape(*meshActor, geom, *_material);
 		_scene->addActor(*meshActor);
 		if (isWinCondition) {

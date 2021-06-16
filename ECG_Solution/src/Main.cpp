@@ -402,7 +402,7 @@ int main(int argc, char** argv)
 		}
 
 		// Load sunbed
-		level.addStaticObject("assets/models/sunbed.obj", PxExtendedVec3(375, getYPosition(375, -220) - 5, -220), 5);
+		level.addStaticObject("assets/models/sunbed.obj", PxExtendedVec3(375, getYPosition(375, -220) - 5, -220), 3);
 
 		// TEST ENEMY
 		//level.addEnemy(physx::PxExtendedVec3(terrainPlaneSize / 2, getYPosition(terrainPlaneSize / 2, -terrainPlaneSize / 2) + 20, -terrainPlaneSize / 2), 1);
@@ -418,7 +418,7 @@ int main(int argc, char** argv)
 		character.init();
 
 		//Relocate the character & camera
-		character.relocate(physx::PxExtendedVec3(terrainPlaneSize / 2, getYPosition(terrainPlaneSize / 2, -terrainPlaneSize / 2) + 5, -terrainPlaneSize / 2));
+		character.relocate(physx::PxExtendedVec3(370, 104,-223));
 
 
 		///* --------------------------------------------- */

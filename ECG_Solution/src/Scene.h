@@ -37,7 +37,7 @@ protected:
 public:
 	Scene(std::shared_ptr<Shader> shader, char *path, physx::PxPhysics* physics, physx::PxCooking* cooking, physx::PxScene* scene, physx::PxMaterial* material, physx::PxControllerManager* manager, std::shared_ptr<FrustumG> viewFrustum)
 		: _shader(shader), _physics(physics), _cooking(cooking), _scene(scene), _material(material), _manager(manager), _viewFrustum(viewFrustum) {
-		_missingMaterial = std::make_shared<TextureMaterial>(_shader, glm::vec3(1.0f, 0.0f, 0.0f), 1.0f, "assets/textures/missing.png");
+		_missingMaterial = std::make_shared<TextureMaterial>(_shader, glm::vec3(1.0f, 0.0f, 0.0f), 1.0f, "assets/textures/snow.jpg"/*"assets/textures/missing.png"*/);
 		_directory = "assets/textures/";
 		_drawnObjects = 0;
 		loadScene(path);
@@ -63,7 +63,7 @@ private:
 	std::string enemyPrefix = "mob_";
 	std::string winConditionPrefeix = "cook_endWall";
 	std::shared_ptr<Node> processNode(aiNode *node, const aiScene *scene, int level, bool transformation, float scale, physx::PxExtendedVec3 position);
-	void processMesh(aiMesh *mesh, const aiScene *scene, bool cookMesh, bool isEnemy, bool isWinCondition, std::shared_ptr<Node> newNode);
+	void processMesh(aiMesh *mesh, const aiScene *scene, bool cookMesh, bool isEnemy, bool isWinCondition, std::shared_ptr<Node> newNode, float scale, physx::PxExtendedVec3 position);
 	std::shared_ptr<Material> loadMaterialTextures(aiMaterial *mat, aiTextureType type,
 		string typeName);
 };
