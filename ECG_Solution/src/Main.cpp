@@ -195,12 +195,12 @@ int main(int argc, char** argv)
 	PxFoundation* gFoundation = nullptr;
 	gFoundation = PxCreateFoundation(PX_FOUNDATION_VERSION, gDefaultAllocatorCallback, gDefaultErrorCallback);
 	
-	PxPvd*  pvd = PxCreatePvd(*gFoundation);
-	PxPvdTransport* transport = PxDefaultPvdSocketTransportCreate("localhost", 5425, 10000);
-	pvd->connect(*transport, PxPvdInstrumentationFlag::eALL);
+	//PxPvd*  pvd = PxCreatePvd(*gFoundation);
+	//PxPvdTransport* transport = PxDefaultPvdSocketTransportCreate("localhost", 5425, 10000);
+	//pvd->connect(*transport, PxPvdInstrumentationFlag::eALL);
 	
 	PxPhysics* gPhysicsSDK = nullptr;
-	gPhysicsSDK = PxCreatePhysics(PX_PHYSICS_VERSION, *gFoundation, PxTolerancesScale(), true, pvd);
+	gPhysicsSDK = PxCreatePhysics(PX_PHYSICS_VERSION, *gFoundation, PxTolerancesScale(), true/*, pvd*/);
 	if (gPhysicsSDK == nullptr) {
 		EXIT_WITH_ERROR("Failed to init physx")
 	}
@@ -608,8 +608,8 @@ int main(int argc, char** argv)
 	gScene->release();
 	gPhysicsSDK->release();
 	gFoundation->release();
-	pvd->release();
-	transport->release();
+	//pvd->release();
+	//transport->release();
 	FreeImage_DeInitialise();
 	/* GAMEPLAY END */
 	destroyFramework();
