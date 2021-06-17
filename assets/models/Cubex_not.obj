@@ -1,7 +1,7 @@
 # Blender v2.92.0 OBJ File: 'Cubex_not.blend'
 # www.blender.org
 mtllib Cubex_not.mtl
-o mob_enemy
+o enemy
 v 0.059875 0.513628 0.094782
 v 0.045558 0.514195 0.098250
 v 0.035077 0.515742 0.107726

@@ -59,24 +59,23 @@ std::shared_ptr<Node> Scene::processNode(aiNode* node, const aiScene* scene, int
 	}
 
 	bool cookMesh = false;
-	bool isWinCondition = false;
+	//bool isWinCondition = false;
 	if (!tmpnam.compare(0, floorPrefix.size(), floorPrefix)) {
 		cookMesh = true;
-		if (!tmpnam.compare(0, winConditionPrefeix.size(), winConditionPrefeix)) {
-			isWinCondition = true;
-		}
+		//if (!tmpnam.compare(0, winConditionPrefeix.size(), winConditionPrefeix)) {
+		//	isWinCondition = true;
+		//}
 	}
 	newNode->name = tmpnam;
 
 	if (transformation) {
 		newNode->setPosition(position);
 		newNode->transform(glm::scale(glm::mat4(1), glm::vec3(scale)));
-
 	}
 
 	for (unsigned int i = 0; i < node->mNumMeshes; i++) {
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-		processMesh(mesh, scene, cookMesh, isEnemy, isWinCondition, newNode, scale, position);
+		processMesh(mesh, scene, cookMesh, isEnemy/*, isWinCondition*/, newNode, scale, position);
 	}
 
 	if (level == 1 && node->mNumMeshes > 0) {
@@ -95,7 +94,7 @@ std::shared_ptr<Node> Scene::processNode(aiNode* node, const aiScene* scene, int
 }
 
 
-void Scene::processMesh(aiMesh* mesh, const aiScene* scene, bool cookMesh, bool isEnemy, bool isWinCondition, std::shared_ptr<Node> newNode, float scale, physx::PxExtendedVec3 position) {
+void Scene::processMesh(aiMesh* mesh, const aiScene* scene, bool cookMesh, bool isEnemy/*, bool isWinCondition*/, std::shared_ptr<Node> newNode, float scale, physx::PxExtendedVec3 position) {
 	GeometryData data;
 	glm::vec3 maxVert(-300.0f, -300.0f, -300.0f);
 	glm::vec3 minVert(300.0f, 300.0f, 300.0f);
@@ -186,9 +185,9 @@ void Scene::processMesh(aiMesh* mesh, const aiScene* scene, bool cookMesh, bool 
 		physx::PxTriangleMeshGeometry geom(triangleMesh, physx::PxMeshScale(scale));
 		physx::PxShape* floorShape = physx::PxRigidActorExt::createExclusiveShape(*meshActor, geom, *_material);
 		_scene->addActor(*meshActor);
-		if (isWinCondition) {
-			winConditionActor = meshActor;
-		}
+		//if (isWinCondition) {
+		//	winConditionActor = meshActor;
+		//}
 	}
 	else if (isEnemy) {
 		physx::PxBoxControllerDesc bDesc;
@@ -387,9 +386,9 @@ void Character::animate(int step) {
 	nodes[0]->draw();
 }
 
-physx::PxRigidActor* Scene::getWinConditionActor() {
-	return winConditionActor;
-}
+//physx::PxRigidActor* Scene::getWinConditionActor() {
+//	return winConditionActor;
+//}
 
 void Scene::addStaticObject(string path, physx::PxExtendedVec3 position, float scale)
 {

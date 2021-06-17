@@ -29,7 +29,7 @@ protected:
 	physx::PxControllerManager* _manager;
 	float _angle = 0.0f;
 	std::shared_ptr<FrustumG> _viewFrustum;
-	physx::PxRigidActor* winConditionActor;
+	//physx::PxRigidActor* winConditionActor;
 	unsigned int _drawnObjects;
 
 	const aiScene* enemyMaster;
@@ -49,7 +49,7 @@ public:
 	std::vector<std::shared_ptr<Enemy>> enemies;
 	std::shared_ptr<Node> getNodeWithName(std::string name);
 	std::shared_ptr<Enemy> getEnemyWithActor(physx::PxRigidActor* actor);
-	physx::PxRigidActor* getWinConditionActor();
+	//physx::PxRigidActor* getWinConditionActor();
 
 	unsigned int getDrawnObjects() {
 		return _drawnObjects;
@@ -61,9 +61,9 @@ public:
 private:
 	std::string floorPrefix = "cook_";
 	std::string enemyPrefix = "mob_";
-	std::string winConditionPrefeix = "cook_endWall";
+	//std::string winConditionPrefeix = "cook_endWall";
 	std::shared_ptr<Node> processNode(aiNode *node, const aiScene *scene, int level, bool transformation, float scale, physx::PxExtendedVec3 position);
-	void processMesh(aiMesh *mesh, const aiScene *scene, bool cookMesh, bool isEnemy, bool isWinCondition, std::shared_ptr<Node> newNode, float scale, physx::PxExtendedVec3 position);
+	void processMesh(aiMesh *mesh, const aiScene *scene, bool cookMesh, bool isEnemy/*, bool isWinCondition*/, std::shared_ptr<Node> newNode, float scale, physx::PxExtendedVec3 position);
 	std::shared_ptr<Material> loadMaterialTextures(aiMaterial *mat, aiTextureType type,
 		string typeName);
 };
