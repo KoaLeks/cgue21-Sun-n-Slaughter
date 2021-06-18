@@ -191,7 +191,7 @@ void Scene::processMesh(aiMesh* mesh, const aiScene* scene, bool cookMesh, bool 
 	}
 	else if (isEnemy) {
 		physx::PxBoxControllerDesc bDesc;
-		bDesc.position = physx::PxExtendedVec3(middlePos.x, middlePos.y, middlePos.z);
+		bDesc.position = physx::PxExtendedVec3(position.x, position.y, position.z);
 		bDesc.contactOffset = 0.05f;
 		bDesc.halfHeight = lenVec.y / 2.0f;
 		bDesc.halfForwardExtent = lenVec.z / 2.0f;
@@ -399,15 +399,15 @@ void Scene::addStaticObject(string path, physx::PxExtendedVec3 position, float s
 }
 
 void Scene::addEnemy(physx::PxExtendedVec3 position, float scale) {
-	if (enemyMaster == nullptr) {
+	//if (enemyMaster == nullptr) {
 		Assimp::Importer import;
-		enemyMaster = import.ReadFile("assets/models/Cubex.obj", aiProcess_Triangulate | aiProcess_FlipUVs);
+		const aiScene* enemyMasterX = import.ReadFile("assets/models/Cubex_notMob.obj", aiProcess_Triangulate | aiProcess_FlipUVs);
 
-		if (!enemyMaster || enemyMaster->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !enemyMaster->mRootNode) {
+		if (!enemyMasterX || enemyMasterX->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !enemyMasterX->mRootNode) {
 			std::cout << "ERROR::ASSIMP::" << import.GetErrorString() << std::endl;
 			return;
 		}
-	}
+//	}
 
-	processNode(enemyMaster->mRootNode, enemyMaster, 0, true, scale, position);
+	processNode(enemyMasterX->mRootNode, enemyMasterX, 0, true, scale, position);
 }

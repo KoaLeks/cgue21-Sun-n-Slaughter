@@ -195,12 +195,12 @@ int main(int argc, char** argv)
 	PxFoundation* gFoundation = nullptr;
 	gFoundation = PxCreateFoundation(PX_FOUNDATION_VERSION, gDefaultAllocatorCallback, gDefaultErrorCallback);
 	
-	//PxPvd*  pvd = PxCreatePvd(*gFoundation);
-	//PxPvdTransport* transport = PxDefaultPvdSocketTransportCreate("localhost", 5425, 10000);
-	//pvd->connect(*transport, PxPvdInstrumentationFlag::eALL);
+	PxPvd*  pvd = PxCreatePvd(*gFoundation);
+	PxPvdTransport* transport = PxDefaultPvdSocketTransportCreate("localhost", 5425, 10000);
+	pvd->connect(*transport, PxPvdInstrumentationFlag::eALL);
 	
 	PxPhysics* gPhysicsSDK = nullptr;
-	gPhysicsSDK = PxCreatePhysics(PX_PHYSICS_VERSION, *gFoundation, PxTolerancesScale(), true/*, pvd*/);
+	gPhysicsSDK = PxCreatePhysics(PX_PHYSICS_VERSION, *gFoundation, PxTolerancesScale(), true, pvd);
 	if (gPhysicsSDK == nullptr) {
 		EXIT_WITH_ERROR("Failed to init physx")
 	}
@@ -231,7 +231,7 @@ int main(int argc, char** argv)
 	cDesc.slopeLimit = 0.2f;
 	cDesc.upDirection = PxVec3(0, 1, 0);
 	cDesc.material = mMaterial;
-	cDesc.reportCallback = simulatonCallback;
+	//cDesc.reportCallback = simulatonCallback;
 	PxController* pxChar = gManager->createController(cDesc);
 
 	/* GAMEPLAY END */
@@ -405,11 +405,11 @@ int main(int argc, char** argv)
 		level.addStaticObject("assets/models/sunbed.obj", PxExtendedVec3(375, getYPosition(375, -220) - 5, -220), 3);
 
 		// TEST ENEMY
-		//level.addEnemy(physx::PxExtendedVec3(terrainPlaneSize / 2, getYPosition(terrainPlaneSize / 2, -terrainPlaneSize / 2) + 20, -terrainPlaneSize / 2), 1);
+		level.addEnemy(physx::PxExtendedVec3(500, getYPosition(500, -500) - 7, -500), 10);
 
 		// Init character
 		GLuint animateShader = getComputeShader("assets/shader/animator.comp");
-		Character character(textureShader, "assets/models/main_char_animated_larry_4.obj", gPhysicsSDK, gCooking, gScene, mMaterial, pxChar, &playerCamera, gManager, animateShader, viewFrustum);
+		Character character(textureShader, "assets/models/main_char_animated_larry_5.obj", gPhysicsSDK, gCooking, gScene, mMaterial, pxChar, &playerCamera, gManager, animateShader, viewFrustum);
 
 		// Adjust character to 3d person cam
 		for (int i = 0; i < character.nodes.size(); i++) {
@@ -498,9 +498,9 @@ int main(int argc, char** argv)
 			is_moving = move_character(window, &character, dt);
 
 			// update all enemy positions and deaths
-			for (size_t i = 0; i < level.enemies.size(); i++) {
-				level.enemies[i]->chase(character.getPosition(), dt);
-			}
+			//for (size_t i = 0; i < level.enemies.size(); i++) {
+			//	level.enemies[i]->chase(character.getPosition(), dt);
+			//}
 
 			// update view frustum
 			viewFrustum->doCheck = _checkFrustum;
@@ -608,8 +608,8 @@ int main(int argc, char** argv)
 	gScene->release();
 	gPhysicsSDK->release();
 	gFoundation->release();
-	//pvd->release();
-	//transport->release();
+	pvd->release();
+	transport->release();
 	FreeImage_DeInitialise();
 	/* GAMEPLAY END */
 	destroyFramework();

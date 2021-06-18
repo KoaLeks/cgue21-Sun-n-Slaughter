@@ -92,7 +92,7 @@ protected:
 public:
 	Character(std::shared_ptr<Shader> shader, char *path, physx::PxPhysics* physics, physx::PxCooking* cooking, physx::PxScene* scene, physx::PxMaterial* material, physx::PxController* c, PlayerCamera* camera, physx::PxControllerManager* manager, GLuint animationShader, std::shared_ptr<FrustumG> viewFrustum)
 		: Scene(shader, path, physics, cooking, scene, material, manager, viewFrustum), _pxController(c), _camera(camera), _animationShader(animationShader), order{ 2, 0, 2, 1 } {
-		move(0.0f, 0.0f, 0.0f);		// to set initial y
+		move(0.0f, 0.0f, 0.0f);	
 	}
 	~Character() {
 
