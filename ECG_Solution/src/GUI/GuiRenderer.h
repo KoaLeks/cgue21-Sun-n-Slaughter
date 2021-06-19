@@ -12,7 +12,7 @@ private:
 	Shader* shader;
 	glm::mat4 transformationMatrix;
 	Query query;
-	const float scale = 0.5;
+	const float scale = 1;
 	// total pixels = (scale / 16 * 1600)^2 * 4; (4x Multisample)
 	const float total_samples = pow(scale * 100, 2) * 4;
 	float occlusionFactor;
