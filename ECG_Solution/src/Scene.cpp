@@ -14,7 +14,7 @@ void Scene::draw() {
 void Scene::drawDepth(Shader* shader) {
 	_drawnObjects = 0;
 	for (unsigned int i = 0; i < nodes.size(); i++) {
-		if (nodes[i]->name.compare(0, floorPrefix.size(), floorPrefix)) {
+		if (nodes[i]->name.compare("cook_map_cook_Plane_Plane")) {
 			nodes[i]->drawDepth(shader);
 		}
 	}

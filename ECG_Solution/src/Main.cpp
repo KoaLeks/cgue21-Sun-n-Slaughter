@@ -46,8 +46,8 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 /* GAMEPLAY */
 bool move_character(GLFWwindow* window, Character* character, float deltaMovement);
 /* GAMEPLAY END */
-void setPerFrameUniformsNormal(Shader* shader, PlayerCamera& camera, PointLight& pointL);
-void setPerFrameUniforms(TerrainShader* shader, PlayerCamera& camera, PointLight& pointL);
+void setPerFrameUniformsNormal(Shader* shader, PlayerCamera& camera, PointLight& pointL, ShadowMap& shadowMap);
+void setPerFrameUniforms(TerrainShader* shader, PlayerCamera& camera, PointLight& pointL, ShadowMap& shadowMap);
 float getYPosition(float x, float z);
 void renderQuad();
 
@@ -84,6 +84,7 @@ int _selectedFPS = 60;
 static bool _limitFPS = true;
 bool _winCondition = false;
 bool _hitDetection = false;
+bool _showShadows = true;
 float brightness = 1.0;
 int imgWidth, imgHeight, nrChannels;
 unsigned char* data;
@@ -309,20 +310,21 @@ int main(int argc, char** argv)
 
 		// Initialize lights
 		//PointLight pointL(glm::vec3(.5f), glm::vec3(50000, lightDistance, 0), glm::vec3(0.08f, 0.03f, 0.01f));
-		PointLight pointL(glm::vec3(.5f), glm::vec3(-1500, 1700, -2500), glm::vec3(0.08f, 0.03f, 0.01f));
+		//PointLight pointL(glm::vec3(.5f), glm::vec3(-1500, 1700, -2500), glm::vec3(0.08f, 0.03f, 0.01f));
+		PointLight pointL(glm::vec3(.5f), glm::vec3(-900, 1020, -1500), glm::vec3(0.08f, 0.03f, 0.01f));
 
 		// Shadow Map
-		ShadowMap shadowMap = ShadowMap(shadowMapDepthShader.get(), pointL.position, nearZ/10, farZ/100, 1250.0f, glm::vec3(terrainPlaneSize/2, 0, -terrainPlaneSize/2));
+		ShadowMap shadowMap = ShadowMap(shadowMapDepthShader.get(), pointL.position, nearZ, farZ/15, 450.0f, glm::vec3(terrainPlaneSize/2, 0, -terrainPlaneSize/2));
 
 		std::shared_ptr<MeshMaterial> debug = std::make_shared<MeshMaterial>(debugShader, glm::vec3(0.5f, 0.7f, 0.3f), 8.0f);
-		std::shared_ptr<MeshMaterial> material = std::make_shared<MeshMaterial>(textureShader, glm::vec3(0.5f, 0.7f, 0.3f), 8.0f);
+		std::shared_ptr<MeshMaterial> material = std::make_shared<MeshMaterial>(textureShader, glm::vec3(0.3f, 0.8f, 0.0f), 8.0f);
 		std::shared_ptr<MeshMaterial> depth = std::make_shared<MeshMaterial>(shadowMapDepthShader, glm::vec3(0.5f, 0.7f, 0.3f), 8.0f);		
 
 		Mesh frust = Mesh(glm::translate(glm::mat4(1), glm::vec3(0)), Mesh::createCubeMesh(125, 125, 125), debug);
 
 		// Tree positions
-		//PossionDiskSampling treePositions = PossionDiskSampling(terrainPlaneSize, treeMaskPath, heightMapPath, terrainHeight, 50, 10);
-		//std::vector<glm::vec3> points = treePositions.getPoints();
+		PossionDiskSampling treePositions = PossionDiskSampling(terrainPlaneSize, treeMaskPath, heightMapPath, terrainHeight, 50, 10);
+		std::vector<glm::vec3> points = treePositions.getPoints();
 
 		// GUI
 		std::vector<GuiTexture> guis;
@@ -403,11 +405,11 @@ int main(int argc, char** argv)
 		//level.addStaticObject("assets/models/trees/palmTree.obj", PxExtendedVec3(3429, 1468, 3323), 20); // bottom right
 
 		// Load trees
-		//for (glm::vec3 pos : points)
-		//{
-		//	pos.z -= terrainPlaneSize;
-		//	level.addStaticObject("assets/models/trees/palmTree.obj", PxExtendedVec3(pos.x, pos.y, pos.z), 5);
-		//}
+		for (glm::vec3 pos : points)
+		{
+			pos.z -= terrainPlaneSize;
+			level.addStaticObject("assets/models/trees/palmTree.obj", PxExtendedVec3(pos.x, pos.y, pos.z), 5);
+		}
 
 		// Load sunbed
 		level.addStaticObject("assets/models/sunbed.obj", PxExtendedVec3(375, getYPosition(375, -220) - 5, -220), 3);
@@ -421,7 +423,7 @@ int main(int argc, char** argv)
 
 		// Adjust character to 3d person cam
 		for (int i = 0; i < character.nodes.size(); i++) {
-			character.nodes[i]->setTransformMatrix(glm::rotate(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -2.0f, 0.0f)), glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
+			character.nodes[i]->setTransformMatrix(glm::rotate(glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(1)), glm::vec3(0.0f, -2.0f, 0.0f)), glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
 		}
 		character.init();
 
@@ -500,8 +502,8 @@ int main(int argc, char** argv)
 			//camera.update(int(mouse_x), int(mouse_y), _zoom, _dragging, _strafing);
 
 			// Set per-frame uniforms
-			setPerFrameUniformsNormal(textureShader.get(), playerCamera, pointL);
-			setPerFrameUniformsNormal(debugShader.get(), playerCamera, pointL);
+			setPerFrameUniformsNormal(textureShader.get(), playerCamera, pointL, shadowMap);
+			setPerFrameUniformsNormal(debugShader.get(), playerCamera, pointL, shadowMap);
 
 			/* GAMEPLAY */
 			// update character and camera position
@@ -522,33 +524,30 @@ int main(int argc, char** argv)
 
 			/* GAMEPLAY END */
 			
-			setPerFrameUniforms(tessellationShader.get(), playerCamera, pointL);
+			setPerFrameUniforms(tessellationShader.get(), playerCamera, pointL, shadowMap);
 
 
 			// 1. render depth of scene to texture (from light's perspective)
 			// --------------------------------------------------------------
-			shadowMap.updateLightPos(pointL.position);
-			shadowMap.draw();
-			level.drawDepth(shadowMapDepthShader.get());
-			//for (glm::vec3 pos : points)
-			//{
-			//	treePlaceholderDepth.resetModelMatrix();
-			//	glm::mat4 transformation = glm::translate(glm::mat4(1.0f), glm::vec3(pos.x - terrainPlaneSize / 2, pos.y + 150, pos.z - terrainPlaneSize / 2));
-			//	treePlaceholderDepth.transform(transformation);
-			//	treePlaceholderDepth.draw();
-			//	
-			//}
-			planeShadow.draw(shadowMapDepthShader.get());
-			
-			shadowMap.unbindFBO();
+			if (_showShadows) {
+				shadowMap.updateLightPos(pointL.position * glm::vec3(0.5));
+				shadowMap.draw();
+				//glCullFace(GL_FRONT);
+				character.drawDepth(shadowMapDepthShader.get());
+				level.drawDepth(shadowMapDepthShader.get());
+				//glCullFace(GL_BACK);
+				planeShadow.draw(shadowMapDepthShader.get());
 
-			// reset viewport
-			glViewport(0, 0, window_width, window_height);
-			glClearColor(0, 0, 0, 1);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			// debug: render shadowMap on quad 
-			//shadowMap.drawDebug(shadowMapDebugShader.get());
-			//renderQuad();
+				shadowMap.unbindFBO();
+
+				// reset viewport
+				glViewport(0, 0, window_width, window_height);
+				glClearColor(0, 0, 0, 1);
+				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+				// debug: render shadowMap on quad 
+				//shadowMap.drawDebug(shadowMapDebugShader.get());
+				//renderQuad();
+			}
 
 			// update view frustum
 			viewFrustum->doCheck = _checkFrustum;
@@ -556,6 +555,11 @@ int main(int argc, char** argv)
 				camModel = (playerCamera.getModel());
 				viewFrustum->setCamDef2(getWorldPosition(camModel), getLookVector(camModel), getUpVector(camModel), frust);
 			}
+
+			// light position
+			//frust.resetModelMatrix();
+			//frust.transform(glm::translate(glm::mat4(1), pointL.position));
+			//frust.draw();
 			
 			// 2. Render Scene
 			// --------------------------------------------------------------
@@ -675,7 +679,7 @@ void renderQuad()
 }
 
 
-void setPerFrameUniformsNormal(Shader* shader, PlayerCamera& camera, PointLight& pointL)
+void setPerFrameUniformsNormal(Shader* shader, PlayerCamera& camera, PointLight& pointL, ShadowMap& shadowMap)
 {
 	shader->use();
 	shader->setUniform("viewProjMatrix", camera.getViewProjectionMatrix());
@@ -683,17 +687,34 @@ void setPerFrameUniformsNormal(Shader* shader, PlayerCamera& camera, PointLight&
 	shader->setUniform("pointL.color", pointL.color);
 	shader->setUniform("pointL.position", pointL.position);
 	shader->setUniform("pointL.attenuation", pointL.attenuation);
+	shader->setUniform("showShadows", _showShadows);
 	shader->setUniform("brightness", brightness);
-	
+	shader->setUniform("lightPosition", pointL.position);
+
+	// shadowMap
+	shader->setUniform("lightSpaceMatrix", shadowMap.getLightSpaceMatrix());
+	shader->setUniform("lightPos", shadowMap.getLightPos());
+	glActiveTexture(GL_TEXTURE6);
+	glBindTexture(GL_TEXTURE_2D, shadowMap.getShadowMapID());
+	shader->setUniform("shadowMap", 6);
 	shader->unuse();
 }
 
-void setPerFrameUniforms(TerrainShader* shader, PlayerCamera& camera, PointLight& pointL)
+void setPerFrameUniforms(TerrainShader* shader, PlayerCamera& camera, PointLight& pointL, ShadowMap& shadowMap)
 {
 	shader->use();
 	shader->setUniform("viewProjMatrix", camera.getViewProjectionMatrix());
+	shader->setUniform("showShadows", _showShadows);
 	shader->setUniform("camera_world", camera.getPosition());
 	shader->setUniform("lightPosition", pointL.position);
+
+	// shadowMap
+	shader->setUniform("lightSpaceMatrix", shadowMap.getLightSpaceMatrix());
+	shader->setUniform("lightPos", shadowMap.getLightPos());
+	glActiveTexture(GL_TEXTURE6);
+	glBindTexture(GL_TEXTURE_2D, shadowMap.getShadowMapID());
+	shader->setUniform("shadowMap", 6);
+	shader->unuse();
 }
 
 /* GAMEPLAY */
@@ -838,6 +859,9 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	case GLFW_KEY_F3:
 		_wireframe = !_wireframe;
 		glPolygonMode(GL_FRONT_AND_BACK, _wireframe ? GL_LINE : GL_FILL);
+		break;
+	case GLFW_KEY_F4:
+		_showShadows = !_showShadows;
 		break;
 	case GLFW_KEY_F8:
 		_checkFrustum = !_checkFrustum;

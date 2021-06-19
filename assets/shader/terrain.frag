@@ -16,6 +16,7 @@ uniform vec3 lightPos;
 uniform vec3 viewPos;
 uniform mat4 lightSpaceMatrix;
 uniform float brightness;
+uniform bool showShadows;
 
 const float regionMinWater = -scaleY * 0.125;
 const float regionMaxWater = scaleY * 0.005;
@@ -103,7 +104,7 @@ float shadowCalculation(vec4 fragPosLightSpace) {
     shadowCoord = 0.5 * (shadowCoord + 1.0);
 
     vec4 lightDir = vec4(lightPos - vec3(0), 1);
-    float bias = max(0.005 * (1.0 - dot(teNormal, lightDir)), 0.003); 
+    float bias = max(0.005 * (1.0 - dot(teNormal, lightDir)), 0.0015); 
     float shadow = 0.0;     
     vec2 texelSize = 1 / vec2(textureSize(shadowMap, 0));
 	
@@ -138,6 +139,8 @@ void main(){
 	vec3 lightDir = normalize(lightPosition - tePosition.xyz);
     float ambientStrength = 0.3;
     vec3 ambient = ambientStrength * lightColor;
+    
+    // diffuse
 	float diff = max(dot(teNormal.xyz, lightDir), 0.0);	
 	vec3 diffuse = diff * lightColor;
     
@@ -157,7 +160,12 @@ void main(){
     terrainColor = vec4(hsv2rgb(terrainColorHSV), 1.0);
     
     // calculate shadow
-    float shadow = shadowCalculation(teFragPosLightSpace); 
+    float shadow;
+    if(showShadows){
+        shadow = shadowCalculation(teFragPosLightSpace); 
+    } else {
+        shadow = 0;
+    }
     //float shadow = shadowCalculation(lightSpaceMatrix * tePosition); 
     
     vec3 light = ambient + (diffuse + specular) * (1 - shadow);
