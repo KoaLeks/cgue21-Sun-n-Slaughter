@@ -2,7 +2,7 @@
 
 Skybox::Skybox(Shader* shader) {
     this->shader = shader;
-    this->data = Mesh::createSkyboxMesh(5000, 5000, 5000);
+    this->data = Mesh::createSkyboxMesh(3000, 3000, 3000);
     textureFaces[0] = "assets/skybox/right.jpg";
     textureFaces[1] = "assets/skybox/left.jpg";
     textureFaces[2] = "assets/skybox/top.jpg";

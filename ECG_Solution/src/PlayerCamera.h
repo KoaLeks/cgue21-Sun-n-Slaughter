@@ -16,6 +16,10 @@ private:
 	float _yaw = 0;
 	float _pitch = 0;
 	float _zoom = -6.0f;
+	float _fov;
+	float _aspect;
+	float _far;
+	float _near;
 	glm::vec3 _position;
 
 	glm::mat4 _rotationMatrix;

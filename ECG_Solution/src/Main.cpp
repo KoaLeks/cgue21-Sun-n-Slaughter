@@ -75,9 +75,9 @@ static bool _mouseSelect = false;
 static bool _doBasicAttack = false;
 static bool _doStrongAttack = false;
 static bool _doAreacAttack = false;
-static bool _checkFrustum = false;
+static bool _checkFrustum = true;
 static bool _showHelp = false;
-static float _zoom = -6.0f;
+static float _fov = 60.0f;
 double lastxpos = 0;
 double lastypos = 0;
 int _selectedFPS = 60;
@@ -110,7 +110,7 @@ int main(int argc, char** argv)
 	int refresh_rate = reader.GetInteger("window", "refresh_rate", 60);
 	bool fullscreen = reader.GetBoolean("window", "fullscreen", false);
 	std::string window_title = reader.Get("window", "title", "Sun'n'Slaughter");
-	float fov = float(reader.GetReal("camera", "fov", 60.0f));
+	_fov = float(reader.GetReal("camera", "fov", 60.0f));
 	float nearZ = float(reader.GetReal("camera", "near", 0.1f));
 	float farZ = float(reader.GetReal("camera", "far", 100000.0f));
 	brightness = float(reader.GetReal("window", "brightness", 1.0));
@@ -282,6 +282,7 @@ int main(int argc, char** argv)
 
 		// Load shader(s)
 		std::shared_ptr<Shader> textureShader = std::make_shared<Shader>("texture.vert", "texture.frag");
+		std::shared_ptr<Shader> debugShader = std::make_shared<Shader>("debug.vert", "debug.frag");
 		std::shared_ptr<Shader> skyboxShader = std::make_shared<Shader>("skybox.vert", "skybox.frag");
 		std::shared_ptr<Shader> shadowMapDebugShader = std::make_shared<Shader>("shadowMapQuadDebug.vert", "shadowMapQuadDebug.frag");
 		std::shared_ptr<Shader> shadowMapDepthShader = std::make_shared<Shader>("shadowmap_depth.vert", "shadowmap_depth.frag");
@@ -313,12 +314,15 @@ int main(int argc, char** argv)
 		// Shadow Map
 		ShadowMap shadowMap = ShadowMap(shadowMapDepthShader.get(), pointL.position, nearZ/10, farZ/100, 1250.0f, glm::vec3(terrainPlaneSize/2, 0, -terrainPlaneSize/2));
 
+		std::shared_ptr<MeshMaterial> debug = std::make_shared<MeshMaterial>(debugShader, glm::vec3(0.5f, 0.7f, 0.3f), 8.0f);
 		std::shared_ptr<MeshMaterial> material = std::make_shared<MeshMaterial>(textureShader, glm::vec3(0.5f, 0.7f, 0.3f), 8.0f);
 		std::shared_ptr<MeshMaterial> depth = std::make_shared<MeshMaterial>(shadowMapDepthShader, glm::vec3(0.5f, 0.7f, 0.3f), 8.0f);		
 
+		Mesh frust = Mesh(glm::translate(glm::mat4(1), glm::vec3(0)), Mesh::createCubeMesh(125, 125, 125), debug);
+
 		// Tree positions
-		PossionDiskSampling treePositions = PossionDiskSampling(terrainPlaneSize, treeMaskPath, heightMapPath, terrainHeight, 50, 10);
-		std::vector<glm::vec3> points = treePositions.getPoints();
+		//PossionDiskSampling treePositions = PossionDiskSampling(terrainPlaneSize, treeMaskPath, heightMapPath, terrainHeight, 50, 10);
+		//std::vector<glm::vec3> points = treePositions.getPoints();
 
 		// GUI
 		std::vector<GuiTexture> guis;
@@ -381,9 +385,9 @@ int main(int argc, char** argv)
 		/* --------------------------------------------- */
 
 		// Initialize camera
-		PlayerCamera playerCamera(fov, float(window_width) / float(window_height), nearZ, farZ);
+		PlayerCamera playerCamera(_fov, float(window_width) / float(window_height), nearZ, farZ);
 		std::shared_ptr<FrustumG> viewFrustum = std::make_shared<FrustumG>();
-		viewFrustum->setCamInternals(fov, float(window_width) / float(window_height), nearZ, farZ);
+		viewFrustum->setCamInternals(_fov, float(window_width) / float(window_height), nearZ, farZ);
 		glm::mat4 camModel = playerCamera.getModel();
 		viewFrustum->setCamDef(getWorldPosition(camModel), getLookVector(camModel), getUpVector(camModel));
 
@@ -393,13 +397,17 @@ int main(int argc, char** argv)
 
 		// Load heightmap
 		data = stbi_load(heightMapPath, &imgWidth, &imgHeight, &nrChannels, 4);
-		
+
+		// Frustum TEST
+		//level.addStaticObject("assets/models/trees/palmTree.obj", PxExtendedVec3(-4054, 1430, -559), 20); // top left
+		//level.addStaticObject("assets/models/trees/palmTree.obj", PxExtendedVec3(3429, 1468, 3323), 20); // bottom right
+
 		// Load trees
-		for (glm::vec3 pos : points)
-		{
-			pos.z -= terrainPlaneSize;
-			level.addStaticObject("assets/models/trees/palmTree.obj", PxExtendedVec3(pos.x, pos.y, pos.z), 5);
-		}
+		//for (glm::vec3 pos : points)
+		//{
+		//	pos.z -= terrainPlaneSize;
+		//	level.addStaticObject("assets/models/trees/palmTree.obj", PxExtendedVec3(pos.x, pos.y, pos.z), 5);
+		//}
 
 		// Load sunbed
 		level.addStaticObject("assets/models/sunbed.obj", PxExtendedVec3(375, getYPosition(375, -220) - 5, -220), 3);
@@ -409,7 +417,7 @@ int main(int argc, char** argv)
 
 		// Init character
 		GLuint animateShader = getComputeShader("assets/shader/animator.comp");
-		Character character(textureShader, "assets/models/main_char_animated_larry_5.obj", gPhysicsSDK, gCooking, gScene, mMaterial, pxChar, &playerCamera, gManager, animateShader, viewFrustum);
+		Character character(textureShader, "assets/models/main_char_animated_larry_4.obj", gPhysicsSDK, gCooking, gScene, mMaterial, pxChar, &playerCamera, gManager, animateShader, viewFrustum);
 
 		// Adjust character to 3d person cam
 		for (int i = 0; i < character.nodes.size(); i++) {
@@ -419,7 +427,7 @@ int main(int argc, char** argv)
 
 		//Relocate the character & camera
 		character.relocate(physx::PxExtendedVec3(370, 104,-223));
-
+		
 
 		///* --------------------------------------------- */
 		//// Init Particle Sahder
@@ -457,6 +465,7 @@ int main(int argc, char** argv)
 		bool is_moving = false;
 		/* GAMEPLAY END */
 
+
 		while (!glfwWindowShouldClose(window)) {
 			// Clear backbuffer
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -469,7 +478,7 @@ int main(int argc, char** argv)
 			gScene->fetchResults(true);
 
 			// Update camera
-			playerCamera.updateZoom(_zoom);
+			playerCamera.updateZoom(_fov);
 
 			if (_dragging || _draggingCamOnly) {
 				glfwGetCursorPos(window, &xpos, &ypos);
@@ -492,6 +501,7 @@ int main(int argc, char** argv)
 
 			// Set per-frame uniforms
 			setPerFrameUniformsNormal(textureShader.get(), playerCamera, pointL);
+			setPerFrameUniformsNormal(debugShader.get(), playerCamera, pointL);
 
 			/* GAMEPLAY */
 			// update character and camera position
@@ -502,12 +512,7 @@ int main(int argc, char** argv)
 			//	level.enemies[i]->chase(character.getPosition(), dt);
 			//}
 
-			// update view frustum
-			viewFrustum->doCheck = _checkFrustum;
-			if (_checkFrustum) {
-				camModel = playerCamera.getModel();
-				viewFrustum->setCamDef(getWorldPosition(camModel), getLookVector(camModel), getUpVector(camModel));
-			}
+			
 
 			// _hitDetection from physx callback -> locked on 60 fps
 			if (_hitDetection) {
@@ -545,7 +550,13 @@ int main(int argc, char** argv)
 			//shadowMap.drawDebug(shadowMapDebugShader.get());
 			//renderQuad();
 
-
+			// update view frustum
+			viewFrustum->doCheck = _checkFrustum;
+			if (_checkFrustum) {
+				camModel = (playerCamera.getModel());
+				viewFrustum->setCamDef2(getWorldPosition(camModel), getLookVector(camModel), getUpVector(camModel), frust);
+			}
+			
 			// 2. Render Scene
 			// --------------------------------------------------------------
 			// Render Skybox
@@ -767,7 +778,13 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	_zoom -= float(yoffset) * 20.5f; //300.0f
+	_fov -= float(yoffset) * 2.0f;
+	if (_fov < 30) {
+		_fov = 30;
+	}
+	else if (_fov > 90) {
+		_fov = 90;
+	}
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)

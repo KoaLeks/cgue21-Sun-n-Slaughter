@@ -3,6 +3,10 @@
 
 
 PlayerCamera::PlayerCamera(float fov, float aspect, float near, float far) {
+	_fov = fov;
+	_aspect = aspect;
+	_near = near;
+	_far = far;
 	_projMatrix = glm::perspective(glm::radians(fov), aspect, near, far);
 	_viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, _zoom));
 	_rotationMatrix = glm::rotate(glm::rotate(glm::mat4(1.0f), _yaw, glm::vec3(0.0f, 1.0f, 0.0f)), _pitch, glm::vec3(1.0f, 0.0f, 0.0f));
@@ -16,14 +20,11 @@ glm::vec3 PlayerCamera::getPosition() {
 }
 
 glm::mat4 PlayerCamera::getViewProjectionMatrix() {
-	return _projMatrix * _viewMatrix * glm::transpose(_rotationMatrix) * glm::translate(glm::mat4(1.0f), _position);
+	return getProjection() * getModel();
 }
 
 void PlayerCamera::updateZoom(float zoom) {
-	if (_zoom != zoom) {
-		_zoom = zoom;
-		_viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, _zoom));
-	}
+	_projMatrix = glm::perspective(glm::radians(zoom), _aspect, _near, _far);
 }
 
 void PlayerCamera::rotate(float xRotate, float yRotate) {

@@ -8,6 +8,7 @@ void Scene::draw() {
 			nodes[i]->draw();
 		}
 	}
+	//std::cout << "Objects: " << _drawnObjects << std::endl << std::endl;
 }
 
 void Scene::drawDepth(Shader* shader) {
