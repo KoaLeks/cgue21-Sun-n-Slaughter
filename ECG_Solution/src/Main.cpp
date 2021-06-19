@@ -320,7 +320,7 @@ int main(int argc, char** argv)
 		std::shared_ptr<MeshMaterial> material = std::make_shared<MeshMaterial>(textureShader, glm::vec3(0.3f, 0.8f, 0.0f), 8.0f);
 		std::shared_ptr<MeshMaterial> depth = std::make_shared<MeshMaterial>(shadowMapDepthShader, glm::vec3(0.5f, 0.7f, 0.3f), 8.0f);		
 
-		Mesh frust = Mesh(glm::translate(glm::mat4(1), glm::vec3(0)), Mesh::createCubeMesh(125, 125, 125), debug);
+		//Mesh frust = Mesh(glm::translate(glm::mat4(1), glm::vec3(0)), Mesh::createCubeMesh(1, 1, 1), debug);
 
 		// Tree positions
 		PossionDiskSampling treePositions = PossionDiskSampling(terrainPlaneSize, treeMaskPath, heightMapPath, terrainHeight, 50, 10);
@@ -553,7 +553,7 @@ int main(int argc, char** argv)
 			viewFrustum->doCheck = _checkFrustum;
 			if (_checkFrustum) {
 				camModel = (playerCamera.getModel());
-				viewFrustum->setCamDef2(getWorldPosition(camModel), getLookVector(camModel), getUpVector(camModel), frust);
+				viewFrustum->setCamDef(getWorldPosition(camModel), getLookVector(camModel), getUpVector(camModel));
 			}
 
 			// light position
@@ -803,8 +803,8 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 	if (_fov < 30) {
 		_fov = 30;
 	}
-	else if (_fov > 90) {
-		_fov = 90;
+	else if (_fov > 120) {
+		_fov = 120;
 	}
 }
 

@@ -14,7 +14,8 @@ void FrustumG::setCamInternals(float fov, float ratio, float nearD, float farD) 
 	fw = fh * _ratio;
 }
 
-void FrustumG::draw(Mesh& mesh, glm::vec3 ftl, glm::vec3 ftr, glm::vec3 fbr, glm::vec3 fbl, glm::vec3 ntl, glm::vec3 ntr, glm::vec3 nbr, glm::vec3 nbl) {
+void FrustumG::draw(Mesh& mesh, glm::vec3 ftl, glm::vec3 ftr, glm::vec3 fbr, glm::vec3 fbl, glm::vec3 ntl, glm::vec3 ntr, glm::vec3 nbr, glm::vec3 nbl,
+	glm::vec3 tNorm, glm::vec3 bNorm, glm::vec3 lNorm, glm::vec3 rNorm, glm::vec3 nNorm, glm::vec3 fNorm) {
 	// far top left
 	mesh.resetModelMatrix();
 	mesh.transform(glm::translate(glm::mat4(1), ftl));
@@ -47,14 +48,40 @@ void FrustumG::draw(Mesh& mesh, glm::vec3 ftl, glm::vec3 ftr, glm::vec3 fbr, glm
 	//mesh.resetModelMatrix();
 	//mesh.transform(glm::translate(glm::mat4(1), nbl));
 	//mesh.draw();
+
+
+	//// top Norm
+	//mesh.resetModelMatrix();
+	//mesh.transform(glm::translate(glm::mat4(1), tNorm));
+	//mesh.draw();
+	//// bot Norm
+	//mesh.resetModelMatrix();
+	//mesh.transform(glm::translate(glm::mat4(1), bNorm));
+	//mesh.draw();
+	//// left Norm
+	//mesh.resetModelMatrix();
+	//mesh.transform(glm::translate(glm::mat4(1), lNorm));
+	//mesh.draw();
+	//// right Norm
+	//mesh.resetModelMatrix();
+	//mesh.transform(glm::translate(glm::mat4(1), rNorm));
+	//mesh.draw();
+	//// far Norm
+	//mesh.resetModelMatrix();
+	//mesh.transform(glm::translate(glm::mat4(1), fNorm));
+	//mesh.draw();
+	//// near Norm
+	//mesh.resetModelMatrix();
+	//mesh.transform(glm::translate(glm::mat4(1), nNorm));
+	//mesh.draw();
 }
 
-void FrustumG::setCamDef2(glm::vec3& p, glm::vec3& l, glm::vec3& u, Mesh& mesh) {
+void FrustumG::setCamDef(glm::vec3& p, glm::vec3& l, glm::vec3& u) {
 	glm::vec3 dir, nc, fc, X, Y, Z;
 
 	Z = glm::normalize(l); 
 	X = glm::normalize(glm::cross(glm::vec3(0, 1, 0), Z));
-	Y = glm::normalize(glm::cross(X, Z));
+	Y = glm::normalize(glm::cross(Z, X));
 
 	// compute the centers of the near and far planes
 	fc = p - Z * _farD;
@@ -72,7 +99,15 @@ void FrustumG::setCamDef2(glm::vec3& p, glm::vec3& l, glm::vec3& u, Mesh& mesh) 
 	nbl = nc - (Y * nh) - (X * nw);
 	nbr = nc - (Y * nh) + (X * nw);
 
-	//std::cout << "frustum top left x=" << fbr.x << ", y=" << fbr.y << ", z=" << fbr.z << std::endl;
+	//glm::vec3 tNorm, bNorm, lNorm, rNorm, nNorm, fNorm;
+	//tNorm = glm::vec3(80) * pl[TOP].setPoints(ntr, ntl, ftl);
+	//bNorm = glm::vec3(80) * pl[BOTTOM].setPoints(nbl, nbr, fbr);
+	//lNorm = glm::vec3(80) * pl[LEFT].setPoints(ntl, nbl, fbl);
+	//rNorm = glm::vec3(80) * pl[RIGHT].setPoints(nbr, ntr, fbr);
+	//nNorm = glm::vec3(80) * pl[NEARP].setPoints(ntl, ntr, nbr);
+	//fNorm = glm::vec3(80) * pl[FARP].setPoints(ftr, ftl, fbl);
+	//
+	//draw(mesh, ftl, ftr, fbr, fbl, ntl, ntr, nbr, nbl, tNorm, bNorm, lNorm, rNorm, nNorm, fNorm);
 
 	pl[TOP].setPoints(ntr, ntl, ftl);
 	pl[BOTTOM].setPoints(nbl, nbr, fbr);
@@ -80,54 +115,6 @@ void FrustumG::setCamDef2(glm::vec3& p, glm::vec3& l, glm::vec3& u, Mesh& mesh) 
 	pl[RIGHT].setPoints(nbr, ntr, fbr);
 	pl[NEARP].setPoints(ntl, ntr, nbr);
 	pl[FARP].setPoints(ftr, ftl, fbl);
-
-	draw(mesh, ftl, ftr, fbr, fbl, ntl, ntr, nbr, nbl);
-	
-}
-
-void FrustumG::setCamDef(glm::vec3 &p, glm::vec3 &l, glm::vec3 &u) {
-
-	glm::vec3 dir, nc, fc, X, Y, Z;
-
-	// compute the Z axis of camera
-	// this axis points in the opposite direction from 
-	// the looking direction
-	Z = glm::normalize(l);
-
-	// X axis of camera with given "up" vector and Z axis
-	X = glm::normalize(glm::cross(glm::vec3(0, 1, 0), Z));
-
-	// the real "up" vector is the cross product of Z and X
-	Y = glm::normalize(u);
-
-
-	// compute the centers of the near and far planes
-	nc = p - Z * _nearD;
-	fc = p - Z * _farD;
-
-	pl[NEARP].setNormalAndPoint(-Z, nc);
-	pl[FARP].setNormalAndPoint(Z, fc);
-
-	glm::vec3 aux, normal;
-
-	aux = (nc + Y * nh) - p;
-	normal = aux * X;
-	pl[TOP].setNormalAndPoint(normal, nc + Y * nh);
-
-	aux = (nc - Y * nh) - p;
-	aux = glm::normalize(aux);
-	normal = X * aux;
-	pl[BOTTOM].setNormalAndPoint(normal, nc - Y * nh);
-
-	aux = (nc - X * nw) - p;
-	aux = glm::normalize(aux);
-	normal = aux * Y;
-	pl[LEFT].setNormalAndPoint(normal, nc - X * nw);
-
-	aux = (nc + X * nw) - p;
-	aux = glm::normalize(aux);
-	normal = Y * aux;
-	pl[RIGHT].setNormalAndPoint(normal, nc + X * nw);
 }
 
 int FrustumG::boxInFrustum(std::shared_ptr<std::vector<glm::vec3>> boundingBox) {
@@ -147,18 +134,20 @@ int FrustumG::boxInFrustum(std::shared_ptr<std::vector<glm::vec3>> boundingBox) 
 		for (int k = 0; k < boundingBox->size() && (in == 0 || out == 0); k++) {
 
 			// is the corner outside or inside
-			if (pl[i].distance(boundingBox->at(k)) < 0) {
+			float dist = pl[i].distance(boundingBox->at(k));
+			if (dist < 0) {
 				out++;
 			} else {
 				in++;
 			}
 		}
 
-		//if all corners are out
 		if (!in) {
 			return (OUTSIDE);
 		} else if (out) {
-			result = INTERSECT;
+			return (INTERSECT);
+		} else {
+			return (INSIDE);
 		}
 	}
 
@@ -166,19 +155,16 @@ int FrustumG::boxInFrustum(std::shared_ptr<std::vector<glm::vec3>> boundingBox) 
 }
 
 
-void Plane::setPoints(glm::vec3 v1, glm::vec3 v2, glm::vec3 v3) {
+glm::vec3 Plane::setPoints(glm::vec3 v1, glm::vec3 v2, glm::vec3 v3) {
 	glm::vec3 aux1, aux2;
 	aux1 = v1 - v2;
 	aux2 = v3 - v2;
 	_norm = glm::normalize(glm::cross(aux2, aux1));
 	_D = -(glm::dot(_norm, v2));
+	return _norm;
 }
 
 float Plane::distance(glm::vec3 point) {
-	return glm::dot(_norm, point) + _D;
-}
-
-void Plane::setNormalAndPoint(glm::vec3 normal, glm::vec3 point) {
-	_norm = glm::normalize(normal);
-	_D = -glm::dot(_norm, point);
+	float dist = _D + glm::dot(_norm, point);
+	return dist;
 }

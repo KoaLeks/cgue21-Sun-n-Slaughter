@@ -116,7 +116,7 @@ Geometry::~Geometry()
 void Geometry::draw(glm::mat4 matrix)
 {
 	glm::mat4 accumModel = matrix * _transformMatrix * _modelMatrix;
-	if (_isCharacter || _viewFrustum->boxInFrustum(_boudingBox) != 0) {
+	if (_isCharacter || _viewFrustum->boxInFrustum(_boudingBox) != FrustumG::OUTSIDE) {
 		if (!_isEmpty) {
 			Shader* shader = _material->getShader();
 			shader->use();
@@ -144,6 +144,7 @@ void Geometry::draw(Shader* shader, glm::mat4 matrix)
 	glm::mat4 accumModel = matrix * _transformMatrix * _modelMatrix;
 	if (_isCharacter || _viewFrustum->boxInFrustum(_boudingBox) != 0) {
 		if (!_isEmpty) {
+
 			shader->use();
 
 			shader->setUniform("modelMatrix", accumModel);

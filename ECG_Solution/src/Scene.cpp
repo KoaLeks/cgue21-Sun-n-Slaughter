@@ -69,13 +69,14 @@ std::shared_ptr<Node> Scene::processNode(aiNode* node, const aiScene* scene, int
 	}
 	newNode->name = tmpnam;
 
-	if (transformation) {
-		newNode->setPosition(position);
-		newNode->transform(glm::scale(glm::mat4(1), glm::vec3(scale)));
-	}
+	//if (transformation) {
+	//	newNode->setPosition(position);
+	//	newNode->transform(glm::scale(glm::mat4(1), glm::vec3(scale)));
+	//}
 
 	for (unsigned int i = 0; i < node->mNumMeshes; i++) {
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
+		
 		processMesh(mesh, scene, cookMesh, isEnemy/*, isWinCondition*/, newNode, scale, position);
 	}
 
@@ -97,24 +98,25 @@ std::shared_ptr<Node> Scene::processNode(aiNode* node, const aiScene* scene, int
 
 void Scene::processMesh(aiMesh* mesh, const aiScene* scene, bool cookMesh, bool isEnemy/*, bool isWinCondition*/, std::shared_ptr<Node> newNode, float scale, physx::PxExtendedVec3 position) {
 	GeometryData data;
-	glm::vec3 maxVert(-300.0f, -300.0f, -300.0f);
-	glm::vec3 minVert(300.0f, 300.0f, 300.0f);
+	glm::vec3 maxVert(-1500.0f, -1500.0f, -1500.0f);
+	glm::vec3 minVert(1500.0f, 1500.0f, 1500.0f);
+	
 
 	for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
 		glm::vec4 vector;
-		vector.x = mesh->mVertices[i].x;
-		vector.y = mesh->mVertices[i].y;
-		vector.z = mesh->mVertices[i].z;
+		vector.x = mesh->mVertices[i].x * scale + position.x;
+		vector.y = mesh->mVertices[i].y * scale + position.y;
+		vector.z = mesh->mVertices[i].z * scale + position.z;
 		vector.w = 1.0f;
 
 
 		// for bounding box
-		maxVert.x = std::fmax(maxVert.x, vector.x);
-		maxVert.y = std::fmax(maxVert.y, vector.y);
-		maxVert.z = std::fmax(maxVert.z, vector.z);
-		minVert.x = std::fmin(minVert.x, vector.x);
-		minVert.y = std::fmin(minVert.y, vector.y);
-		minVert.z = std::fmin(minVert.z, vector.z);
+		maxVert.x = max(maxVert.x, vector.x);
+		maxVert.y = max(maxVert.y, vector.y);
+		maxVert.z = max(maxVert.z, vector.z);
+		minVert.x = min(minVert.x, vector.x);
+		minVert.y = min(minVert.y, vector.y);
+		minVert.z = min(minVert.z, vector.z);
 
 
 		data.positions.push_back(vector);

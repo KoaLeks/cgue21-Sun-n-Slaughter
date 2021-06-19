@@ -19,7 +19,7 @@ public:
 	glm::vec3 _norm;
 	float _A, _B, _C, _D;
 	float distance(glm::vec3 point);
-	void setPoints(glm::vec3 a, glm::vec3 b, glm::vec3 c);
+	glm::vec3 setPoints(glm::vec3 a, glm::vec3 b, glm::vec3 c);
 	void setNormalAndPoint(glm::vec3 normal, glm::vec3 point);
 };
 
@@ -48,8 +48,8 @@ public:
 	FrustumG::~FrustumG() {}
 
 	void setCamInternals(float angle, float ratio, float nearD, float farD);
-	void draw(Mesh& mesh, glm::vec3 ftl, glm::vec3 ftr, glm::vec3 fbr, glm::vec3 fbl, glm::vec3 ntl, glm::vec3 ntr, glm::vec3 nbr, glm::vec3 nbl);
-	void setCamDef2(glm::vec3& p, glm::vec3& l, glm::vec3& u, Mesh& mesh);
-	void setCamDef(glm::vec3 &p, glm::vec3 &l, glm::vec3 &u);
+	void draw(Mesh& mesh, glm::vec3 ftl, glm::vec3 ftr, glm::vec3 fbr, glm::vec3 fbl, glm::vec3 ntl, glm::vec3 ntr, glm::vec3 nbr, glm::vec3 nbl,
+		glm::vec3 tNorm, glm::vec3 bNorm, glm::vec3 lNorm, glm::vec3 rNorm, glm::vec3 nNorm, glm::vec3 fNorm);
+	void setCamDef(glm::vec3& p, glm::vec3& l, glm::vec3& u);
 	int boxInFrustum(std::shared_ptr<std::vector<glm::vec3>> boundingBox);
 };
