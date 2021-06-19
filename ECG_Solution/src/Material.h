@@ -39,6 +39,12 @@ public:
 	glm::vec3 getCoefficients() {
 		return _materialCoefficients;
 	}
+	void setCoefficients(glm::vec3 coeff) {
+		_materialCoefficients = coeff;
+	}
+	void setAlpha(float alpha) {
+		_alpha = alpha;
+	}
 	/* GAMEPLAY END */
 
 };

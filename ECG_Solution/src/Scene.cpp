@@ -157,7 +157,17 @@ void Scene::processMesh(aiMesh* mesh, const aiScene* scene, bool cookMesh, bool 
 	if (mesh->mMaterialIndex >= 0) {
 		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 		mat = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
+		aiColor3D colorA, colorD, colorS, alpha;
+		
+		material->Get(AI_MATKEY_COLOR_AMBIENT, colorA);
+		material->Get(AI_MATKEY_COLOR_DIFFUSE, colorD);
+		material->Get(AI_MATKEY_COLOR_SPECULAR, colorS);
+		material->Get(AI_MATKEY_SHININESS, alpha);
+		mat->setCoefficients(glm::vec3(colorA.r, colorD.g, colorS.b));
+		mat->setAlpha(alpha.r);
+		//std::cout << "name=" << newNode->name << ", ka=" << colorA.r << ", kd=" << colorD.g << ", ks=" << colorS.b << ", alpha=" << alpha.r << std::endl;
 	}
+
 
 	physx::PxRigidActor* meshActor = nullptr;
 	physx::PxController* pxChar = nullptr;

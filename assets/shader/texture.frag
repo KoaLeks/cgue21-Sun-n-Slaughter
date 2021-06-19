@@ -111,13 +111,24 @@ void main() {
 	//color.rgb +=  phong(n, pointL.position - vert.position_world, v, pointL.color * texColor, materialCoefficients.y, pointL.color, materialCoefficients.z, specularAlpha, false,  vec3(0));
 	//vec3 light = (materialCoefficients.x + (1-shadow) * phong(n, (pointL.position - vert.position_world), v, pointL.color * texColor, materialCoefficients.y, pointL.color, materialCoefficients.z, specularAlpha, false,  vec3(0)));
 	
+
+    
+	vec3 lightDir = normalize(pointL.position - vert.position_world);
+	// ambient
     vec3 ambient = materialCoefficients.x * pointL.color;
     
     // diffuse
-	float diff = max(dot(n, normalize(pointL.position - vert.position_world)), 0.0);	
+	float diff = max(dot(n, lightDir), 0.0);	
 	vec3 diffuse = diff * materialCoefficients.y * pointL.color;
-	vec3 light = ambient + diffuse * (1-shadow);
-	vec3 result = brightness * texColor * light; 
+
+    // specular
+    vec3 viewDir = normalize(camera_world - vert.position_world);
+    float spec = 0.0;
+    vec3 halfwayDir = normalize(lightDir + viewDir);  
+    spec = pow(max(dot(n, halfwayDir), 0.0), specularAlpha);
+    vec3 specular =  spec * materialCoefficients.z * pointL.color;    
 	
+	vec3 light = ambient + (diffuse + specular) * (1-shadow);
+	vec3 result = brightness * texColor * light; 
 	color = vec4(result, 1);
 }
