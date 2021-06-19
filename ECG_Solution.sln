@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.0
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30011.22
 MinimumVisualStudioVersion = 15.0.0
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ECG_Solution", "ECG_Solution\ECG_Solution.vcxproj", "{89281764-4192-41E0-B813-DFB62C075125}"
 EndProject
@@ -18,5 +18,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {BA9F5AAD-691D-4656-AA62-2818C534040C}
 	EndGlobalSection
 EndGlobal
