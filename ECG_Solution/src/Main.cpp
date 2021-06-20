@@ -54,19 +54,16 @@ float getYPosition(float x, float z);
 void renderQuad();
 void loadHighscores();
 void safeHighscore();
+void showHighscore(TextRenderer* hud, glm::vec3 color);
 
 
 /* --------------------------------------------- */
 // Global variables
 /* --------------------------------------------- */
 
-//static bool _wireframe = false;
-//static bool _culling = true;
-//static bool _dragging = false;
-static bool _strafing = false;
-//static float _zoom = 5.0f;
-static int sreen_width = 1600;
-static int sreen_height= 900;
+static int window_width = 1600;
+static int window_height = 900;
+ 
 static char* heightMapPath = "assets/terrain/hm3.png";
 static char* treeMaskPath = "assets/terrain/mask1.png";
 
@@ -115,8 +112,8 @@ int main(int argc, char** argv)
 
 	INIReader reader("assets/settings.ini");
 
-	int window_width = reader.GetInteger("window", "width", 1600);
-	int window_height = reader.GetInteger("window", "height", 900);
+	window_width = reader.GetInteger("window", "width", 1600);
+	window_height = reader.GetInteger("window", "height", 900);
 	int refresh_rate = reader.GetInteger("window", "refresh_rate", 60);
 	bool fullscreen = reader.GetBoolean("window", "fullscreen", false);
 	std::string window_title = reader.Get("window", "title", "Sun'n'Slaughter");
@@ -204,7 +201,51 @@ int main(int argc, char** argv)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	/* GAMEPLAY END */
 
+
+
+
+	/* --------------------------------------------- */
+	// Init framework
+	/* --------------------------------------------- */
+
+	if (!initFramework()) {
+		EXIT_WITH_ERROR("Failed to init framework");
+	}
+
 	/* GAMEPLAY */
+	FreeImage_Initialise(true);
+	/* GAMEPLAY END */
+
+	// set callbacks
+	glfwSetKeyCallback(window, key_callback);
+	glfwSetMouseButtonCallback(window, mouse_button_callback);
+	glfwSetScrollCallback(window, scroll_callback);
+	/* GAMEPLAY */
+	glfwSetInputMode(window, GLFW_STICKY_KEYS, 1);
+	/* GAMEPLAY END */
+
+	// set GL defaults
+	glClearColor(1, 1, 1, 1);
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
+
+	/* GAMEPLAY */
+
+	/* --------------------------------------------- */
+	// Init HUD / Text / SPLASHSCREEN
+	/* --------------------------------------------- */
+
+	TextRenderer* hud = new TextRenderer(window_width, window_height);
+	hud->Load("assets/fonts/beachday.ttf", 32);
+	//splashscreen
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	hud->RenderText("Sun'n'Slaughter", window_width / 2 - 225, window_height / 2 - 50, 2.0f, glm::vec3(0, 0, 0));
+	showHighscore(hud, glm::vec3(0, 0, 0));
+	glfwSwapBuffers(window);
+
+	/* GAMEPLAY END */
+
+		/* GAMEPLAY */
 
 	/* --------------------------------------------- */
 	// Init Physx
@@ -214,11 +255,11 @@ int main(int argc, char** argv)
 	PxDefaultAllocator gDefaultAllocatorCallback;
 	PxFoundation* gFoundation = nullptr;
 	gFoundation = PxCreateFoundation(PX_FOUNDATION_VERSION, gDefaultAllocatorCallback, gDefaultErrorCallback);
-	
-	PxPvd*  pvd = PxCreatePvd(*gFoundation);
+
+	PxPvd* pvd = PxCreatePvd(*gFoundation);
 	PxPvdTransport* transport = PxDefaultPvdSocketTransportCreate("localhost", 5425, 10000);
 	pvd->connect(*transport, PxPvdInstrumentationFlag::eALL);
-	
+
 	PxPhysics* gPhysicsSDK = nullptr;
 	gPhysicsSDK = PxCreatePhysics(PX_PHYSICS_VERSION, *gFoundation, PxTolerancesScale(), true, pvd);
 	if (gPhysicsSDK == nullptr) {
@@ -253,43 +294,6 @@ int main(int argc, char** argv)
 	cDesc.material = mMaterial;
 	//cDesc.reportCallback = simulatonCallback;
 	PxController* pxChar = gManager->createController(cDesc);
-
-	/* GAMEPLAY END */
-
-
-	/* --------------------------------------------- */
-	// Init framework
-	/* --------------------------------------------- */
-
-	if (!initFramework()) {
-		EXIT_WITH_ERROR("Failed to init framework");
-	}
-
-	/* GAMEPLAY */
-	FreeImage_Initialise(true);
-	/* GAMEPLAY END */
-
-	// set callbacks
-	glfwSetKeyCallback(window, key_callback);
-	glfwSetMouseButtonCallback(window, mouse_button_callback);
-	glfwSetScrollCallback(window, scroll_callback);
-	/* GAMEPLAY */
-	glfwSetInputMode(window, GLFW_STICKY_KEYS, 1);
-	/* GAMEPLAY END */
-
-	// set GL defaults
-	glClearColor(1, 1, 1, 1);
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_CULL_FACE);
-
-	/* GAMEPLAY */
-
-	/* --------------------------------------------- */
-	// Init HUD / Text
-	/* --------------------------------------------- */
-
-	TextRenderer* hud = new TextRenderer(window_width, window_height);
-	hud->Load("assets/fonts/beachday.ttf", 32);
 
 	/* GAMEPLAY END */
 
@@ -433,7 +437,7 @@ int main(int argc, char** argv)
 		level.addStaticObject("assets/models/sunbed.obj", PxExtendedVec3(375, getYPosition(375, -220) - 5, -220), 3);
 
 		// TEST ENEMY
-		level.addEnemy(physx::PxExtendedVec3(500, getYPosition(500, -500), -500), 10);
+		level.addEnemy(physx::PxExtendedVec3(500, getYPosition(500, -500) - 5, -500), 10);
 
 		// Init character
 		GLuint animateShader = getComputeShader("assets/shader/animator.comp");
@@ -611,6 +615,7 @@ int main(int argc, char** argv)
 			// draw HUD
 			hud->RenderText("HP: " + std::to_string(character.getHP()), 10.0f, 10.0f, 1.0f);
 			hud->RenderText("Highscore: " + std::to_string(highscore), 10.0f, 40.0f, 1.0f);
+			//showHighscore(hud, glm::vec3(255, 255, 255));
 			
 			if (fpsCnt > 60) {
 				fpsCnt = 0;
@@ -768,6 +773,17 @@ void safeHighscore() {
 
 	// Close the file
 	file.close();
+}
+
+void showHighscore(TextRenderer* hud, glm::vec3 color)
+{
+	std::string line = "";
+
+	hud->RenderText("Highscores:", 10.0f, 100.f, 1.0f, color);
+	for (int i = 0; i < 5; i++) {
+		line = std::to_string(i + 1) + ". " + highscoresN[i] + "..." + std::to_string(highscores[i]);
+		hud->RenderText(line , 10.0f, 150 + 40 * i, 0.8f, color);
+	}
 }
 
 void setPerFrameUniformsNormal(Shader* shader, PlayerCamera& camera, PointLight& pointL, ShadowMap& shadowMap)
