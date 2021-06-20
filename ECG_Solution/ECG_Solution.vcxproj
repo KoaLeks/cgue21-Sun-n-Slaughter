@@ -19,6 +19,7 @@
     <ClCompile Include="src\stb_image.cpp" />
     <ClCompile Include="src\Terrain\Terrain.cpp" />
     <ClCompile Include="src\Terrain\TerrainShader.cpp" />
+    <ClCompile Include="src\TextRenderer.cpp" />
     <ClCompile Include="src\Texture.cpp" />
     <ClCompile Include="src\Utils.cpp" />
     <ClInclude Include="src\Camera.h" />
@@ -48,6 +49,7 @@
     <ClInclude Include="src\stb_image.h" />
     <ClInclude Include="src\Terrain\Terrain.h" />
     <ClInclude Include="src\Terrain\TerrainShader.h" />
+    <ClInclude Include="src\TextRenderer.h" />
     <ClInclude Include="src\Texture.h" />
     <ClInclude Include="src\Utils.h" />
   </ItemGroup>
