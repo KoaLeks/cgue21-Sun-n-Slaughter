@@ -45,7 +45,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 /* GAMEPLAY */
-bool move_character(GLFWwindow* window, Character* character, float deltaMovement);
+bool move_character(GLFWwindow* window, Character* character, PlayerCamera* playerCamera, float deltaMovement);
 /* GAMEPLAY END */
 void setPerFrameUniformsNormal(Shader* shader, PlayerCamera& camera, PointLight& pointL, ShadowMap& shadowMap);
 void setPerFrameUniforms(TerrainShader* shader, PlayerCamera& camera, PointLight& pointL, ShadowMap& shadowMap);
@@ -89,6 +89,8 @@ bool _showShadows = true;
 float brightness = 1.0;
 int imgWidth, imgHeight, nrChannels;
 unsigned char* data;
+float playerSpeed = 1000.f;
+float enemySpeed = 25.f;
 
 int terrainPlaneSize = 1024;
 int terrainHeight = 250;
@@ -540,12 +542,12 @@ int main(int argc, char** argv)
 
 			/* GAMEPLAY */
 			// update character and camera position
-			is_moving = move_character(window, &character, dt);
+			is_moving = move_character(window, &character, &playerCamera, dt);
 
 			// update all enemy positions and deaths
-			//for (size_t i = 0; i < level.enemies.size(); i++) {
-			//	level.enemies[i]->chase(character.getPosition(), dt);
-			//}
+			for (size_t i = 0; i < level.enemies.size(); i++) {
+				level.enemies[i]->chase(character.getPosition(), enemySpeed, dt);
+			}
 
 			
 
@@ -825,7 +827,7 @@ void setPerFrameUniforms(TerrainShader* shader, PlayerCamera& camera, PointLight
 }
 
 /* GAMEPLAY */
-bool move_character(GLFWwindow* window, Character* character, float deltaMovement) {
+bool move_character(GLFWwindow* window, Character* character, PlayerCamera* playerCamera, float deltaMovement) {
 	float forward = 0;
 	float leftStrafe = 0;
 	bool updateForward = false;
@@ -861,7 +863,9 @@ bool move_character(GLFWwindow* window, Character* character, float deltaMovemen
 		if (!updateForward) {
 			leftStrafe *= 1.414f;
 		}
-		character->move(-forward * 35.0f, -leftStrafe * 35.0f, deltaMovement);
+
+		character->move(-forward * playerSpeed, -leftStrafe * playerSpeed, deltaMovement);
+		//character->move2(glm::normalize(-getLookVector(playerCamera->getModel())), playerSpeed, deltaMovement);
 		return true;
 	}
 	return false;
