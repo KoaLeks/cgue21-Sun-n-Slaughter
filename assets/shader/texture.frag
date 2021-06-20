@@ -40,7 +40,7 @@ float shadowCalculation(vec4 fragPosLightSpace) {
     shadowCoord = 0.5 * (shadowCoord + 1.0);
 
     vec4 lightDir = vec4(lightPos - vec3(0), 1);
-    float bias = max(0.005 * (1.0 - dot(vec4(vert.normal_world, 1), lightDir)), 0.0015); 
+    float bias = max(0.005 * (1.0 - dot(vec4(vert.normal_world, 1), lightDir)), 0.0005); 
     float shadow = 0.0;     
     vec2 texelSize = 1 / vec2(textureSize(shadowMap, 0));
 	
@@ -49,7 +49,7 @@ float shadowCalculation(vec4 fragPosLightSpace) {
         return 0.0;
     }
     
-    int pcfRange = 3;
+    int pcfRange = 2;
     for (int y = -pcfRange; y <= pcfRange; y++) {
         for(int x = -pcfRange; x <= pcfRange; x++){
             vec2 offset = vec2(x,y) * texelSize;
@@ -152,8 +152,9 @@ void main() {
     float texLevel = floor(texColorHSV.z * levels);
 	texColorHSV.z = (texLevel / levels);
     texColor = hsv2rgb(texColorHSV);
+    
 	
-	vec3 light = ambient + (diffuse + specular) * (1-shadow);
+	vec3 light = ambient + ((diffuse + specular) * (1-shadow));
 	vec3 result = brightness * texColor * light; 
 	color = vec4(result, 1);
 }

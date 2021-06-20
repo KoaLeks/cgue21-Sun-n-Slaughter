@@ -104,7 +104,7 @@ float shadowCalculation(vec4 fragPosLightSpace) {
     shadowCoord = 0.5 * (shadowCoord + 1.0);
 
     vec4 lightDir = vec4(lightPos - vec3(0), 1);
-    float bias = max(0.005 * (1.0 - dot(teNormal, lightDir)), 0.0015); 
+    float bias = max(0.005 * (1.0 - dot(teNormal, lightDir)), 0.0005); 
     float shadow = 0.0;     
     vec2 texelSize = 1 / vec2(textureSize(shadowMap, 0));
 	
@@ -168,7 +168,7 @@ void main(){
     }
     //float shadow = shadowCalculation(lightSpaceMatrix * tePosition); 
     
-    vec3 light = ambient + (diffuse + specular) * (1 - shadow);
+    vec3 light = ambient + ((diffuse + specular) * (1 - shadow));
 	//light = floor(light * levels);
 	//light = light / levels;
 	

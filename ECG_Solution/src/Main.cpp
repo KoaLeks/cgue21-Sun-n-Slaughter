@@ -314,7 +314,7 @@ int main(int argc, char** argv)
 		PointLight pointL(glm::vec3(.5f), glm::vec3(-900, 1020, -1500), glm::vec3(0.08f, 0.03f, 0.01f));
 
 		// Shadow Map
-		ShadowMap shadowMap = ShadowMap(shadowMapDepthShader.get(), pointL.position, nearZ, farZ/15, 450.0f, glm::vec3(terrainPlaneSize/2, 0, -terrainPlaneSize/2));
+		ShadowMap shadowMap = ShadowMap(shadowMapDepthShader.get(), pointL.position, nearZ, farZ/10, 400.0f, glm::vec3(terrainPlaneSize/2, 0, -terrainPlaneSize/2));
 
 		std::shared_ptr<MeshMaterial> debug = std::make_shared<MeshMaterial>(debugShader, glm::vec3(0.5f, 0.7f, 0.3f), 8.0f);
 		std::shared_ptr<MeshMaterial> material = std::make_shared<MeshMaterial>(textureShader, glm::vec3(0.3f, 0.8f, 0.0f), 8.0f);
@@ -531,8 +531,9 @@ int main(int argc, char** argv)
 			// --------------------------------------------------------------
 			if (_showShadows) {
 				shadowMap.updateLightPos(pointL.position * glm::vec3(0.5));
-				shadowMap.draw();
+
 				//glCullFace(GL_FRONT);
+				shadowMap.draw();
 				character.drawDepth(shadowMapDepthShader.get());
 				level.drawDepth(shadowMapDepthShader.get());
 				//glCullFace(GL_BACK);
@@ -544,9 +545,9 @@ int main(int argc, char** argv)
 				glViewport(0, 0, window_width, window_height);
 				glClearColor(0, 0, 0, 1);
 				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-				// debug: render shadowMap on quad 
-				//shadowMap.drawDebug(shadowMapDebugShader.get());
-				//renderQuad();
+				// debug: render shadowMap on screen 
+				shadowMap.drawDebug(shadowMapDebugShader.get());
+				renderQuad();
 			}
 
 			// update view frustum
