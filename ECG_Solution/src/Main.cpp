@@ -580,8 +580,17 @@ int main(int argc, char** argv)
 			//guiRenderer.render(guis, brightness);
 
 			// draw HUD
-			//text->RenderText("HP: " + std::to_string(character.getHP()), 100.0f, 100.0f, 1.0f);
-			hud->RenderText("TEST", 100.0f, 100.0f, 1.0f, glm::vec3(0, 0, 0));
+			hud->RenderText("HP: " + std::to_string(character.getHP()), 10.0f, 10.0f, 1.0f);
+			
+			if (fpsCnt > 60) {
+				fpsCnt = 0;
+				fps = int(1.0f / dt);
+			}
+			fpsCnt++;
+
+			hud->RenderText("FPS: " + std::to_string(fps), 10.0f, window_height - 30.0f, 1.0f);
+			hud->RenderText("Objects: " + std::to_string(level.getDrawnObjects()), 10.0f, window_height - 60.0f, 1.0f);
+			 
 			// Render flares
 			flareMangaer.render(playerCamera.getViewProjectionMatrix(), pointL.position, brightness);
 
@@ -880,6 +889,8 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	}
 	/* GAMEPLAY END */
 }
+
+
 
 static void APIENTRY DebugCallbackDefault(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const GLvoid* userParam) {
 	if (id == 131185 || id == 131218) return; // ignore performance warnings from nvidia
