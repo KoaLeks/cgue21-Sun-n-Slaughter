@@ -89,6 +89,9 @@ void TextRenderer::Load(std::string font, GLuint fontSize)
 
 void TextRenderer::RenderText(std::string text, GLfloat x, GLfloat y, GLfloat scale, glm::vec3 color)
 {
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	TextShader->use();
 	TextShader->setUniform("textColor", color);
 	glActiveTexture(GL_TEXTURE0);
@@ -129,9 +132,8 @@ void TextRenderer::RenderText(std::string text, GLfloat x, GLfloat y, GLfloat sc
 	}
 	glBindVertexArray(0);
 	glBindTexture(GL_TEXTURE_2D, 0);
-	glBindVertexArray(0);
-	glBindTexture(GL_TEXTURE_2D, 0);
 	TextShader->unuse();
+	glDisable(GL_BLEND);
 }
 
 void TextRenderer::RenderImage(GLuint imagePos, GLfloat x, GLfloat y, GLfloat scale, glm::vec3 color) {

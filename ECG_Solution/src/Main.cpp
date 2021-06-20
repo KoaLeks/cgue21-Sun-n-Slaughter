@@ -288,7 +288,7 @@ int main(int argc, char** argv)
 		std::shared_ptr<Shader> skyboxShader = std::make_shared<Shader>("skybox.vert", "skybox.frag");
 		std::shared_ptr<Shader> shadowMapDebugShader = std::make_shared<Shader>("shadowMapQuadDebug.vert", "shadowMapQuadDebug.frag");
 		std::shared_ptr<Shader> shadowMapDepthShader = std::make_shared<Shader>("shadowmap_depth.vert", "shadowmap_depth.frag");
-		//std::shared_ptr<Shader> guiShader = std::make_shared<Shader>("gui.vert", "gui.frag");
+		std::shared_ptr<Shader> guiShader = std::make_shared<Shader>("gui.vert", "gui.frag");
 		std::shared_ptr<TerrainShader> tessellationShader = std::make_shared<TerrainShader>(
 			"assets/shader/terrain.vert", 
 			"assets/shader/terrain.tessc", 
@@ -380,7 +380,7 @@ int main(int argc, char** argv)
 		flares.push_back(GuiTexture(flare4.getTextureId(), glm::vec2(0.0f), glm::vec2(0.4f)));
 		flares.push_back(GuiTexture(flare8.getTextureId(), glm::vec2(0.0f), glm::vec2(0.6f)));
 
-		//FlareManager flareMangaer = FlareManager(guiShader.get(), 0.15f, flares);
+		FlareManager flareMangaer = FlareManager(guiShader.get(), 0.15f, flares);
 
 		/* GAMEPLAY */
 		/* --------------------------------------------- */
@@ -576,15 +576,15 @@ int main(int argc, char** argv)
 			character.animate(animationStep);
 			/* GAMEPLAY END*/
 
-			// Render flares
-			//flareMangaer.render(playerCamera.getViewProjectionMatrix(), pointL.position, brightness);
-
 			// Render GUI
 			//guiRenderer.render(guis, brightness);
 
 			// draw HUD
 			//text->RenderText("HP: " + std::to_string(character.getHP()), 100.0f, 100.0f, 1.0f);
 			hud->RenderText("TEST", 100.0f, 100.0f, 1.0f, glm::vec3(0, 0, 0));
+			// Render flares
+			flareMangaer.render(playerCamera.getViewProjectionMatrix(), pointL.position, brightness);
+
 
 			// Compute frame time
 			dt = t;
