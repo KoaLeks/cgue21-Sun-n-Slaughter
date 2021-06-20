@@ -209,8 +209,8 @@ void Scene::processMesh(aiMesh* mesh, const aiScene* scene, bool cookMesh, bool 
 		bDesc.halfHeight = lenVec.y / 2.0f;
 		bDesc.halfForwardExtent = lenVec.z / 2.0f;
 		bDesc.halfSideExtent = lenVec.x / 2.0f;
-		//bDesc.stepOffset = 0.0f;
-		bDesc.slopeLimit = 4.0f;
+		bDesc.stepOffset = 0.0f;
+		bDesc.slopeLimit = 0.0f;
 		bDesc.upDirection = physx::PxVec3(0, 1, 0);
 		bDesc.material = _material;
 		
@@ -265,7 +265,7 @@ void Character::move(float forward, float strafeLeft, float dt) {
 	float addY = forward * glm::sin(glm::radians(_angle)) + strafeLeft * glm::cos(-glm::radians(_angle));
 
 
-	_pxController->move(physx::PxVec3(addY, -9.8f, addX) * dt, 0.001f, dt, physx::PxControllerFilters());
+	_pxController->move(physx::PxVec3(addY, -98.0f, addX) * dt, 0.001f, dt, physx::PxControllerFilters());
 	//std::cout << "x: " << _pxController->getPosition().x << ", y: " << _pxController->getPosition().y << ", z: " << _pxController->getPosition().z << std::endl;
 	for (unsigned int i = 0; i < nodes.size(); i++) {
 		nodes[i]->setPosition(_pxController->getPosition());
@@ -278,7 +278,7 @@ void Character::move2(glm::vec3 dir, float speed, float dt) {
 	float addX = speed * dir.x;
 	float addZ = speed * dir.z;
 
-	_pxController->move(physx::PxVec3(addX, -900.8f, addZ) * dt, 0.001f, dt, physx::PxControllerFilters());
+	_pxController->move(physx::PxVec3(addX, -9.8f, addZ) * dt, 0.001f, dt, physx::PxControllerFilters());
 	//std::cout << "x: " << _pxController->getPosition().x << ", y: " << _pxController->getPosition().y << ", z: " << _pxController->getPosition().z << std::endl;
 	for (unsigned int i = 0; i < nodes.size(); i++) {
 		nodes[i]->setPosition(_pxController->getPosition());

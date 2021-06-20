@@ -92,8 +92,8 @@ bool _showShadows = true;
 float brightness = 1.0;
 int imgWidth, imgHeight, nrChannels;
 unsigned char* data;
-float playerSpeed = 500.f;
-float enemySpeed = 30.f;
+float playerSpeed = 1000.f;
+float enemySpeed = 25.f;
 
 int terrainPlaneSize = 1024;
 int terrainHeight = 250;
