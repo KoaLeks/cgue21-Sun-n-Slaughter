@@ -547,8 +547,8 @@ int main(int argc, char** argv)
 				glClearColor(0, 0, 0, 1);
 				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 				// debug: render shadowMap on screen 
-				shadowMap.drawDebug(shadowMapDebugShader.get());
-				renderQuad();
+				//shadowMap.drawDebug(shadowMapDebugShader.get());
+				//renderQuad();
 			}
 
 			// update view frustum
