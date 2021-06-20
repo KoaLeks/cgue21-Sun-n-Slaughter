@@ -49,8 +49,11 @@ bool move_character(GLFWwindow* window, Character* character, float deltaMovemen
 /* GAMEPLAY END */
 void setPerFrameUniformsNormal(Shader* shader, PlayerCamera& camera, PointLight& pointL, ShadowMap& shadowMap);
 void setPerFrameUniforms(TerrainShader* shader, PlayerCamera& camera, PointLight& pointL, ShadowMap& shadowMap);
+int main(int argc, char** argv);
 float getYPosition(float x, float z);
 void renderQuad();
+void loadHighscores();
+void safeHighscore();
 
 
 /* --------------------------------------------- */
@@ -93,6 +96,11 @@ unsigned char* data;
 int terrainPlaneSize = 1024;
 int terrainHeight = 250;
 float lightDistance = 20000.0f;
+
+std::string playerName;
+int highscore = 0;
+std::string highscoresN[5];
+int highscores[5];
 /* GAMEPLAY END */
 
 /* --------------------------------------------- */
@@ -119,7 +127,17 @@ int main(int argc, char** argv)
 
 	/* GAMEPLAY */
 	_selectedFPS = reader.GetInteger("window", "fps", 60);
+
+	playerName = reader.Get("player", "name", "Unknown");
 	/* GAMEPLAY END */
+
+	//Load highscores
+	loadHighscores();
+
+	//TEST
+	//highscore = 99;
+	//safeHighscore();
+
 
 	/* --------------------------------------------- */
 	// Create context
@@ -272,7 +290,6 @@ int main(int argc, char** argv)
 
 	TextRenderer* hud = new TextRenderer(window_width, window_height);
 	hud->Load("assets/fonts/beachday.ttf", 32);
-	//GLuint frameHud = loadTextureFromFile("assets/textures/frame_hud.png");
 
 	/* GAMEPLAY END */
 
@@ -581,6 +598,7 @@ int main(int argc, char** argv)
 
 			// draw HUD
 			hud->RenderText("HP: " + std::to_string(character.getHP()), 10.0f, 10.0f, 1.0f);
+			hud->RenderText("Highscore: " + std::to_string(highscore), 10.0f, 40.0f, 1.0f);
 			
 			if (fpsCnt > 60) {
 				fpsCnt = 0;
@@ -693,6 +711,52 @@ void renderQuad()
 	glBindVertexArray(0);
 }
 
+void loadHighscores() {
+	// Create a text string, which is used to output the text file
+	std::string line;
+	int place = 0; // first place (1) = 0
+
+	// Read from the text file
+	std::ifstream file("assets/highscores.txt");
+
+	// Use a while loop together with the getline() function to read the file line by line
+	while (std::getline(file, line)) {
+		// Output the text from the file
+		highscoresN[place] = line;
+		if (std::getline(file, line)) {
+			highscores[place] = std::atoi(line.c_str());
+		}
+		//std::cout << highscoresN[place] << ": " << highscores[place] << std::endl;
+		place++;
+	}
+
+	// Close the file
+	file.close();
+}
+
+void safeHighscore() {
+	bool saved = false;
+	std:: ofstream file("assets/highscores.txt");
+
+	for (int i = 0; i < 5; i++) {
+		if (highscores[i] < highscore && !saved) {
+			for (int x = 3; x >= i; x--) {
+				highscores[x + 1] = highscores[x];
+				highscoresN[x + 1] = highscoresN[x];
+			}
+
+			highscores[i] = highscore;
+			highscoresN[i] = playerName;
+
+			saved = true;
+		}
+		file << highscoresN[i] << std::endl;
+		file << highscores[i] << std::endl;
+	}
+
+	// Close the file
+	file.close();
+}
 
 void setPerFrameUniformsNormal(Shader* shader, PlayerCamera& camera, PointLight& pointL, ShadowMap& shadowMap)
 {

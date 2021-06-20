@@ -32,8 +32,6 @@ protected:
 	//physx::PxRigidActor* winConditionActor;
 	unsigned int _drawnObjects;
 
-	const aiScene* enemyMaster;
-
 public:
 	Scene(std::shared_ptr<Shader> shader, char *path, physx::PxPhysics* physics, physx::PxCooking* cooking, physx::PxScene* scene, physx::PxMaterial* material, physx::PxControllerManager* manager, std::shared_ptr<FrustumG> viewFrustum)
 		: _shader(shader), _physics(physics), _cooking(cooking), _scene(scene), _material(material), _manager(manager), _viewFrustum(viewFrustum) {
