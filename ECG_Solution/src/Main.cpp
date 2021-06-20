@@ -30,6 +30,7 @@
 #include "PlayerCamera.h"
 #include "Scene.h"
 #include "FrustumG.h"
+#include "TextRenderer.h"
 using namespace physx;
 /* GAMEPLAY END */
 
@@ -181,8 +182,8 @@ int main(int argc, char** argv)
 
 	/* GAMEPLAY */
 	// for HUD overlay
-	//glEnable(GL_BLEND);
-	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	/* GAMEPLAY END */
 
 	/* GAMEPLAY */
@@ -269,8 +270,8 @@ int main(int argc, char** argv)
 	// Init HUD / Text
 	/* --------------------------------------------- */
 
-	//TextRenderer* text = new TextRenderer(window_width, window_height);
-	//text->Load("assets/fonts/MetalMania-Regular.ttf", 32);
+	TextRenderer* hud = new TextRenderer(window_width, window_height);
+	hud->Load("assets/fonts/beachday.ttf", 32);
 	//GLuint frameHud = loadTextureFromFile("assets/textures/frame_hud.png");
 
 	/* GAMEPLAY END */
@@ -287,7 +288,7 @@ int main(int argc, char** argv)
 		std::shared_ptr<Shader> skyboxShader = std::make_shared<Shader>("skybox.vert", "skybox.frag");
 		std::shared_ptr<Shader> shadowMapDebugShader = std::make_shared<Shader>("shadowMapQuadDebug.vert", "shadowMapQuadDebug.frag");
 		std::shared_ptr<Shader> shadowMapDepthShader = std::make_shared<Shader>("shadowmap_depth.vert", "shadowmap_depth.frag");
-		std::shared_ptr<Shader> guiShader = std::make_shared<Shader>("gui.vert", "gui.frag");
+		//std::shared_ptr<Shader> guiShader = std::make_shared<Shader>("gui.vert", "gui.frag");
 		std::shared_ptr<TerrainShader> tessellationShader = std::make_shared<TerrainShader>(
 			"assets/shader/terrain.vert", 
 			"assets/shader/terrain.tessc", 
@@ -327,19 +328,19 @@ int main(int argc, char** argv)
 		std::vector<glm::vec3> points = treePositions.getPoints();
 
 		// GUI
-		std::vector<GuiTexture> guis;
-		Texture heart = Texture("assets/heart.png", true);
-		float scaleFactor = 50.0f;
-		glm::vec2 scale = glm::vec2(scaleFactor * heart.getAspectRatio() / window_width, scaleFactor / window_height);
-		GuiTexture gui1 = GuiTexture(heart.getTextureId(), glm::vec2(-0.95f, 0.9f), scale);
-		GuiTexture gui2 = GuiTexture(heart.getTextureId(), glm::vec2(-0.88f, 0.9f), scale);
-		GuiTexture gui3 = GuiTexture(heart.getTextureId(), glm::vec2(-0.81f, 0.9f), scale);
-		GuiTexture gui4 = GuiTexture(heart.getTextureId(), glm::vec2(-0.74f, 0.9f), scale);
-		guis.push_back(gui1);
-		guis.push_back(gui2);
-		guis.push_back(gui3);
-		guis.push_back(gui4);
-		GuiRenderer guiRenderer = GuiRenderer(guiShader.get());
+		//std::vector<GuiTexture> guis;
+		//Texture heart = Texture("assets/heart.png", true);
+		//float scaleFactor = 50.0f;
+		//glm::vec2 scale = glm::vec2(scaleFactor * heart.getAspectRatio() / window_width, scaleFactor / window_height);
+		//GuiTexture gui1 = GuiTexture(heart.getTextureId(), glm::vec2(-0.95f, 0.9f), scale);
+		//GuiTexture gui2 = GuiTexture(heart.getTextureId(), glm::vec2(-0.88f, 0.9f), scale);
+		//GuiTexture gui3 = GuiTexture(heart.getTextureId(), glm::vec2(-0.81f, 0.9f), scale);
+		//GuiTexture gui4 = GuiTexture(heart.getTextureId(), glm::vec2(-0.74f, 0.9f), scale);
+		//guis.push_back(gui1);
+		//guis.push_back(gui2);
+		//guis.push_back(gui3);
+		//guis.push_back(gui4);
+		//GuiRenderer guiRenderer = GuiRenderer(guiShader.get());
 
 		// Flare
 		std::vector<GuiTexture> flares;
@@ -379,7 +380,7 @@ int main(int argc, char** argv)
 		flares.push_back(GuiTexture(flare4.getTextureId(), glm::vec2(0.0f), glm::vec2(0.4f)));
 		flares.push_back(GuiTexture(flare8.getTextureId(), glm::vec2(0.0f), glm::vec2(0.6f)));
 
-		FlareManager flareMangaer = FlareManager(guiShader.get(), 0.15f, flares);
+		//FlareManager flareMangaer = FlareManager(guiShader.get(), 0.15f, flares);
 
 		/* GAMEPLAY */
 		/* --------------------------------------------- */
@@ -415,7 +416,7 @@ int main(int argc, char** argv)
 		level.addStaticObject("assets/models/sunbed.obj", PxExtendedVec3(375, getYPosition(375, -220) - 5, -220), 3);
 
 		// TEST ENEMY
-		level.addEnemy(physx::PxExtendedVec3(500, getYPosition(500, -500) - 7, -500), 10);
+		level.addEnemy(physx::PxExtendedVec3(500, getYPosition(500, -500), -500), 10);
 
 		// Init character
 		GLuint animateShader = getComputeShader("assets/shader/animator.comp");
@@ -576,10 +577,14 @@ int main(int argc, char** argv)
 			/* GAMEPLAY END*/
 
 			// Render flares
-			flareMangaer.render(playerCamera.getViewProjectionMatrix(), pointL.position, brightness);
+			//flareMangaer.render(playerCamera.getViewProjectionMatrix(), pointL.position, brightness);
 
 			// Render GUI
-			guiRenderer.render(guis, brightness);
+			//guiRenderer.render(guis, brightness);
+
+			// draw HUD
+			//text->RenderText("HP: " + std::to_string(character.getHP()), 100.0f, 100.0f, 1.0f);
+			hud->RenderText("TEST", 100.0f, 100.0f, 1.0f, glm::vec3(0, 0, 0));
 
 			// Compute frame time
 			dt = t;
