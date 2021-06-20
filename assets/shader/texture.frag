@@ -154,7 +154,7 @@ void main() {
     texColor = hsv2rgb(texColorHSV);
     
 	
-	vec3 light = ambient + ((diffuse + specular) * (1-shadow));
+    vec3 light = ambient + ((diffuse + specular) * (1-shadow));
 	vec3 result = brightness * texColor * light; 
 	color = vec4(result, 1);
 }

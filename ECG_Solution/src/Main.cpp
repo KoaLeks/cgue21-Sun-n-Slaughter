@@ -512,6 +512,17 @@ int main(int argc, char** argv)
 				if (!_draggingCamOnly) {
 					character.updateRotation(playerCamera.getYaw());
 				}
+				//this is the main thing that keeps it from leaving the screen
+				if (xpos < 100 || xpos > window_width - 100) { 
+					lastxpos = window_width / 2;  
+					lastypos = window_height / 2;
+					glfwSetCursorPos(window, lastxpos, lastypos);
+				}
+				else if (ypos < 100 || ypos > window_height - 100) {
+					lastxpos = window_width / 2;
+					lastypos = window_height / 2;
+					glfwSetCursorPos(window, lastxpos, lastypos);
+				}
 			}
 			/* GAMEPLAY END */
 
@@ -572,6 +583,7 @@ int main(int argc, char** argv)
 			viewFrustum->doCheck = _checkFrustum;
 			if (_checkFrustum) {
 				camModel = (playerCamera.getModel());
+				viewFrustum->updateFOV(_fov);
 				viewFrustum->setCamDef(getWorldPosition(camModel), getLookVector(camModel), getUpVector(camModel));
 			}
 
@@ -882,8 +894,8 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 	if (_fov < 30) {
 		_fov = 30;
 	}
-	else if (_fov > 120) {
-		_fov = 120;
+	else if (_fov > 90) {
+		_fov = 90;
 	}
 }
 

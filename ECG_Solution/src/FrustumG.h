@@ -48,6 +48,7 @@ public:
 	FrustumG::~FrustumG() {}
 
 	void setCamInternals(float angle, float ratio, float nearD, float farD);
+	void updateFOV(float fov);
 	void draw(Mesh& mesh, glm::vec3 ftl, glm::vec3 ftr, glm::vec3 fbr, glm::vec3 fbl, glm::vec3 ntl, glm::vec3 ntr, glm::vec3 nbr, glm::vec3 nbl,
 		glm::vec3 tNorm, glm::vec3 bNorm, glm::vec3 lNorm, glm::vec3 rNorm, glm::vec3 nNorm, glm::vec3 fNorm);
 	void setCamDef(glm::vec3& p, glm::vec3& l, glm::vec3& u);
