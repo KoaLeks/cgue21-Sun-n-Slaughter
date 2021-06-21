@@ -90,12 +90,11 @@ bool checkShadows = true;
 float brightness = 1.0;
 int imgWidth, imgHeight, nrChannels;
 unsigned char* data;
-float playerSpeed = 35.f;
-float enemySpeed = 1.f;
+float playerSpeed = 30.f;
+float enemySpeed = 20.f;
 
 int terrainPlaneSize = 1024;
 int terrainHeight = 250;
-float lightDistance = 20000.0f;
 
 std::string playerName;
 int highscore = 0;
@@ -852,8 +851,8 @@ void setPerFrameUniforms(TerrainShader* shader, PlayerCamera& camera, PointLight
 }
 
 bool move_character(GLFWwindow* window, Character* character, PlayerCamera* playerCamera, float deltaMovement) {
-	float forward = 0;
-	float leftStrafe = 0;
+	//float forward = 0;
+	//float leftStrafe = 0;
 	bool updateForward = false;
 	bool updateStrafe = false;
 
@@ -862,34 +861,87 @@ bool move_character(GLFWwindow* window, Character* character, PlayerCamera* play
 	int holdingLeftStrafe = glfwGetKey(window, GLFW_KEY_A);
 	int holdingRightStrafe = glfwGetKey(window, GLFW_KEY_D);
 
+	float zDir, xDir;
+	glm::vec3 up = glm::vec3(0, 1, 0);
+	xDir = glm::sin(glm::radians(playerCamera->getYaw()));
+	zDir = glm::cos(glm::radians(playerCamera->getYaw()));
+	glm::vec3 dirF = glm::normalize(-glm::vec3(xDir, 0, zDir));
+	glm::vec3 directionForward(0);
+	glm::vec3 directionRight(0);
+
+
 	if (holdingForward == GLFW_PRESS) {
-		forward += deltaMovement;
+		directionForward = dirF;
 		updateForward = true;
 	}
-	if (holdingBackward == GLFW_PRESS) {
-		forward -= deltaMovement;
+	else if (holdingForward == GLFW_PRESS && holdingLeftStrafe == GLFW_PRESS) {
+		directionForward = dirF;
+		directionRight = glm::normalize(glm::cross(directionForward, -up));
 		updateForward = true;
+		updateStrafe = true;
+	}
+	else if (holdingForward == GLFW_PRESS && holdingRightStrafe == GLFW_PRESS) {
+		directionForward = dirF;
+		directionRight = glm::normalize(glm::cross(directionForward, up));
+		updateForward = true;
+		updateStrafe = true;
+	}
+
+	if (holdingBackward == GLFW_PRESS) {
+		directionForward = -dirF;
+		updateForward = true;
+	}
+	else if (holdingBackward == GLFW_PRESS && holdingLeftStrafe == GLFW_PRESS) {
+		directionForward = -dirF;
+		directionRight = glm::normalize(glm::cross(-directionForward, -up));
+		updateForward = true;
+		updateStrafe = true;
+	}
+	else if (holdingBackward == GLFW_PRESS && holdingRightStrafe == GLFW_PRESS) {
+		directionForward = -dirF;
+		directionRight = glm::normalize(glm::cross(-directionForward, up));
+		updateForward = true;
+		updateStrafe = true;
 	}
 
 	if (holdingLeftStrafe == GLFW_PRESS) {
-		leftStrafe += deltaMovement;
+		directionRight = glm::normalize(glm::cross(dirF, -up));
 		updateStrafe = true;
 	}
-	if (holdingRightStrafe == GLFW_PRESS) {
-		leftStrafe -= deltaMovement;
+	else if (holdingRightStrafe == GLFW_PRESS) {
+		directionRight = glm::normalize(glm::cross(dirF, up));
 		updateStrafe = true;
 	}
 
+	//if (holdingForward == GLFW_PRESS) {
+	//	forward += deltaMovement;
+	//	updateForward = true;
+	//}
+	//if (holdingBackward == GLFW_PRESS) {
+	//	forward -= deltaMovement;
+	//	updateForward = true;
+	//}
+	//
+	//if (holdingLeftStrafe == GLFW_PRESS) {
+	//	leftStrafe += deltaMovement;
+	//	updateStrafe = true;
+	//}
+	//if (holdingRightStrafe == GLFW_PRESS) {
+	//	leftStrafe -= deltaMovement;
+	//	updateStrafe = true;
+	//}
+	//
 	if (updateForward || updateStrafe) {
 		if (!updateStrafe) {
-			forward *= 1.414f;
+			directionForward *= 1.414f;
 		}
 		if (!updateForward) {
-			leftStrafe *= 1.414f;
+			directionRight *= 1.414f;
 		}
 
-		character->move(-forward * playerSpeed, -leftStrafe * playerSpeed, deltaMovement);
-		//character->move2(glm::normalize(-getLookVector(playerCamera->getModel())), playerSpeed, deltaMovement);
+		//character->move(-forward * playerSpeed, -leftStrafe * playerSpeed, deltaMovement);
+		character->move2((directionForward + directionRight), playerSpeed, deltaMovement);
+		
 		return true;
 	}
 	return false;
