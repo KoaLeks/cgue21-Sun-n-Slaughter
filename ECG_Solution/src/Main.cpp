@@ -84,14 +84,15 @@ double lastxpos = 0;
 double lastypos = 0;
 int _selectedFPS = 60;
 static bool checkFPSLimit = true;
-bool _winCondition = false;
+
 bool _hitDetection = false;
+
 bool checkShadows = true;
 float brightness = 1.0;
 int imgWidth, imgHeight, nrChannels;
 unsigned char* data;
 float playerSpeed = 35.f;
-float enemySpeed = 1.f;
+float enemySpeed = 0.5f;
 
 int terrainPlaneSize = 1024;
 int terrainHeight = 250;
@@ -272,13 +273,12 @@ int main(int argc, char** argv)
 		EXIT_WITH_ERROR("Failed to init cooking")
 	}
 
-	SimulationCallback* simulatonCallback = new SimulationCallback(&_winCondition, &_hitDetection);
+	SimulationCallback* simulationCallback = new SimulationCallback(&_hitDetection);
 	PxScene* gScene = nullptr;
 	PxSceneDesc sceneDesc(gPhysicsSDK->getTolerancesScale());
 	sceneDesc.gravity = PxVec3(0.0f, -9.8f, 0.0f);
 	sceneDesc.cpuDispatcher = PxDefaultCpuDispatcherCreate(1);
 	sceneDesc.filterShader = PxDefaultSimulationFilterShader;
-	// sceneDesc.simulationEventCallback = simulatonCallback;
 	gScene = gPhysicsSDK->createScene(sceneDesc);
 	PxMaterial* mMaterial = gPhysicsSDK->createMaterial(0.5f, 0.5f, 0.5f);
 
@@ -293,7 +293,7 @@ int main(int argc, char** argv)
 	cDesc.slopeLimit = 0.2f;
 	cDesc.upDirection = PxVec3(0, 1, 0);
 	cDesc.material = mMaterial;
-	//cDesc.reportCallback = simulatonCallback;
+	//cDesc.reportCallback = simulationCallback;
 	PxController* pxChar = gManager->createController(cDesc);
 
 	/* GAMEPLAY END */
@@ -418,7 +418,6 @@ int main(int argc, char** argv)
 
 		//std::shared_ptr<Shader> textureShader = std::make_shared<Shader>("texture.vert", "texture.frag");
 		Scene level(textureShader, "assets/models/cook_map_detailed.obj", gPhysicsSDK, gCooking, gScene, mMaterial, gManager, viewFrustum);
-		//simulatonCallback->setWinConditionActor(level.getWinConditionActor());
 
 		// Load heightmap
 		data = stbi_load(heightMapPath, &imgWidth, &imgHeight, &nrChannels, 4);
@@ -438,7 +437,7 @@ int main(int argc, char** argv)
 		level.addStaticObject("assets/models/sunbed.obj", PxExtendedVec3(375, getYPosition(375, -220) - 5, -220), 3);
 
 		// TEST ENEMY
-		level.addEnemy(physx::PxExtendedVec3(500, getYPosition(500, -500) - 5, -500), 10);
+		level.addEnemy(physx::PxExtendedVec3(500, getYPosition(500, -500) - 5, -500), 10, simulationCallback);
 
 		// Init character
 		GLuint animateShader = getComputeShader("assets/shader/animator.comp");
@@ -547,8 +546,6 @@ int main(int argc, char** argv)
 			for (size_t i = 0; i < level.enemies.size(); i++) {
 				level.enemies[i]->chase(character.getPosition(), enemySpeed, dt);
 			}
-
-
 
 			// _hitDetection from physx callback -> locked on 60 fps
 			if (_hitDetection) {
