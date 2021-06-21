@@ -31,27 +31,27 @@ void main()
 		vec3 dcMidPos = vec3(vPosition[3].xyz + ((vPosition[2].xyz - vPosition[3].xyz) / 2));
 		vec3 bcMidPos = vec3(vPosition[1].xyz + ((vPosition[2].xyz - vPosition[1].xyz) / 2));
 		
-		float abDistance = (distance(abMidPos.xyz, vec3(-camera_world.x, camera_world.y, -camera_world.z)));
-		float adDistance = (distance(adMidPos.xyz, vec3(-camera_world.x, camera_world.y, -camera_world.z)));
-		float dcDistance = (distance(dcMidPos.xyz, vec3(-camera_world.x, camera_world.y, -camera_world.z)));
-		float bcDistance = (distance(bcMidPos.xyz, vec3(-camera_world.x, camera_world.y, -camera_world.z)));
+		float abDistance = abs(distance( vec3(abMidPos.x, 0, abMidPos.z), vec3(-camera_world.x, 0, -camera_world.z) ));
+		float adDistance = abs(distance( vec3(adMidPos.x, 0, adMidPos.z), vec3(-camera_world.x, 0, -camera_world.z) ));
+		float dcDistance = abs(distance( vec3(dcMidPos.x, 0, dcMidPos.z), vec3(-camera_world.x, 0, -camera_world.z) ));
+		float bcDistance = abs(distance( vec3(bcMidPos.x, 0, bcMidPos.z), vec3(-camera_world.x, 0, -camera_world.z) ));
 
 		// Interpolate between min/max tess levels
 		// max = 64, min = 1
 		// apply tess level to the corresponding outer-level parameter
-		float adTessLevel = mix( 48, 1, adDistance / 1024);
-		float dcTessLevel = mix( 48, 1, dcDistance / 1024);
-		float bcTessLevel = mix( 48, 1, bcDistance / 1024);
-		float abTessLevel = mix( 48, 1, abDistance / 1024);
+		float abTessLevel = mix( 12, 1, abDistance/250);
+		float adTessLevel = mix( 12, 1, adDistance/250);
+		float dcTessLevel = mix( 12, 1, dcDistance/250);
+		float bcTessLevel = mix( 12, 1, bcDistance/250);
 		
 		// average of the outer level
 		float innerTessLevel = (abTessLevel + adTessLevel + dcTessLevel + bcTessLevel) / 4;
 		
 		// quads
-		gl_TessLevelOuter[0] = max(1, adTessLevel);
-		gl_TessLevelOuter[1] = max(1, dcTessLevel);
-		gl_TessLevelOuter[2] = max(1, bcTessLevel);
-		gl_TessLevelOuter[3] = max(1, adTessLevel);
+		gl_TessLevelOuter[0] = max(1, abTessLevel);
+		gl_TessLevelOuter[1] = max(1, adTessLevel);
+		gl_TessLevelOuter[2] = max(1, dcTessLevel);
+		gl_TessLevelOuter[3] = max(1, bcTessLevel);
 		gl_TessLevelInner[0] = max(1, innerTessLevel);
 		gl_TessLevelInner[1] = max(1, innerTessLevel);
 

@@ -21,6 +21,6 @@ void main(){
 	
 	// new position
 	vec4 newPos = vec4(position.x, height, position.z, 1.0);
-	vPosition = vec4(position.x, position.y, position.z, 1);
+	vPosition = vec4(position.x, position.y, position.z, 1.0);
 	vFragPosLightSpace = lightSpaceMatrix * newPos;
 }

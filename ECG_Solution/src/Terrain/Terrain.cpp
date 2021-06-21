@@ -174,8 +174,6 @@ void Terrain::draw(TerrainShader* terrainShader, PlayerCamera& camera, ShadowMap
 	terrainShader->setUniform("stoneTexture", 4);
 	terrainShader->setUniform("snowTexture", 5);
 
-	terrainShader->setUniform("viewPos", camera.getPosition());
-
 	glBindVertexArray(terrainVao);
 	glPatchParameteri(GL_PATCH_VERTICES, 4);
 	glDrawElements(GL_PATCHES, terrainCount, GL_UNSIGNED_INT, 0);

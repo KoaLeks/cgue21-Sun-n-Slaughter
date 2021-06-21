@@ -90,8 +90,8 @@ bool checkShadows = true;
 float brightness = 1.0;
 int imgWidth, imgHeight, nrChannels;
 unsigned char* data;
-float playerSpeed = 1000.f;
-float enemySpeed = 25.f;
+float playerSpeed = 35.f;
+float enemySpeed = 1.f;
 
 int terrainPlaneSize = 1024;
 int terrainHeight = 250;
@@ -337,16 +337,16 @@ int main(int argc, char** argv)
 		PointLight pointL(glm::vec3(.5f), glm::vec3(-900, 1020, -1500), glm::vec3(0.08f, 0.03f, 0.01f));
 
 		// Shadow Map
-		ShadowMap shadowMap = ShadowMap(shadowMapDepthShader.get(), pointL.position, nearZ, farZ / 10, 400.0f, glm::vec3(terrainPlaneSize / 2, 0, -terrainPlaneSize / 2));
+		ShadowMap shadowMap = ShadowMap(shadowMapDepthShader.get(), pointL.position, nearZ, farZ, 400.0f, glm::vec3(terrainPlaneSize/2, 0, -terrainPlaneSize/2));
 
 		std::shared_ptr<MeshMaterial> debug = std::make_shared<MeshMaterial>(debugShader, glm::vec3(0.5f, 0.7f, 0.3f), 8.0f);
 		std::shared_ptr<MeshMaterial> material = std::make_shared<MeshMaterial>(textureShader, glm::vec3(0.3f, 0.8f, 0.0f), 8.0f);
 		std::shared_ptr<MeshMaterial> depth = std::make_shared<MeshMaterial>(shadowMapDepthShader, glm::vec3(0.5f, 0.7f, 0.3f), 8.0f);
 
-		//Mesh frust = Mesh(glm::translate(glm::mat4(1), glm::vec3(0)), Mesh::createCubeMesh(1, 1, 1), debug);
+		Mesh frust = Mesh(glm::translate(glm::mat4(1), glm::vec3(0)), Mesh::createCubeMesh(10, 10, 10), debug);
 
 		// Tree positions
-		PossionDiskSampling treePositions = PossionDiskSampling(terrainPlaneSize, treeMaskPath, heightMapPath, terrainHeight, 50, 10);
+		PossionDiskSampling treePositions = PossionDiskSampling(terrainPlaneSize, treeMaskPath, heightMapPath, terrainHeight, 150, 10);
 		std::vector<glm::vec3> points = treePositions.getPoints();
 
 		// GUI
@@ -589,12 +589,13 @@ int main(int argc, char** argv)
 			if (checkVFC) {
 				camModel = (playerCamera.getModel());
 				viewFrustum->updateFOV(_fov);
-				viewFrustum->setCamDef(getWorldPosition(camModel), getLookVector(camModel), getUpVector(camModel));
+				viewFrustum->setCamDef(playerCamera.getActualPosition(), getLookVector(camModel), getUpVector(camModel));
 			}
 
 			// light position
 			//frust.resetModelMatrix();
 			//frust.transform(glm::translate(glm::mat4(1), pointL.position));
+			//frust.draw();
 			//frust.draw();
 
 			// 2. Render Scene
@@ -682,6 +683,7 @@ int main(int argc, char** argv)
 	pvd->release();
 	transport->release();
 	FreeImage_DeInitialise();
+
 	/* GAMEPLAY END */
 	destroyFramework();
 

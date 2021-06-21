@@ -13,7 +13,7 @@ uniform sampler2D snowTexture;
 
 uniform sampler2D shadowMap;
 uniform vec3 lightPos;
-uniform vec3 viewPos;
+uniform vec3 camera_world;
 uniform mat4 lightSpaceMatrix;
 uniform float brightness;
 uniform bool showShadows;
@@ -113,7 +113,7 @@ float shadowCalculation(vec4 fragPosLightSpace) {
         return 0.0;
     }
     
-    int pcfRange = 3;
+    int pcfRange = 2;
     for (int y = -pcfRange; y <= pcfRange; y++) {
         for(int x = -pcfRange; x <= pcfRange; x++){
             vec2 offset = vec2(x,y) * texelSize;
@@ -145,7 +145,7 @@ void main(){
 	vec3 diffuse = diff * lightColor;
     
     // specular
-    vec3 viewDir = normalize(viewPos - tePosition.xyz);
+    vec3 viewDir = normalize(camera_world - tePosition.xyz);
     float spec = 0.0;
     vec3 halfwayDir = normalize(lightDir + viewDir);  
     spec = pow(max(dot(teNormal.xyz, halfwayDir), 0.0), 64.0);

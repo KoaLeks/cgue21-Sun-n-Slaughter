@@ -32,6 +32,7 @@ public:
 	~PlayerCamera();
 
 	glm::vec3 getPosition();
+	glm::vec3 getActualPosition();
 	glm::mat4 getViewProjectionMatrix();
 	glm::mat4 getProjection();
 	glm::mat4 getModel();

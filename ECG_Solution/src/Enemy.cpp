@@ -69,7 +69,7 @@ void Enemy::move2(glm::vec3 dir, float speed, float dt) {
 	float addX = speed * dir.x; 
 	float addZ = speed * dir.z;
 
-	physx::PxControllerCollisionFlags test = _pxChar->move(physx::PxVec3(addX, -9.8f, addZ) * dt, 0.001f, dt, physx::PxControllerFilters());
+	physx::PxControllerCollisionFlags test = _pxChar->move(physx::PxVec3(addX, -9.8f, addZ)/* * dt*/, 0.001f, dt, physx::PxControllerFilters());
 	//_pxChar->getActor()->addForce(physx::PxVec3(addX, -0.0f, addZ));
 	this->setPosition(_pxChar->getPosition());
 }

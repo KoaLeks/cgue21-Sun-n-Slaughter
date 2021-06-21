@@ -205,7 +205,7 @@ void Scene::processMesh(aiMesh* mesh, const aiScene* scene, bool cookMesh, bool 
 	else if (isEnemy) {
 		physx::PxBoxControllerDesc bDesc;
 		bDesc.position = physx::PxExtendedVec3(position.x, position.y, position.z);
-		bDesc.contactOffset = 0.05f;
+		bDesc.contactOffset = 0.5f;
 		bDesc.halfHeight = lenVec.y / 2.0f;
 		bDesc.halfForwardExtent = lenVec.z / 2.0f;
 		bDesc.halfSideExtent = lenVec.x / 2.0f;
@@ -213,6 +213,7 @@ void Scene::processMesh(aiMesh* mesh, const aiScene* scene, bool cookMesh, bool 
 		bDesc.slopeLimit = 0.0f;
 		bDesc.upDirection = physx::PxVec3(0, 1, 0);
 		bDesc.material = _material;
+		
 		
 		pxChar = _manager->createController(bDesc);
 		meshActor = pxChar->getActor();
@@ -264,7 +265,7 @@ void Character::move(float forward, float strafeLeft, float dt) {
 	float addY = forward * glm::sin(glm::radians(_angle)) + strafeLeft * glm::cos(-glm::radians(_angle));
 
 
-	_pxController->move(physx::PxVec3(addY, -98.0f, addX) * dt, 0.001f, dt, physx::PxControllerFilters());
+	_pxController->move(physx::PxVec3(addY, -98.0f, addX)/* * dt*/, 0.001f, dt, physx::PxControllerFilters());
 	//std::cout << "x: " << _pxController->getPosition().x << ", y: " << _pxController->getPosition().y << ", z: " << _pxController->getPosition().z << std::endl;
 	for (unsigned int i = 0; i < nodes.size(); i++) {
 		nodes[i]->setPosition(_pxController->getPosition());
