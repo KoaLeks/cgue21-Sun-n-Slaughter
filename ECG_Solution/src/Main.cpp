@@ -630,6 +630,17 @@ int main(int argc, char** argv)
 			hud->RenderText("FPS: " + std::to_string(fps), 10.0f, window_height - 30.0f, 1.0f);
 			hud->RenderText("Objects: " + std::to_string(level.getDrawnObjects()), 10.0f, window_height - 60.0f, 1.0f);
 
+			//win or rather lose condition
+			if (character.getHP() <= 0) {
+				hud->RenderText("You got slaughtered!", window_width / 2 - 500, window_height / 2 - 100, 2.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+				showHighscores(hud, glm::vec3(1.0f, 0.0f, 0.0f));
+				brightness -= dt / 3;
+
+				if (brightness <= -1.0f) {
+					glfwSetWindowShouldClose(window, true);
+				}
+			}
+
 			// Render flares
 			flareMangaer.render(playerCamera.getViewProjectionMatrix(), pointL.position, brightness);
 
