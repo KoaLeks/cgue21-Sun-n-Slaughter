@@ -129,6 +129,7 @@ void Geometry::draw(glm::mat4 matrix)
 			glDrawElements(GL_TRIANGLES, _elements, GL_UNSIGNED_INT, 0);
 			glBindVertexArray(0);
 			(*_drawnObjects)++;
+			shader->unuse();
 
 		}
 	}
@@ -156,6 +157,7 @@ void Geometry::draw(Shader* shader, glm::mat4 matrix)
 			glBindVertexArray(0);
 			(*_drawnObjects)++;
 
+			shader->unuse();
 		}
 	}
 

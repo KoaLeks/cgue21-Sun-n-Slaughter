@@ -65,3 +65,7 @@ glm::mat4 PlayerCamera::getProjection() {
 glm::mat4 PlayerCamera::getModel() {
 	return _viewMatrix * glm::transpose(_rotationMatrix) * glm::translate(glm::mat4(1.0f), _position);
 }
+
+glm::vec3 PlayerCamera::getActualPosition() {
+	return glm::inverse(getModel())[3];
+}

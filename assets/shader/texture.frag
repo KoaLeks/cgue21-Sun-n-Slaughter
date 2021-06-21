@@ -49,7 +49,7 @@ float shadowCalculation(vec4 fragPosLightSpace) {
         return 0.0;
     }
     
-    int pcfRange = 2;
+    int pcfRange = 1;
     for (int y = -pcfRange; y <= pcfRange; y++) {
         for(int x = -pcfRange; x <= pcfRange; x++){
             vec2 offset = vec2(x,y) * texelSize;
@@ -59,6 +59,8 @@ float shadowCalculation(vec4 fragPosLightSpace) {
     }
     shadow /= pow(2 * pcfRange + 1, 2);
       
+    //shadow = texture(shadowMap, shadowCoord.xy).r;
+
     //for (int i = 0; i < 4; i++){
     //    int index = int(16.0 * random(gl_FragCoord.xyy, i)) % 16;
 	//	float pcfDepth = (texture( shadowMap, vec2(shadowCoord.xy + poissonDisk[index]/700)).r); 

@@ -205,7 +205,7 @@ void Scene::processMesh(aiMesh* mesh, const aiScene* scene, bool cookMesh, bool 
 	else if (isEnemy) {
 		physx::PxBoxControllerDesc bDesc;
 		bDesc.position = physx::PxExtendedVec3(position.x, position.y, position.z);
-		bDesc.contactOffset = 0.05f;
+		bDesc.contactOffset = 0.5f;
 		bDesc.halfHeight = lenVec.y / 2.0f;
 		bDesc.halfForwardExtent = lenVec.z / 2.0f;
 		bDesc.halfSideExtent = lenVec.x / 2.0f;
@@ -213,6 +213,7 @@ void Scene::processMesh(aiMesh* mesh, const aiScene* scene, bool cookMesh, bool 
 		bDesc.slopeLimit = 0.0f;
 		bDesc.upDirection = physx::PxVec3(0, 1, 0);
 		bDesc.material = _material;
+		
 		
 		pxChar = _manager->createController(bDesc);
 		meshActor = pxChar->getActor();

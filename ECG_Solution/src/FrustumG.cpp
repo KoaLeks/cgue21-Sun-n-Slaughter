@@ -6,7 +6,7 @@ void FrustumG::setCamInternals(float fov, float ratio, float nearD, float farD) 
 	_ratio = ratio;
 	_fov = fov;
 	_nearD = nearD;
-	_farD = farD/10;
+	_farD = farD / 10;
 	_tang = (float)tan(glm::radians(_fov) * 0.5);
 	nh = _nearD * _tang;
 	nw = nh * ratio;
@@ -41,22 +41,22 @@ void FrustumG::draw(Mesh& mesh, glm::vec3 ftl, glm::vec3 ftr, glm::vec3 fbr, glm
 	mesh.resetModelMatrix();
 	mesh.transform(glm::translate(glm::mat4(1), fbl));
 	mesh.draw();
-	//// near top left
-	//mesh.resetModelMatrix();
-	//mesh.transform(glm::translate(glm::mat4(1), ntl));
-	//mesh.draw();
-	//// near top right
-	//mesh.resetModelMatrix();
-	//mesh.transform(glm::translate(glm::mat4(1), ntr));
-	//mesh.draw();
-	//// near bottom right
-	//mesh.resetModelMatrix();
-	//mesh.transform(glm::translate(glm::mat4(1), nbr));
-	//mesh.draw();
-	//// near bottom left
-	//mesh.resetModelMatrix();
-	//mesh.transform(glm::translate(glm::mat4(1), nbl));
-	//mesh.draw();
+	// near top left
+	mesh.resetModelMatrix();
+	mesh.transform(glm::translate(glm::mat4(1), ntl));
+	mesh.draw();
+	// near top right
+	mesh.resetModelMatrix();
+	mesh.transform(glm::translate(glm::mat4(1), ntr));
+	mesh.draw();
+	// near bottom right
+	mesh.resetModelMatrix();
+	mesh.transform(glm::translate(glm::mat4(1), nbr));
+	mesh.draw();
+	// near bottom left
+	mesh.resetModelMatrix();
+	mesh.transform(glm::translate(glm::mat4(1), nbl));
+	mesh.draw();
 
 
 	//// top Norm
@@ -85,6 +85,46 @@ void FrustumG::draw(Mesh& mesh, glm::vec3 ftl, glm::vec3 ftr, glm::vec3 fbr, glm
 	//mesh.draw();
 }
 
+void FrustumG::setCamDefDebug(glm::vec3& p, glm::vec3& l, glm::vec3& u, Mesh& mesh) {
+	glm::vec3 dir, nc, fc, X, Y, Z;
+
+	Z = glm::normalize(l);
+	X = glm::normalize(glm::cross(glm::vec3(0, 1, 0), Z));
+	Y = glm::normalize(glm::cross(Z, X));
+	// compute the centers of the near and far planes
+	fc = p - Z * _farD;
+	nc = p - Z * _nearD;
+
+	// compute the 4 corners of the frustum on the far plane
+	ftl = fc + (Y * fh) - (X * fw);
+	ftr = fc + (Y * fh) + (X * fw);
+	fbl = fc - (Y * fh) - (X * fw);
+	fbr = fc - (Y * fh) + (X * fw);
+
+	// compute the 4 corners of the frustum on the near plane
+	ntl = nc + (Y * nh) - (X * nw);
+	ntr = nc + (Y * nh) + (X * nw);
+	nbl = nc - (Y * nh) - (X * nw);
+	nbr = nc - (Y * nh) + (X * nw);
+
+	glm::vec3 tNorm, bNorm, lNorm, rNorm, nNorm, fNorm;
+	tNorm = glm::vec3(80) * pl[TOP].setPoints(ntr, ntl, ftl);
+	bNorm = glm::vec3(80) * pl[BOTTOM].setPoints(nbl, nbr, fbr);
+	lNorm = glm::vec3(80) * pl[LEFT].setPoints(ntl, nbl, fbl);
+	rNorm = glm::vec3(80) * pl[RIGHT].setPoints(nbr, ntr, fbr);
+	nNorm = glm::vec3(80) * pl[NEARP].setPoints(ntl, ntr, nbr);
+	fNorm = glm::vec3(80) * pl[FARP].setPoints(ftr, ftl, fbl);
+	
+	draw(mesh, ftl, ftr, fbr, fbl, ntl, ntr, nbr, nbl, tNorm, bNorm, lNorm, rNorm, nNorm, fNorm);
+
+	pl[TOP].setPoints(ntr, ntl, ftl);
+	pl[BOTTOM].setPoints(nbl, nbr, fbr);
+	pl[LEFT].setPoints(ntl, nbl, fbl);
+	pl[RIGHT].setPoints(nbr, ntr, fbr);
+	pl[NEARP].setPoints(ntl, ntr, nbr);
+	pl[FARP].setPoints(ftr, ftl, fbl);
+}
+
 void FrustumG::setCamDef(glm::vec3& p, glm::vec3& l, glm::vec3& u) {
 	glm::vec3 dir, nc, fc, X, Y, Z;
 
@@ -107,16 +147,6 @@ void FrustumG::setCamDef(glm::vec3& p, glm::vec3& l, glm::vec3& u) {
 	ntr = nc + (Y * nh) + (X * nw);
 	nbl = nc - (Y * nh) - (X * nw);
 	nbr = nc - (Y * nh) + (X * nw);
-
-	//glm::vec3 tNorm, bNorm, lNorm, rNorm, nNorm, fNorm;
-	//tNorm = glm::vec3(80) * pl[TOP].setPoints(ntr, ntl, ftl);
-	//bNorm = glm::vec3(80) * pl[BOTTOM].setPoints(nbl, nbr, fbr);
-	//lNorm = glm::vec3(80) * pl[LEFT].setPoints(ntl, nbl, fbl);
-	//rNorm = glm::vec3(80) * pl[RIGHT].setPoints(nbr, ntr, fbr);
-	//nNorm = glm::vec3(80) * pl[NEARP].setPoints(ntl, ntr, nbr);
-	//fNorm = glm::vec3(80) * pl[FARP].setPoints(ftr, ftl, fbl);
-	//
-	//draw(mesh, ftl, ftr, fbr, fbl, ntl, ntr, nbr, nbl, tNorm, bNorm, lNorm, rNorm, nNorm, fNorm);
 
 	pl[TOP].setPoints(ntr, ntl, ftl);
 	pl[BOTTOM].setPoints(nbl, nbr, fbr);
@@ -155,8 +185,6 @@ int FrustumG::boxInFrustum(std::shared_ptr<std::vector<glm::vec3>> boundingBox) 
 			return (OUTSIDE);
 		} else if (out) {
 			return (INTERSECT);
-		} else {
-			return (INSIDE);
 		}
 	}
 
