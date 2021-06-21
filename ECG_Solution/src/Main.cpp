@@ -83,7 +83,7 @@ static float _fov = 60.0f;
 double lastxpos = 0;
 double lastypos = 0;
 int _selectedFPS = 60;
-static bool checkFPSLimit = true;
+static bool checkFPSLimit = false;
 bool _winCondition = false;
 bool _hitDetection = false;
 bool checkShadows = true;
@@ -346,7 +346,7 @@ int main(int argc, char** argv)
 		Mesh frust = Mesh(glm::translate(glm::mat4(1), glm::vec3(0)), Mesh::createCubeMesh(10, 10, 10), debug);
 
 		// Tree positions
-		PossionDiskSampling treePositions = PossionDiskSampling(terrainPlaneSize, treeMaskPath, heightMapPath, terrainHeight, 150, 10);
+		PossionDiskSampling treePositions = PossionDiskSampling(terrainPlaneSize, treeMaskPath, heightMapPath, terrainHeight, 80, 10);
 		std::vector<glm::vec3> points = treePositions.getPoints();
 
 		// GUI
@@ -473,6 +473,10 @@ int main(int argc, char** argv)
 		float t2 = t;
 		float dt = 0.0f;
 		float t_sum = 0.0f;
+		float fps_start = 0.0f;
+		float fps_current = 0.0f;
+		float fps_delta = 0.0f;
+		float fps_update = 5.0f; // 5 updates per second
 		int waitingMS = 0;
 		PxReal timeStep = 1.0f / 60.0f;
 		float timeStepFloat = 1.0f / 60.0f;
@@ -482,7 +486,7 @@ int main(int argc, char** argv)
 		float topRightScreen = window_width - (window_width / 5.0f);
 		std::string info = "";
 		float infoTime = 0.0f;
-		int fps = 60;
+		int fps = 0;
 		int fpsCnt = 0;
 		boolean drawFire = false;
 		float animationStepBuffer = 0.0f;
@@ -592,12 +596,6 @@ int main(int argc, char** argv)
 				viewFrustum->setCamDef(playerCamera.getActualPosition(), getLookVector(camModel), getUpVector(camModel));
 			}
 
-			// light position
-			//frust.resetModelMatrix();
-			//frust.transform(glm::translate(glm::mat4(1), pointL.position));
-			//frust.draw();
-			//frust.draw();
-
 			// 2. Render Scene
 			// --------------------------------------------------------------
 			// Render Skybox
@@ -624,15 +622,6 @@ int main(int argc, char** argv)
 				showHelp(hud);
 			}
 
-			if (fpsCnt > 60) {
-				fpsCnt = 0;
-				fps = int(1.0f / dt);
-			}
-			fpsCnt++;
-
-			hud->RenderText("FPS: " + std::to_string(fps), 10.0f, window_height - 30.0f, 1.0f);
-			hud->RenderText("Objects: " + std::to_string(level.getDrawnObjects()), 10.0f, window_height - 60.0f, 1.0f);
-
 			// Render flares
 			flareMangaer.render(playerCamera.getViewProjectionMatrix(), pointL.position, brightness);
 
@@ -642,6 +631,17 @@ int main(int argc, char** argv)
 			t = float(glfwGetTime());
 			dt = t - dt;
 			t_sum += dt;
+
+
+			fpsCnt++;
+			fps_delta += dt;
+			if (fps_delta > 1.0 / fps_update) {
+				fps = int(fpsCnt / fps_delta);
+				fpsCnt = 0;
+				fps_delta -= 1.0 / fps_update;
+			}
+			hud->RenderText("FPS: " + std::to_string(fps), 10.0f, window_height - 30.0f, 1.0f);
+			hud->RenderText("Objects: " + std::to_string(level.getDrawnObjects()), 10.0f, window_height - 60.0f, 1.0f);
 
 			/* GAMEPLAY */
 			animationStepBuffer += dt;
