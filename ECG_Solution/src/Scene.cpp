@@ -163,7 +163,7 @@ void Scene::processMesh(aiMesh* mesh, const aiScene* scene, bool cookMesh, bool 
 		material->Get(AI_MATKEY_SHININESS, alpha);
 		mat->setCoefficients(glm::vec3(colorA.r, colorD.g, colorS.b));
 		mat->setAlpha(alpha.r);
-		//std::cout << "name=" << newNode->name << ", ka=" << colorA.r << ", kd=" << colorD.g << ", ks=" << colorS.b << ", alpha=" << alpha.r << std::endl;
+		//std::cout << "name = " << newNode->name << std::endl << "ka=" << colorA.r << ", kd=" << colorD.g << ", ks=" << colorS.b << ", alpha=" << alpha.r << std::endl;
 	}
 
 

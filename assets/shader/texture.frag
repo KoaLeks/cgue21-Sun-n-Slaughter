@@ -25,6 +25,7 @@ uniform mat4 lightSpaceMatrix;
 uniform vec3 lightPos;
 uniform sampler2D shadowMap;
 uniform bool showShadows;
+uniform bool disableTextures;
 
 uniform struct PointLight {
 	vec3 color;
@@ -49,7 +50,7 @@ float shadowCalculation(vec4 fragPosLightSpace) {
         return 0.0;
     }
     
-    int pcfRange = 1;
+    int pcfRange = 3;
     for (int y = -pcfRange; y <= pcfRange; y++) {
         for(int x = -pcfRange; x <= pcfRange; x++){
             vec2 offset = vec2(x,y) * texelSize;
@@ -121,7 +122,12 @@ void main() {
         shadow = 0;
     }
 
-	vec3 texColor = texture(diffuseTexture, vert.uv).rgb;
+    vec3 texColor;
+    if(disableTextures){
+        texColor = vec3(1);
+    } else {
+	    texColor = texture(diffuseTexture, vert.uv).rgb;
+    }
 	// vec4(texColor * materialCoefficients.x, 1) //ambient
     
 	// add directional light contribution
@@ -154,6 +160,7 @@ void main() {
     float texLevel = floor(texColorHSV.z * levels);
 	texColorHSV.z = (texLevel / levels);
     texColor = hsv2rgb(texColorHSV);
+    
     
 	
     vec3 light = ambient + ((diffuse + specular) * (1-shadow));

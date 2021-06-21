@@ -39,10 +39,10 @@ void main()
 		// Interpolate between min/max tess levels
 		// max = 64, min = 1
 		// apply tess level to the corresponding outer-level parameter
-		float abTessLevel = mix( 12, 1, abDistance/250);
-		float adTessLevel = mix( 12, 1, adDistance/250);
-		float dcTessLevel = mix( 12, 1, dcDistance/250);
-		float bcTessLevel = mix( 12, 1, bcDistance/250);
+		float abTessLevel = mix( 18, 1, abDistance/400);
+		float adTessLevel = mix( 18, 1, adDistance/400);
+		float dcTessLevel = mix( 18, 1, dcDistance/400);
+		float bcTessLevel = mix( 18, 1, bcDistance/400);
 		
 		// average of the outer level
 		float innerTessLevel = (abTessLevel + adTessLevel + dcTessLevel + bcTessLevel) / 4;

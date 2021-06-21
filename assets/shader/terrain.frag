@@ -17,6 +17,7 @@ uniform vec3 camera_world;
 uniform mat4 lightSpaceMatrix;
 uniform float brightness;
 uniform bool showShadows;
+uniform bool disableTextures;
 
 const float regionMinWater = -scaleY * 0.125;
 const float regionMaxWater = scaleY * 0.005;
@@ -104,7 +105,7 @@ float shadowCalculation(vec4 fragPosLightSpace) {
     shadowCoord = 0.5 * (shadowCoord + 1.0);
 
     vec4 lightDir = vec4(lightPos - vec3(0), 1);
-    float bias = max(0.005 * (1.0 - dot(teNormal, lightDir)), 0.0005); 
+    float bias = max(0.005 * (1.0 - dot(teNormal, lightDir)), 0.001); 
     float shadow = 0.0;     
     vec2 texelSize = 1 / vec2(textureSize(shadowMap, 0));
 	
@@ -113,7 +114,7 @@ float shadowCalculation(vec4 fragPosLightSpace) {
         return 0.0;
     }
     
-    int pcfRange = 2;
+    int pcfRange = 3;
     for (int y = -pcfRange; y <= pcfRange; y++) {
         for(int x = -pcfRange; x <= pcfRange; x++){
             vec2 offset = vec2(x,y) * texelSize;
@@ -151,7 +152,12 @@ void main(){
     spec = pow(max(dot(teNormal.xyz, halfwayDir), 0.0), 64.0);
     vec3 specular = vec3(0); // spec * lightColor;    
 	
-    vec4 terrainColor = generateTerrainColor(texCoord);
+    vec4 terrainColor;
+    if(disableTextures){
+        terrainColor = vec4(1);
+    } else {
+        terrainColor = generateTerrainColor(texCoord);
+    }
 	
     // cel shading
     vec3 terrainColorHSV = rgb2hsv(terrainColor.rgb);

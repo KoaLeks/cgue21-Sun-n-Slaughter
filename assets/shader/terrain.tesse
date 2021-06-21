@@ -34,17 +34,17 @@ void main()
     vec4 newPos = vec4(position.x, height, position.z, 1.0);
 	mat4 mvp = viewProjMatrix * modelMatrix;
 
-    const ivec3 off = ivec3(-0.1, 0, 0.1);
+    const ivec3 off = ivec3(-1, 0, 1);
 
-    float s11 = height;
-    float s01 = textureOffset(heightMap, textureCoordinate, off.xy).x;
-    float s21 = textureOffset(heightMap, textureCoordinate, off.zy).x;
-    float s10 = textureOffset(heightMap, textureCoordinate, off.yx).x;
-    float s12 = textureOffset(heightMap, textureCoordinate, off.yz).x;
+    float s01 = scaleY * textureOffset(heightMap, textureCoordinate, off.xy).x;
+    float s21 = scaleY * textureOffset(heightMap, textureCoordinate, off.zy).x;
+    float s10 = scaleY * textureOffset(heightMap, textureCoordinate, off.yx).x;
+    float s12 = scaleY * textureOffset(heightMap, textureCoordinate, off.yz).x;
     vec3 va = normalize(vec3(2, s21-s01, 0));
     vec3 vb = normalize(vec3(0, s12-s10, -2));
     
-    teNormal = vec4( cross(va,vb), s11 );
+    teNormal = vec4( cross(va,vb), height );
+    
     tePosition = newPos;
     gl_Position = mvp * newPos;
 }
