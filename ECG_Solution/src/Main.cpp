@@ -53,7 +53,7 @@ int main(int argc, char** argv);
 float getYPosition(float x, float z);
 void renderQuad();
 void loadHighscores();
-void safeHighscore();
+void saveHighscore();
 void showHighscores(TextRenderer* hud, glm::vec3 color = glm::vec3(1.0f));
 void showHelp(TextRenderer* hud, glm::vec3 color = glm::vec3(1.0f));
 
@@ -78,28 +78,31 @@ static bool _doBasicAttack = false;
 static bool _doStrongAttack = false;
 static bool _doAreacAttack = false;
 static bool checkVFC = true;
-static bool _showHelp = false;
+static bool help = false;
 static float _fov = 60.0f;
 double lastxpos = 0;
 double lastypos = 0;
-int _selectedFPS = 60;
+int selectedFPS = 60;
 static bool checkFPSLimit = false;
-bool _winCondition = false;
+
 bool _hitDetection = false;
+
 bool checkShadows = true;
 float brightness = 1.0;
 int imgWidth, imgHeight, nrChannels;
 unsigned char* data;
-float playerSpeed = 30.f;
-float enemySpeed = 20.f;
+float playerSpeed = 35.f;
+float enemySpeed = 0.5f;
 
 int terrainPlaneSize = 1024;
 int terrainHeight = 250;
+float lightDistance = 20000.0f;
 
 std::string playerName;
-int highscore = 0;
+int highscore = 6666;
 std::string highscoresN[5];
 int highscores[5];
+bool isSaved = false;
 /* GAMEPLAY END */
 
 /* --------------------------------------------- */
@@ -125,7 +128,7 @@ int main(int argc, char** argv)
 	brightness = float(reader.GetReal("window", "brightness", 1.0));
 
 	/* GAMEPLAY */
-	_selectedFPS = reader.GetInteger("window", "fps", 60);
+	selectedFPS = reader.GetInteger("window", "fps", 60);
 
 	playerName = reader.Get("player", "name", "Unknown");
 	/* GAMEPLAY END */
@@ -135,7 +138,7 @@ int main(int argc, char** argv)
 
 	//TEST
 	//highscore = 99;
-	//safeHighscore();
+	//saveHighscore();
 
 
 	/* --------------------------------------------- */
@@ -241,8 +244,8 @@ int main(int argc, char** argv)
 	hud->Load("assets/fonts/beachday.ttf", 32);
 	//splashscreen
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	hud->RenderText("Sun'n'Slaughter", 
-		window_width / 2 - 225, window_height / 2 - 100.0f, 2.0f, glm::vec3(0.0));
+	hud->RenderText(window_title,
+		window_width / 2 - 225, window_height / 2 - 100.0f, 2.0f, glm::vec3(1, 0, 0));
 	showHighscores(hud, glm::vec3(0.0));
 	showHelp(hud, glm::vec3(0.0));
 	glfwSwapBuffers(window);
@@ -271,13 +274,12 @@ int main(int argc, char** argv)
 		EXIT_WITH_ERROR("Failed to init cooking")
 	}
 
-	SimulationCallback* simulatonCallback = new SimulationCallback(&_winCondition, &_hitDetection);
+	SimulationCallback* simulationCallback = new SimulationCallback(&_hitDetection);
 	PxScene* gScene = nullptr;
 	PxSceneDesc sceneDesc(gPhysicsSDK->getTolerancesScale());
 	sceneDesc.gravity = PxVec3(0.0f, -9.8f, 0.0f);
 	sceneDesc.cpuDispatcher = PxDefaultCpuDispatcherCreate(1);
 	sceneDesc.filterShader = PxDefaultSimulationFilterShader;
-	// sceneDesc.simulationEventCallback = simulatonCallback;
 	gScene = gPhysicsSDK->createScene(sceneDesc);
 	PxMaterial* mMaterial = gPhysicsSDK->createMaterial(0.5f, 0.5f, 0.5f);
 
@@ -292,7 +294,7 @@ int main(int argc, char** argv)
 	cDesc.slopeLimit = 0.2f;
 	cDesc.upDirection = PxVec3(0, 1, 0);
 	cDesc.material = mMaterial;
-	//cDesc.reportCallback = simulatonCallback;
+	//cDesc.reportCallback = simulationCallback;
 	PxController* pxChar = gManager->createController(cDesc);
 
 	/* GAMEPLAY END */
@@ -417,7 +419,6 @@ int main(int argc, char** argv)
 
 		//std::shared_ptr<Shader> textureShader = std::make_shared<Shader>("texture.vert", "texture.frag");
 		Scene level(textureShader, "assets/models/cook_map_detailed.obj", gPhysicsSDK, gCooking, gScene, mMaterial, gManager, viewFrustum);
-		//simulatonCallback->setWinConditionActor(level.getWinConditionActor());
 
 		// Load heightmap
 		data = stbi_load(heightMapPath, &imgWidth, &imgHeight, &nrChannels, 4);
@@ -437,7 +438,7 @@ int main(int argc, char** argv)
 		level.addStaticObject("assets/models/sunbed.obj", PxExtendedVec3(375, getYPosition(375, -220) - 5, -220), 3);
 
 		// TEST ENEMY
-		level.addEnemy(physx::PxExtendedVec3(500, getYPosition(500, -500) - 5, -500), 10);
+		level.addEnemy(physx::PxExtendedVec3(500, getYPosition(500, -500) - 5, -500), 10, simulationCallback);
 
 		// Init character
 		GLuint animateShader = getComputeShader("assets/shader/animator.comp");
@@ -551,8 +552,6 @@ int main(int argc, char** argv)
 				level.enemies[i]->chase(character.getPosition(), enemySpeed, dt);
 			}
 
-
-
 			// _hitDetection from physx callback -> locked on 60 fps
 			if (_hitDetection) {
 				character.inflictDamage(1);
@@ -608,22 +607,8 @@ int main(int argc, char** argv)
 			character.animate(animationStep);
 			/* GAMEPLAY END*/
 
-			// Render GUI
-			//guiRenderer.render(guis, brightness);
-
-			// draw HUD
-			hud->RenderText("HP: " + std::to_string(character.getHP()), 10.0f, 10.0f, 1.0f);
-			hud->RenderText("Highscore: " + std::to_string(highscore), 10.0f, 40.0f, 1.0f);
-			//showHighscores(hud, glm::vec3(255, 255, 255));
-
-			if (_showHelp) {
-				showHighscores(hud);
-				showHelp(hud);
-			}
-
 			// Render flares
 			flareMangaer.render(playerCamera.getViewProjectionMatrix(), pointL.position, brightness);
-
 
 			// Compute frame time
 			dt = t;
@@ -639,8 +624,35 @@ int main(int argc, char** argv)
 				fpsCnt = 0;
 				fps_delta -= 1.0 / fps_update;
 			}
-			hud->RenderText("FPS: " + std::to_string(fps), 10.0f, window_height - 30.0f, 1.0f);
-			hud->RenderText("Objects: " + std::to_string(level.getDrawnObjects()), 10.0f, window_height - 60.0f, 1.0f);
+
+			//win or rather lose condition
+			if (character.getHP() <= 0) {
+				if (!isSaved) { //TODO isSaved for general blocking of controlls after death?
+					saveHighscore(); // TODO: Add text if you got an new highscore
+					isSaved = true;
+				}
+				hud->RenderText("You got slaughtered!", window_width / 2 - 300, window_height / 2 - 100.0f, 2.0f, glm::vec3(1, 0, 0));
+				hud->RenderText("Highscore: " + std::to_string(highscore), 10.0f, 40.0f, 1.0f, glm::vec3(1, 0, 0));
+				showHighscores(hud, glm::vec3(1.0f, 0.0f, 0.0f));
+				brightness -= dt / 3;
+
+				if (brightness <= -1.0f) {
+					glfwSetWindowShouldClose(window, true);
+				}
+			}
+			else {
+				// draw HUD
+				hud->RenderText("HP: " + std::to_string(character.getHP()), 10.0f, 10.0f, 1.0f);
+				hud->RenderText("Highscore: " + std::to_string(highscore), 10.0f, 40.0f, 1.0f);
+
+				if (help) {
+					showHighscores(hud);
+					showHelp(hud);
+				}
+
+				hud->RenderText("FPS: " + std::to_string(fps), 10.0f, window_height - 30.0f, 1.0f);
+				hud->RenderText("Objects: " + std::to_string(level.getDrawnObjects()), 10.0f, window_height - 60.0f, 1.0f);
+			}
 
 			/* GAMEPLAY */
 			animationStepBuffer += dt;
@@ -655,7 +667,7 @@ int main(int argc, char** argv)
 
 			}
 			if (checkFPSLimit) {
-				waitingMS = (1000 / _selectedFPS) - (t - t2) * 1000;
+				waitingMS = (1000 / selectedFPS) - (t - t2) * 1000;
 				if (waitingMS > 0) {
 					Sleep(waitingMS);
 				}
@@ -758,7 +770,7 @@ void loadHighscores() {
 	file.close();
 }
 
-void safeHighscore() {
+void saveHighscore() {
 	bool saved = false;
 	std::ofstream file("assets/highscores.txt");
 
@@ -851,8 +863,8 @@ void setPerFrameUniforms(TerrainShader* shader, PlayerCamera& camera, PointLight
 }
 
 bool move_character(GLFWwindow* window, Character* character, PlayerCamera* playerCamera, float deltaMovement) {
-	//float forward = 0;
-	//float leftStrafe = 0;
+	float forward = 0;
+	float leftStrafe = 0;
 	bool updateForward = false;
 	bool updateStrafe = false;
 
@@ -861,87 +873,34 @@ bool move_character(GLFWwindow* window, Character* character, PlayerCamera* play
 	int holdingLeftStrafe = glfwGetKey(window, GLFW_KEY_A);
 	int holdingRightStrafe = glfwGetKey(window, GLFW_KEY_D);
 
-	float zDir, xDir;
-	glm::vec3 up = glm::vec3(0, 1, 0);
-	xDir = glm::sin(glm::radians(playerCamera->getYaw()));
-	zDir = glm::cos(glm::radians(playerCamera->getYaw()));
-	glm::vec3 dirF = glm::normalize(-glm::vec3(xDir, 0, zDir));
-	glm::vec3 directionForward(0);
-	glm::vec3 directionRight(0);
-
-
 	if (holdingForward == GLFW_PRESS) {
-		directionForward = dirF;
+		forward += deltaMovement;
 		updateForward = true;
 	}
-	else if (holdingForward == GLFW_PRESS && holdingLeftStrafe == GLFW_PRESS) {
-		directionForward = dirF;
-		directionRight = glm::normalize(glm::cross(directionForward, -up));
-		updateForward = true;
-		updateStrafe = true;
-	}
-	else if (holdingForward == GLFW_PRESS && holdingRightStrafe == GLFW_PRESS) {
-		directionForward = dirF;
-		directionRight = glm::normalize(glm::cross(directionForward, up));
-		updateForward = true;
-		updateStrafe = true;
-	}
-
 	if (holdingBackward == GLFW_PRESS) {
-		directionForward = -dirF;
+		forward -= deltaMovement;
 		updateForward = true;
-	}
-	else if (holdingBackward == GLFW_PRESS && holdingLeftStrafe == GLFW_PRESS) {
-		directionForward = -dirF;
-		directionRight = glm::normalize(glm::cross(-directionForward, -up));
-		updateForward = true;
-		updateStrafe = true;
-	}
-	else if (holdingBackward == GLFW_PRESS && holdingRightStrafe == GLFW_PRESS) {
-		directionForward = -dirF;
-		directionRight = glm::normalize(glm::cross(-directionForward, up));
-		updateForward = true;
-		updateStrafe = true;
 	}
 
 	if (holdingLeftStrafe == GLFW_PRESS) {
-		directionRight = glm::normalize(glm::cross(dirF, -up));
+		leftStrafe += deltaMovement;
 		updateStrafe = true;
 	}
-	else if (holdingRightStrafe == GLFW_PRESS) {
-		directionRight = glm::normalize(glm::cross(dirF, up));
+	if (holdingRightStrafe == GLFW_PRESS) {
+		leftStrafe -= deltaMovement;
 		updateStrafe = true;
 	}
 
-	//if (holdingForward == GLFW_PRESS) {
-	//	forward += deltaMovement;
-	//	updateForward = true;
-	//}
-	//if (holdingBackward == GLFW_PRESS) {
-	//	forward -= deltaMovement;
-	//	updateForward = true;
-	//}
-	//
-	//if (holdingLeftStrafe == GLFW_PRESS) {
-	//	leftStrafe += deltaMovement;
-	//	updateStrafe = true;
-	//}
-	//if (holdingRightStrafe == GLFW_PRESS) {
-	//	leftStrafe -= deltaMovement;
-	//	updateStrafe = true;
-	//}
-	//
 	if (updateForward || updateStrafe) {
 		if (!updateStrafe) {
-			directionForward *= 1.414f;
+			forward *= 1.414f;
 		}
 		if (!updateForward) {
-			directionRight *= 1.414f;
+			leftStrafe *= 1.414f;
 		}
 
-		//character->move(-forward * playerSpeed, -leftStrafe * playerSpeed, deltaMovement);
-		character->move2((directionForward + directionRight), playerSpeed, deltaMovement);
-		
+		character->move(-forward * playerSpeed, -leftStrafe * playerSpeed, deltaMovement);
+		//character->move2(glm::normalize(-getLookVector(playerCamera->getModel())), playerSpeed, deltaMovement);
 		return true;
 	}
 	return false;
@@ -980,7 +939,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		glfwSetWindowShouldClose(window, true);
 		break;
 	case GLFW_KEY_F1:
-		_showHelp = !_showHelp;
+		help = !help;
 		break;
 	case GLFW_KEY_F2:
 		checkFPSLimit = !checkFPSLimit;

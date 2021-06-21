@@ -30,7 +30,7 @@ std::shared_ptr<Node> Scene::loadScene(string path) {
 		return nullptr;
 	}
 	//directory = path.substr(0, path.find_last_of('/'));
-	return processNode(scene->mRootNode, scene, 0, false, 1, physx::PxExtendedVec3(0, 0, 0));
+	return processNode(scene->mRootNode, scene, 0, false, 1, physx::PxExtendedVec3(0, 0, 0), nullptr);
 }
 
 std::shared_ptr<Node> Scene::loadScene(string path, float scale, physx::PxExtendedVec3 position) {
@@ -42,10 +42,11 @@ std::shared_ptr<Node> Scene::loadScene(string path, float scale, physx::PxExtend
 		return nullptr;
 	}
 	//directory = path.substr(0, path.find_last_of('/'));
-	return processNode(scene->mRootNode, scene, 0, true, scale, position);
+	return processNode(scene->mRootNode, scene, 0, true, scale, position, nullptr);
 }
 
-std::shared_ptr<Node> Scene::processNode(aiNode* node, const aiScene* scene, int level, bool transformation, float scale, physx::PxExtendedVec3 position) {
+std::shared_ptr<Node> Scene::processNode(aiNode* node, const aiScene* scene, int level, bool transformation, 
+	float scale, physx::PxExtendedVec3 position, SimulationCallback* simulationCallback) {
 	// process all the node's meshes (if any)
 	std::string tmpnam = node->mName.C_Str();
 	bool isEnemy = false;
@@ -60,12 +61,8 @@ std::shared_ptr<Node> Scene::processNode(aiNode* node, const aiScene* scene, int
 	}
 
 	bool cookMesh = false;
-	//bool isWinCondition = false;
 	if (!tmpnam.compare(0, floorPrefix.size(), floorPrefix)) {
 		cookMesh = true;
-		//if (!tmpnam.compare(0, winConditionPrefeix.size(), winConditionPrefeix)) {
-		//	isWinCondition = true;
-		//}
 	}
 	newNode->name = tmpnam;
 
@@ -77,7 +74,7 @@ std::shared_ptr<Node> Scene::processNode(aiNode* node, const aiScene* scene, int
 	for (unsigned int i = 0; i < node->mNumMeshes; i++) {
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
 		
-		processMesh(mesh, scene, cookMesh, isEnemy/*, isWinCondition*/, newNode, scale, position);
+		processMesh(mesh, scene, cookMesh, isEnemy, newNode, scale, position, simulationCallback);
 	}
 
 	if (level == 1 && node->mNumMeshes > 0) {
@@ -89,14 +86,15 @@ std::shared_ptr<Node> Scene::processNode(aiNode* node, const aiScene* scene, int
 	level++;
 	// then do the same for each of its children
 	for (unsigned int i = 0; i < node->mNumChildren; i++) {
-		newNode->addChild(processNode(node->mChildren[i], scene, level, transformation, scale, position));
+		newNode->addChild(processNode(node->mChildren[i], scene, level, transformation, scale, position, simulationCallback));
 	}
 
 	return newNode;
 }
 
 
-void Scene::processMesh(aiMesh* mesh, const aiScene* scene, bool cookMesh, bool isEnemy/*, bool isWinCondition*/, std::shared_ptr<Node> newNode, float scale, physx::PxExtendedVec3 position) {
+void Scene::processMesh(aiMesh* mesh, const aiScene* scene, bool cookMesh, bool isEnemy, std::shared_ptr<Node> newNode, 
+	float scale, physx::PxExtendedVec3 position, SimulationCallback* simulationCallback) {
 	GeometryData data;
 	glm::vec3 maxVert(-1500.0f, -1500.0f, -1500.0f);
 	glm::vec3 minVert(1500.0f, 1500.0f, 1500.0f);
@@ -193,14 +191,11 @@ void Scene::processMesh(aiMesh* mesh, const aiScene* scene, bool cookMesh, bool 
 		physx::PxDefaultMemoryInputData readBuffer(writeBuffer.getData(), writeBuffer.getSize());
 		physx::PxTriangleMesh* triangleMesh = _physics->createTriangleMesh(readBuffer);
 
-		physx::PxTransform floorPos = physx::PxTransform(/*physx::PxVec3(0.0f, 0.0f, 0.0f)*/position.x, position.y, position.z);
+		physx::PxTransform floorPos = physx::PxTransform(position.x, position.y, position.z);
 		meshActor = _physics->createRigidStatic(floorPos);
 		physx::PxTriangleMeshGeometry geom(triangleMesh, physx::PxMeshScale(scale));
 		physx::PxShape* floorShape = physx::PxRigidActorExt::createExclusiveShape(*meshActor, geom, *_material);
 		_scene->addActor(*meshActor);
-		//if (isWinCondition) {
-		//	winConditionActor = meshActor;
-		//}
 	}
 	else if (isEnemy) {
 		physx::PxBoxControllerDesc bDesc;
@@ -213,6 +208,7 @@ void Scene::processMesh(aiMesh* mesh, const aiScene* scene, bool cookMesh, bool 
 		bDesc.slopeLimit = 0.0f;
 		bDesc.upDirection = physx::PxVec3(0, 1, 0);
 		bDesc.material = _material;
+		bDesc.reportCallback = simulationCallback;
 		
 		
 		pxChar = _manager->createController(bDesc);
@@ -413,9 +409,6 @@ void Character::animate(int step) {
 	nodes[0]->draw();
 }
 
-//physx::PxRigidActor* Scene::getWinConditionActor() {
-//	return winConditionActor;
-//}
 
 void Scene::addStaticObject(string path, physx::PxExtendedVec3 position, float scale)
 {
@@ -425,7 +418,7 @@ void Scene::addStaticObject(string path, physx::PxExtendedVec3 position, float s
 
 }
 
-void Scene::addEnemy(physx::PxExtendedVec3 position, float scale) {
+void Scene::addEnemy(physx::PxExtendedVec3 position, float scale, SimulationCallback* simulationCallback) {
 	//if (enemyMaster == nullptr) {
 		Assimp::Importer import;
 		const aiScene* enemyMasterX = import.ReadFile("assets/models/Cubex_notMob.obj", aiProcess_Triangulate | aiProcess_FlipUVs);
@@ -436,5 +429,5 @@ void Scene::addEnemy(physx::PxExtendedVec3 position, float scale) {
 		}
 //	}
 
-	processNode(enemyMasterX->mRootNode, enemyMasterX, 0, true, scale, position);
+	processNode(enemyMasterX->mRootNode, enemyMasterX, 0, true, scale, position, simulationCallback);
 }
