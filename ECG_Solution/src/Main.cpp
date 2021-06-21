@@ -54,7 +54,8 @@ float getYPosition(float x, float z);
 void renderQuad();
 void loadHighscores();
 void safeHighscore();
-void showHighscore(TextRenderer* hud, glm::vec3 color);
+void showHighscores(TextRenderer* hud, glm::vec3 color = glm::vec3(1.0f));
+void showHelp(TextRenderer* hud, glm::vec3 color = glm::vec3(1.0f));
 
 
 /* --------------------------------------------- */
@@ -63,29 +64,29 @@ void showHighscore(TextRenderer* hud, glm::vec3 color);
 
 static int window_width = 1600;
 static int window_height = 900;
- 
+
 static char* heightMapPath = "assets/terrain/hm3.png";
 static char* treeMaskPath = "assets/terrain/mask1.png";
 
 /* GAMEPLAY */
-static bool _wireframe = false;
-static bool _culling = true;
+static bool checkWireframe = false;
+static bool checkBackCulling = true;
 static bool _dragging = true; //= false;
 static bool _draggingCamOnly = false;
 static bool _mouseSelect = false;
 static bool _doBasicAttack = false;
 static bool _doStrongAttack = false;
 static bool _doAreacAttack = false;
-static bool _checkFrustum = true;
+static bool checkVFC = true;
 static bool _showHelp = false;
 static float _fov = 60.0f;
 double lastxpos = 0;
 double lastypos = 0;
 int _selectedFPS = 60;
-static bool _limitFPS = true;
+static bool checkFPSLimit = true;
 bool _winCondition = false;
 bool _hitDetection = false;
-bool _showShadows = true;
+bool checkShadows = true;
 float brightness = 1.0;
 int imgWidth, imgHeight, nrChannels;
 unsigned char* data;
@@ -241,13 +242,11 @@ int main(int argc, char** argv)
 	hud->Load("assets/fonts/beachday.ttf", 32);
 	//splashscreen
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	hud->RenderText("Sun'n'Slaughter", window_width / 2 - 225, window_height / 2 - 50, 2.0f, glm::vec3(0, 0, 0));
-	showHighscore(hud, glm::vec3(0, 0, 0));
+	hud->RenderText("Sun'n'Slaughter", 
+		window_width / 2 - 225, window_height / 2 - 100.0f, 2.0f, glm::vec3(0.0));
+	showHighscores(hud, glm::vec3(0.0));
+	showHelp(hud, glm::vec3(0.0));
 	glfwSwapBuffers(window);
-
-	/* GAMEPLAY END */
-
-		/* GAMEPLAY */
 
 	/* --------------------------------------------- */
 	// Init Physx
@@ -313,9 +312,9 @@ int main(int argc, char** argv)
 		std::shared_ptr<Shader> shadowMapDepthShader = std::make_shared<Shader>("shadowmap_depth.vert", "shadowmap_depth.frag");
 		std::shared_ptr<Shader> guiShader = std::make_shared<Shader>("gui.vert", "gui.frag");
 		std::shared_ptr<TerrainShader> tessellationShader = std::make_shared<TerrainShader>(
-			"assets/shader/terrain.vert", 
-			"assets/shader/terrain.tessc", 
-			"assets/shader/terrain.tesse", 
+			"assets/shader/terrain.vert",
+			"assets/shader/terrain.tessc",
+			"assets/shader/terrain.tesse",
 			"assets/shader/terrain.frag"
 			);
 
@@ -338,11 +337,11 @@ int main(int argc, char** argv)
 		PointLight pointL(glm::vec3(.5f), glm::vec3(-900, 1020, -1500), glm::vec3(0.08f, 0.03f, 0.01f));
 
 		// Shadow Map
-		ShadowMap shadowMap = ShadowMap(shadowMapDepthShader.get(), pointL.position, nearZ, farZ/10, 400.0f, glm::vec3(terrainPlaneSize/2, 0, -terrainPlaneSize/2));
+		ShadowMap shadowMap = ShadowMap(shadowMapDepthShader.get(), pointL.position, nearZ, farZ / 10, 400.0f, glm::vec3(terrainPlaneSize / 2, 0, -terrainPlaneSize / 2));
 
 		std::shared_ptr<MeshMaterial> debug = std::make_shared<MeshMaterial>(debugShader, glm::vec3(0.5f, 0.7f, 0.3f), 8.0f);
 		std::shared_ptr<MeshMaterial> material = std::make_shared<MeshMaterial>(textureShader, glm::vec3(0.3f, 0.8f, 0.0f), 8.0f);
-		std::shared_ptr<MeshMaterial> depth = std::make_shared<MeshMaterial>(shadowMapDepthShader, glm::vec3(0.5f, 0.7f, 0.3f), 8.0f);		
+		std::shared_ptr<MeshMaterial> depth = std::make_shared<MeshMaterial>(shadowMapDepthShader, glm::vec3(0.5f, 0.7f, 0.3f), 8.0f);
 
 		//Mesh frust = Mesh(glm::translate(glm::mat4(1), glm::vec3(0)), Mesh::createCubeMesh(1, 1, 1), debug);
 
@@ -376,7 +375,7 @@ int main(int argc, char** argv)
 		Texture flare7 = Texture("assets/flares/tex7.png", true);
 		Texture flare8 = Texture("assets/flares/tex8.png", true);
 		Texture flare9 = Texture("assets/flares/tex9.png", true);
-		
+
 		GuiTexture flareGui1 = GuiTexture(flare1.getTextureId(), glm::vec2(0.0f), glm::vec2(1.0f));
 		GuiTexture flareGui2 = GuiTexture(flare2.getTextureId(), glm::vec2(0.0f), glm::vec2(1.0f));
 		GuiTexture flareGui3 = GuiTexture(flare3.getTextureId(), glm::vec2(0.0f), glm::vec2(1.0f));
@@ -386,7 +385,7 @@ int main(int argc, char** argv)
 		GuiTexture flareGui7 = GuiTexture(flare7.getTextureId(), glm::vec2(0.0f), glm::vec2(1.0f));
 		GuiTexture flareGui8 = GuiTexture(flare8.getTextureId(), glm::vec2(0.0f), glm::vec2(1.0f));
 		GuiTexture flareGui9 = GuiTexture(flare9.getTextureId(), glm::vec2(0.0f), glm::vec2(1.0f));
-			
+
 		flares.push_back(GuiTexture(flare6.getTextureId(), glm::vec2(0.0f), glm::vec2(0.5f)));
 		flares.push_back(GuiTexture(flare4.getTextureId(), glm::vec2(0.0f), glm::vec2(0.23f)));
 		flares.push_back(GuiTexture(flare2.getTextureId(), glm::vec2(0.0f), glm::vec2(0.1f)));
@@ -452,8 +451,8 @@ int main(int argc, char** argv)
 		character.init();
 
 		//Relocate the character & camera
-		character.relocate(physx::PxExtendedVec3(370, 104,-223));
-		
+		character.relocate(physx::PxExtendedVec3(370, 104, -223));
+
 
 		///* --------------------------------------------- */
 		//// Init Particle Sahder
@@ -519,8 +518,8 @@ int main(int argc, char** argv)
 					character.updateRotation(playerCamera.getYaw());
 				}
 				//this is the main thing that keeps it from leaving the screen
-				if (xpos < 100 || xpos > window_width - 100) { 
-					lastxpos = window_width / 2;  
+				if (xpos < 100 || xpos > window_width - 100) {
+					lastxpos = window_width / 2;
 					lastypos = window_height / 2;
 					glfwSetCursorPos(window, lastxpos, lastypos);
 				}
@@ -549,7 +548,7 @@ int main(int argc, char** argv)
 				level.enemies[i]->chase(character.getPosition(), enemySpeed, dt);
 			}
 
-			
+
 
 			// _hitDetection from physx callback -> locked on 60 fps
 			if (_hitDetection) {
@@ -558,13 +557,13 @@ int main(int argc, char** argv)
 			}
 
 			/* GAMEPLAY END */
-			
+
 			setPerFrameUniforms(tessellationShader.get(), playerCamera, pointL, shadowMap);
 
 
 			// 1. render depth of scene to texture (from light's perspective)
 			// --------------------------------------------------------------
-			if (_showShadows) {
+			if (checkShadows) {
 				shadowMap.updateLightPos(pointL.position * glm::vec3(0.5));
 
 				//glCullFace(GL_FRONT);
@@ -586,8 +585,8 @@ int main(int argc, char** argv)
 			}
 
 			// update view frustum
-			viewFrustum->doCheck = _checkFrustum;
-			if (_checkFrustum) {
+			viewFrustum->doCheck = checkVFC;
+			if (checkVFC) {
 				camModel = (playerCamera.getModel());
 				viewFrustum->updateFOV(_fov);
 				viewFrustum->setCamDef(getWorldPosition(camModel), getLookVector(camModel), getUpVector(camModel));
@@ -597,7 +596,7 @@ int main(int argc, char** argv)
 			//frust.resetModelMatrix();
 			//frust.transform(glm::translate(glm::mat4(1), pointL.position));
 			//frust.draw();
-			
+
 			// 2. Render Scene
 			// --------------------------------------------------------------
 			// Render Skybox
@@ -617,8 +616,13 @@ int main(int argc, char** argv)
 			// draw HUD
 			hud->RenderText("HP: " + std::to_string(character.getHP()), 10.0f, 10.0f, 1.0f);
 			hud->RenderText("Highscore: " + std::to_string(highscore), 10.0f, 40.0f, 1.0f);
-			//showHighscore(hud, glm::vec3(255, 255, 255));
-			
+			//showHighscores(hud, glm::vec3(255, 255, 255));
+
+			if (_showHelp) {
+				showHighscores(hud);
+				showHelp(hud);
+			}
+
 			if (fpsCnt > 60) {
 				fpsCnt = 0;
 				fps = int(1.0f / dt);
@@ -627,7 +631,7 @@ int main(int argc, char** argv)
 
 			hud->RenderText("FPS: " + std::to_string(fps), 10.0f, window_height - 30.0f, 1.0f);
 			hud->RenderText("Objects: " + std::to_string(level.getDrawnObjects()), 10.0f, window_height - 60.0f, 1.0f);
-			 
+
 			// Render flares
 			flareMangaer.render(playerCamera.getViewProjectionMatrix(), pointL.position, brightness);
 
@@ -650,7 +654,7 @@ int main(int argc, char** argv)
 				}
 
 			}
-			if (_limitFPS) {
+			if (checkFPSLimit) {
 				waitingMS = (1000 / _selectedFPS) - (t - t2) * 1000;
 				if (waitingMS > 0) {
 					Sleep(waitingMS);
@@ -661,7 +665,7 @@ int main(int argc, char** argv)
 			// Poll events
 			glfwPollEvents();
 			/* GAMEPLAY END */
-			
+
 			// Swap buffers
 			glfwSwapBuffers(window);
 		}
@@ -755,7 +759,7 @@ void loadHighscores() {
 
 void safeHighscore() {
 	bool saved = false;
-	std:: ofstream file("assets/highscores.txt");
+	std::ofstream file("assets/highscores.txt");
 
 	for (int i = 0; i < 5; i++) {
 		if (highscores[i] < highscore && !saved) {
@@ -777,15 +781,34 @@ void safeHighscore() {
 	file.close();
 }
 
-void showHighscore(TextRenderer* hud, glm::vec3 color)
+void showHighscores(TextRenderer* hud, glm::vec3 color)
 {
 	std::string line = "";
 
 	hud->RenderText("Highscores:", 10.0f, 100.f, 1.0f, color);
 	for (int i = 0; i < 5; i++) {
 		line = std::to_string(i + 1) + ". " + highscoresN[i] + "..." + std::to_string(highscores[i]);
-		hud->RenderText(line , 10.0f, 150 + 40 * i, 0.8f, color);
+		hud->RenderText(line, 10.0f, 150 + 40 * i, 0.8f, color);
 	}
+}
+
+void showHelp(TextRenderer* hud, glm::vec3 color) {
+	float width = window_width / 2 + 400.0f;
+	hud->RenderText("Instructions:", width, 100.0f, 1.0f, color);
+	hud->RenderText("F1: Help", width, 150.0f, 0.8f, color);
+	hud->RenderText("F2: FPS Limiter ON/OFF", width, 190.0f, 0.8f, color);
+	hud->RenderText("F3: Wireframe ON/OFF", width, 230.0f, 0.8f, color);
+	hud->RenderText("F4: Shadows ON/OFF", width, 270.0f, 0.8f, color);
+	hud->RenderText("F8: View Frustum Culling ON/OFF", width, 310.0f, 0.8f, color);
+	hud->RenderText("F9: Backface Culling ON/OFF", width, 350.0f, 0.8f, color);
+	hud->RenderText("Esc: Exit Game", width, 390.0f, 0.8f, color);
+	hud->RenderText("---------------------------", width, 430.0f, 0.8f, color);
+	hud->RenderText("WASD: Move Player", width, 470.0f, 0.8f, color);
+	hud->RenderText("LMB: Standard Attack", width, 510.0f, 0.8f, color);
+	hud->RenderText("RMB: Dash Attack", width, 550.0f, 0.8f, color);
+
+	hud->RenderText("Made by Aleksander Marinkovic & Sebastian Karall",
+		window_width / 2 - 350, window_height - 30.0f, 1.0f, color);
 }
 
 void setPerFrameUniformsNormal(Shader* shader, PlayerCamera& camera, PointLight& pointL, ShadowMap& shadowMap)
@@ -796,7 +819,7 @@ void setPerFrameUniformsNormal(Shader* shader, PlayerCamera& camera, PointLight&
 	shader->setUniform("pointL.color", pointL.color);
 	shader->setUniform("pointL.position", pointL.position);
 	shader->setUniform("pointL.attenuation", pointL.attenuation);
-	shader->setUniform("showShadows", _showShadows);
+	shader->setUniform("showShadows", checkShadows);
 	shader->setUniform("brightness", brightness);
 	shader->setUniform("lightPosition", pointL.position);
 
@@ -813,7 +836,7 @@ void setPerFrameUniforms(TerrainShader* shader, PlayerCamera& camera, PointLight
 {
 	shader->use();
 	shader->setUniform("viewProjMatrix", camera.getViewProjectionMatrix());
-	shader->setUniform("showShadows", _showShadows);
+	shader->setUniform("showShadows", checkShadows);
 	shader->setUniform("camera_world", camera.getPosition());
 	shader->setUniform("lightPosition", pointL.position);
 
@@ -826,7 +849,6 @@ void setPerFrameUniforms(TerrainShader* shader, PlayerCamera& camera, PointLight
 	shader->unuse();
 }
 
-/* GAMEPLAY */
 bool move_character(GLFWwindow* window, Character* character, PlayerCamera* playerCamera, float deltaMovement) {
 	float forward = 0;
 	float leftStrafe = 0;
@@ -870,42 +892,17 @@ bool move_character(GLFWwindow* window, Character* character, PlayerCamera* play
 	}
 	return false;
 }
-/* GAMEPLAY END */
-
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
 	//if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
-	//	_dragging = true;
+	//	glfwGetCursorPos(window, &lastxpos, &lastypos);
+	//	_draggingCamOnly = true;
+	//	_mouseSelect = true;
 	//}
 	//else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
-	//	_dragging = false;
+	//	_draggingCamOnly = false;
 	//}
-	//else if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
-	//	_strafing = true;
-	//}
-	//else if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE) {
-	//	_strafing = false;
-	//}
-	/* GAMEPLAY */
-	{
-		/*	if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
-				glfwGetCursorPos(window, &lastxpos, &lastypos);
-				_dragging = true;
-				_draggingCamOnly = false;
-			} else if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE) {
-				_dragging = false;
-				_draggingCamOnly = false;
-			} else*/ if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
-				glfwGetCursorPos(window, &lastxpos, &lastypos);
-				_draggingCamOnly = true;
-				_mouseSelect = true;
-			}
-			else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
-				_draggingCamOnly = false;
-			}
-	}
-	/* GAMEPLAY END */
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
@@ -921,39 +918,6 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-	//// F1 - Wireframe
-	//// F2 - Culling
-	//// Esc - Exit
-
-	//if (action != GLFW_RELEASE) return;
-
-	//switch (key)
-	//{
-	//case GLFW_KEY_ESCAPE:
-	//	glfwSetWindowShouldClose(window, true);
-	//	break;
-	//case GLFW_KEY_F1:
-	//	_wireframe = !_wireframe;
-	//	glPolygonMode(GL_FRONT_AND_BACK, _wireframe ? GL_LINE : GL_FILL);
-	//	break;
-	//case GLFW_KEY_F2:
-	//	_culling = !_culling;
-	//	if (_culling) glEnable(GL_CULL_FACE);
-	//	else glDisable(GL_CULL_FACE);
-	//	break;
-	//}
-	/* GAMEPLAY */
-	
-	// F2 - FPS Limiter
-	// F3 - Wireframe ON/OFF
-	
-	// F8 - View Frustum ON/OFF
-	// F9 - Backface Culling
-
-
-
-	// Esc - Exit
-
 	if (action != GLFW_RELEASE) return;
 
 	switch (key)
@@ -961,29 +925,28 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	case GLFW_KEY_ESCAPE:
 		glfwSetWindowShouldClose(window, true);
 		break;
-	//case GLFW_KEY_F1:
-	//	_showHelp = !_showHelp;
-	//	break;
+	case GLFW_KEY_F1:
+		_showHelp = !_showHelp;
+		break;
 	case GLFW_KEY_F2:
-		_limitFPS = !_limitFPS;
+		checkFPSLimit = !checkFPSLimit;
 		break;
 	case GLFW_KEY_F3:
-		_wireframe = !_wireframe;
-		glPolygonMode(GL_FRONT_AND_BACK, _wireframe ? GL_LINE : GL_FILL);
+		checkWireframe = !checkWireframe;
+		glPolygonMode(GL_FRONT_AND_BACK, checkWireframe ? GL_LINE : GL_FILL);
 		break;
 	case GLFW_KEY_F4:
-		_showShadows = !_showShadows;
+		checkShadows = !checkShadows;
 		break;
 	case GLFW_KEY_F8:
-		_checkFrustum = !_checkFrustum;
+		checkVFC = !checkVFC;
 		break;
 	case GLFW_KEY_F9:
-		_culling = !_culling;
-		if (_culling) glEnable(GL_CULL_FACE);
+		checkBackCulling = !checkBackCulling;
+		if (checkBackCulling) glEnable(GL_CULL_FACE);
 		else glDisable(GL_CULL_FACE);
 		break;
 	}
-	/* GAMEPLAY END */
 }
 
 

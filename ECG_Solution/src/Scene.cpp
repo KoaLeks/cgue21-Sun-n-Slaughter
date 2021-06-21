@@ -216,7 +216,6 @@ void Scene::processMesh(aiMesh* mesh, const aiScene* scene, bool cookMesh, bool 
 		
 		pxChar = _manager->createController(bDesc);
 		meshActor = pxChar->getActor();
-		_scene->addActor(*meshActor);
 		if (isEnemy) {
 			std::shared_ptr<Enemy> enemyNode = std::static_pointer_cast<Enemy>(newNode);
 			enemyNode->setCharacterController(pxChar);
