@@ -53,7 +53,7 @@ int main(int argc, char** argv);
 float getYPosition(float x, float z);
 void renderQuad();
 void loadHighscores();
-void safeHighscore();
+void saveHighscore();
 void showHighscores(TextRenderer* hud, glm::vec3 color = glm::vec3(1.0f));
 void showHelp(TextRenderer* hud, glm::vec3 color = glm::vec3(1.0f));
 
@@ -78,12 +78,12 @@ static bool _doBasicAttack = false;
 static bool _doStrongAttack = false;
 static bool _doAreacAttack = false;
 static bool checkVFC = true;
-static bool _showHelp = false;
+static bool help = false;
 static float _fov = 60.0f;
 double lastxpos = 0;
 double lastypos = 0;
-int _selectedFPS = 60;
-static bool checkFPSLimit = true;
+int selectedFPS = 60;
+static bool checkFPSLimit = false;
 
 bool _hitDetection = false;
 
@@ -99,9 +99,10 @@ int terrainHeight = 250;
 float lightDistance = 20000.0f;
 
 std::string playerName;
-int highscore = 0;
+int highscore = 6666;
 std::string highscoresN[5];
 int highscores[5];
+bool isSaved = false;
 /* GAMEPLAY END */
 
 /* --------------------------------------------- */
@@ -127,7 +128,7 @@ int main(int argc, char** argv)
 	brightness = float(reader.GetReal("window", "brightness", 1.0));
 
 	/* GAMEPLAY */
-	_selectedFPS = reader.GetInteger("window", "fps", 60);
+	selectedFPS = reader.GetInteger("window", "fps", 60);
 
 	playerName = reader.Get("player", "name", "Unknown");
 	/* GAMEPLAY END */
@@ -137,7 +138,7 @@ int main(int argc, char** argv)
 
 	//TEST
 	//highscore = 99;
-	//safeHighscore();
+	//saveHighscore();
 
 
 	/* --------------------------------------------- */
@@ -243,8 +244,8 @@ int main(int argc, char** argv)
 	hud->Load("assets/fonts/beachday.ttf", 32);
 	//splashscreen
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	hud->RenderText("Sun'n'Slaughter", 
-		window_width / 2 - 225, window_height / 2 - 100.0f, 2.0f, glm::vec3(0.0));
+	hud->RenderText(window_title,
+		window_width / 2 - 225, window_height / 2 - 100.0f, 2.0f, glm::vec3(1, 0, 0));
 	showHighscores(hud, glm::vec3(0.0));
 	showHelp(hud, glm::vec3(0.0));
 	glfwSwapBuffers(window);
@@ -346,7 +347,7 @@ int main(int argc, char** argv)
 		Mesh frust = Mesh(glm::translate(glm::mat4(1), glm::vec3(0)), Mesh::createCubeMesh(10, 10, 10), debug);
 
 		// Tree positions
-		PossionDiskSampling treePositions = PossionDiskSampling(terrainPlaneSize, treeMaskPath, heightMapPath, terrainHeight, 150, 10);
+		PossionDiskSampling treePositions = PossionDiskSampling(terrainPlaneSize, treeMaskPath, heightMapPath, terrainHeight, 80, 10);
 		std::vector<glm::vec3> points = treePositions.getPoints();
 
 		// GUI
@@ -472,6 +473,10 @@ int main(int argc, char** argv)
 		float t2 = t;
 		float dt = 0.0f;
 		float t_sum = 0.0f;
+		float fps_start = 0.0f;
+		float fps_current = 0.0f;
+		float fps_delta = 0.0f;
+		float fps_update = 5.0f; // 5 updates per second
 		int waitingMS = 0;
 		PxReal timeStep = 1.0f / 60.0f;
 		float timeStepFloat = 1.0f / 60.0f;
@@ -481,7 +486,7 @@ int main(int argc, char** argv)
 		float topRightScreen = window_width - (window_width / 5.0f);
 		std::string info = "";
 		float infoTime = 0.0f;
-		int fps = 60;
+		int fps = 0;
 		int fpsCnt = 0;
 		boolean drawFire = false;
 		float animationStepBuffer = 0.0f;
@@ -589,12 +594,6 @@ int main(int argc, char** argv)
 				viewFrustum->setCamDef(playerCamera.getActualPosition(), getLookVector(camModel), getUpVector(camModel));
 			}
 
-			// light position
-			//frust.resetModelMatrix();
-			//frust.transform(glm::translate(glm::mat4(1), pointL.position));
-			//frust.draw();
-			//frust.draw();
-
 			// 2. Render Scene
 			// --------------------------------------------------------------
 			// Render Skybox
@@ -608,31 +607,32 @@ int main(int argc, char** argv)
 			character.animate(animationStep);
 			/* GAMEPLAY END*/
 
-			// Render GUI
-			//guiRenderer.render(guis, brightness);
+			// Render flares
+			flareMangaer.render(playerCamera.getViewProjectionMatrix(), pointL.position, brightness);
 
-			// draw HUD
-			hud->RenderText("HP: " + std::to_string(character.getHP()), 10.0f, 10.0f, 1.0f);
-			hud->RenderText("Highscore: " + std::to_string(highscore), 10.0f, 40.0f, 1.0f);
-			//showHighscores(hud, glm::vec3(255, 255, 255));
+			// Compute frame time
+			dt = t;
+			t = float(glfwGetTime());
+			dt = t - dt;
+			t_sum += dt;
 
-			if (_showHelp) {
-				showHighscores(hud);
-				showHelp(hud);
-			}
 
-			if (fpsCnt > 60) {
-				fpsCnt = 0;
-				fps = int(1.0f / dt);
-			}
 			fpsCnt++;
-
-			hud->RenderText("FPS: " + std::to_string(fps), 10.0f, window_height - 30.0f, 1.0f);
-			hud->RenderText("Objects: " + std::to_string(level.getDrawnObjects()), 10.0f, window_height - 60.0f, 1.0f);
+			fps_delta += dt;
+			if (fps_delta > 1.0 / fps_update) {
+				fps = int(fpsCnt / fps_delta);
+				fpsCnt = 0;
+				fps_delta -= 1.0 / fps_update;
+			}
 
 			//win or rather lose condition
 			if (character.getHP() <= 0) {
-				hud->RenderText("You got slaughtered!", window_width / 2 - 500, window_height / 2 - 100, 2.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+				if (!isSaved) { //TODO isSaved for general blocking of controlls after death?
+					saveHighscore(); // TODO: Add text if you got an new highscore
+					isSaved = true;
+				}
+				hud->RenderText("You got slaughtered!", window_width / 2 - 300, window_height / 2 - 100.0f, 2.0f, glm::vec3(1, 0, 0));
+				hud->RenderText("Highscore: " + std::to_string(highscore), 10.0f, 40.0f, 1.0f, glm::vec3(1, 0, 0));
 				showHighscores(hud, glm::vec3(1.0f, 0.0f, 0.0f));
 				brightness -= dt / 3;
 
@@ -640,16 +640,19 @@ int main(int argc, char** argv)
 					glfwSetWindowShouldClose(window, true);
 				}
 			}
+			else {
+				// draw HUD
+				hud->RenderText("HP: " + std::to_string(character.getHP()), 10.0f, 10.0f, 1.0f);
+				hud->RenderText("Highscore: " + std::to_string(highscore), 10.0f, 40.0f, 1.0f);
 
-			// Render flares
-			flareMangaer.render(playerCamera.getViewProjectionMatrix(), pointL.position, brightness);
+				if (help) {
+					showHighscores(hud);
+					showHelp(hud);
+				}
 
-
-			// Compute frame time
-			dt = t;
-			t = float(glfwGetTime());
-			dt = t - dt;
-			t_sum += dt;
+				hud->RenderText("FPS: " + std::to_string(fps), 10.0f, window_height - 30.0f, 1.0f);
+				hud->RenderText("Objects: " + std::to_string(level.getDrawnObjects()), 10.0f, window_height - 60.0f, 1.0f);
+			}
 
 			/* GAMEPLAY */
 			animationStepBuffer += dt;
@@ -664,7 +667,7 @@ int main(int argc, char** argv)
 
 			}
 			if (checkFPSLimit) {
-				waitingMS = (1000 / _selectedFPS) - (t - t2) * 1000;
+				waitingMS = (1000 / selectedFPS) - (t - t2) * 1000;
 				if (waitingMS > 0) {
 					Sleep(waitingMS);
 				}
@@ -767,7 +770,7 @@ void loadHighscores() {
 	file.close();
 }
 
-void safeHighscore() {
+void saveHighscore() {
 	bool saved = false;
 	std::ofstream file("assets/highscores.txt");
 
@@ -936,7 +939,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		glfwSetWindowShouldClose(window, true);
 		break;
 	case GLFW_KEY_F1:
-		_showHelp = !_showHelp;
+		help = !help;
 		break;
 	case GLFW_KEY_F2:
 		checkFPSLimit = !checkFPSLimit;
