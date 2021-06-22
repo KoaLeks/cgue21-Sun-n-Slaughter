@@ -584,8 +584,8 @@ int main(int argc, char** argv)
 			}
 
 			// hitDetection from physx callback -> locked on 60 fps
-			if (hitDetection) {
-				character.inflictDamage(1);
+			if (hitDetection && fpsCnt % 25 == 0) {
+				character.inflictDamage(5);
 				hitDetection = false;
 			}
 
