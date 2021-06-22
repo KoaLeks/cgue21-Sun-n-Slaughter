@@ -55,7 +55,8 @@ void renderQuad();
 void loadHighscores();
 void saveHighscore();
 void showHighscores(TextRenderer* hud, glm::vec3 color = glm::vec3(1.0f));
-void showHelp(TextRenderer* hud, glm::vec3 color = glm::vec3(1.0f));
+void showHelp(TextRenderer* hud, glm::vec3 color = glm::vec3(1.0f)); 
+glm::vec3 getViewDirection(float yaw);
 
 
 /* --------------------------------------------- */
@@ -553,21 +554,27 @@ int main(int argc, char** argv)
 			// update character and camera position
 			is_moving = move_character(window, &character, &playerCamera, dt);
 
-			// update all enemy positions and deaths
+			// update all enemy positions, deaths and player hits
 			for (size_t i = 0; i < level.enemies.size(); i++) {
 				level.enemies[i]->chase(character.getPosition(), enemySpeed, dt);
 
 				if (attack) {
-					//BLAHBLAHBLA
-					std::cout << "ATTACK!" << std::endl;
+					glm::vec3 enemyPos = level.enemies[i]->getPosition();
+					glm::vec3 dirToEnemy = glm::normalize( enemyPos - character.getPosition());
+					glm::vec3 viewDir = getViewDirection(playerCamera.getYaw());
+					float angle = M_PI - glm::acos(glm::dot(viewDir, dirToEnemy));
 					
+					if (glm::degrees(angle) <= 45 && glm::distance(character.getPosition(), enemyPos) <= 30) {
+						level.enemies[i]->hitWithDamage(20);
+						//std::cout << level.enemies[i]->getCharacterController()->getActor()->getName() << " HIT " << std::endl;
+					}
 				}
 			}
 			attack = false; //Eigentlich wollt ich das ins if(attack) aber das ist ja ein einer Schleife und nicht verkehrt, sollt trotzdem passen
 
 			if (dashInProgress && enemyDetection >= 0) {
 				if (!enemiesHitByDash[enemyDetection]) {
-					level.enemies[enemyDetection]->hitWithDamage(25);
+					level.enemies[enemyDetection]->hitWithDamage(50);
 					enemiesHitByDash[enemyDetection] = true;
 				}
 				enemyDetection = -1;
@@ -575,7 +582,7 @@ int main(int argc, char** argv)
 
 			//dash attack
 			if (dashInProgress) {
-				dashCoolDown = 10.0f;
+				dashCoolDown = 20.0f;
 				dashDuration -= dt;
 				if (dashDuration < 0.0f) {
 					dashInProgress = false;
@@ -684,7 +691,7 @@ int main(int argc, char** argv)
 			else {
 				// draw HUD
 				hud->RenderText("HP: " + std::to_string(character.getHP()), 15.0f, 15.0f, 1.0f, (character.getHP() < 25) ? glm::vec3(1, 0, 0) : glm::vec3(1));
-				hud->RenderText("Dash: " + std::to_string(int(10.0 - dashCoolDown)) + "/10", 15.0f, 55.0f, 1.0f, (dashCoolDown > 0.0) ? glm::vec3(1, 0, 0) : glm::vec3(1));
+				hud->RenderText("Dash: " + std::to_string(int(20.0 - dashCoolDown)) + "/20", 15.0f, 55.0f, 1.0f, (dashCoolDown > 0.0) ? glm::vec3(1, 0, 0) : glm::vec3(1));
 				hud->RenderText("Highscore: " + std::to_string(highscore), window_width - (170 + 16 * std::to_string(highscore).length()), 15.0f, 1.0f);
 
 				if (help) {
@@ -874,6 +881,12 @@ void setPerFrameUniforms(TerrainShader* shader, PlayerCamera& camera, PointLight
 	glBindTexture(GL_TEXTURE_2D, shadowMap.getShadowMapID());
 	shader->setUniform("shadowMap", 6);
 	shader->unuse();
+}
+
+glm::vec3 getViewDirection(float yaw) {
+	float xDir = glm::sin(glm::radians(yaw));
+	float zDir = glm::cos(glm::radians(yaw));
+	return glm::normalize(glm::vec3(xDir, 0, zDir));
 }
 
 bool move_character(GLFWwindow* window, Character* character, PlayerCamera* playerCamera, float deltaMovement) {
