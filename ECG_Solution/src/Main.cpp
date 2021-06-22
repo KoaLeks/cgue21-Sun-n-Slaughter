@@ -564,6 +564,11 @@ int main(int argc, char** argv)
 				level.enemies[i]->chase(character.getPosition(), enemySpeed, dt);
 			}
 
+			if (dashInProgress && enemyDetection >= 0) {
+				level.enemies[enemyDetection]->hitWithDamage(25);
+				enemyDetection = -1;
+			}
+
 			//dash attack
 			if (dashInProgress) {
 				dashCoolDown = 10.0f;
