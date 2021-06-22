@@ -658,8 +658,8 @@ int main(int argc, char** argv)
 
 			//win or rather lose condition
 			if (character.getHP() <= 0) {
-				if (!isSaved) { //TODO isSaved for general blocking of controlls after death?
-					saveHighscore(); // TODO: Add text if you got an new highscore
+				if (!isSaved) { 
+					saveHighscore();
 					isSaved = true;
 				}
 				hud->RenderText("You got slaughtered!", window_width / 2 - 300, window_height / 2 - 100.0f, 2.0f, glm::vec3(1, 0, 0));
@@ -966,15 +966,10 @@ bool move_character(GLFWwindow* window, Character* character, PlayerCamera* play
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
-	//if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
-	//	glfwGetCursorPos(window, &lastxpos, &lastypos);
-	//	_draggingCamOnly = true;
-	//	_mouseSelect = true;
-	//}
-	//else 
-	if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
-		//_draggingCamOnly = false;
-		//std::cout << "PRESS" << std::endl;
+	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+
+	}
+	else if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
 		dashInProgress = (dashCoolDown > 0.0) ? false : true;
 	}
 }
