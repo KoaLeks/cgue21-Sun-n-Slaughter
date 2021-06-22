@@ -88,6 +88,7 @@ int enemyDetection = -1;
 bool dashInProgress = false;
 float dashDuration = 0.5f;
 float dashCoolDown = 0.0f; //Max 10.0f
+bool enemiesHitByDash[4] = { false };
 
 
 bool disableTextures = false;
@@ -565,7 +566,10 @@ int main(int argc, char** argv)
 			}
 
 			if (dashInProgress && enemyDetection >= 0) {
-				level.enemies[enemyDetection]->hitWithDamage(25);
+				if (!enemiesHitByDash[enemyDetection]) {
+					level.enemies[enemyDetection]->hitWithDamage(25);
+					enemiesHitByDash[enemyDetection] = true;
+				}
 				enemyDetection = -1;
 			}
 
@@ -575,6 +579,10 @@ int main(int argc, char** argv)
 				dashDuration -= dt;
 				if (dashDuration < 0.0f) {
 					dashInProgress = false;
+					enemiesHitByDash[0] = false;
+					enemiesHitByDash[1] = false;
+					enemiesHitByDash[2] = false;
+					enemiesHitByDash[3] = false;
 					dashDuration = 1.0f;
 				}
 			}
