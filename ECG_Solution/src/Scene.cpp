@@ -193,6 +193,7 @@ void Scene::processMesh(aiMesh* mesh, const aiScene* scene, bool cookMesh, bool 
 
 		physx::PxTransform floorPos = physx::PxTransform(position.x, position.y, position.z);
 		meshActor = _physics->createRigidStatic(floorPos);
+		meshActor->setName("cook");
 		physx::PxTriangleMeshGeometry geom(triangleMesh, physx::PxMeshScale(scale));
 		physx::PxShape* floorShape = physx::PxRigidActorExt::createExclusiveShape(*meshActor, geom, *_material);
 		_scene->addActor(*meshActor);
@@ -213,6 +214,7 @@ void Scene::processMesh(aiMesh* mesh, const aiScene* scene, bool cookMesh, bool 
 		
 		pxChar = _manager->createController(bDesc);
 		meshActor = pxChar->getActor();
+		pxChar->getActor()->setName("enemy");
 		if (isEnemy) {
 			std::shared_ptr<Enemy> enemyNode = std::static_pointer_cast<Enemy>(newNode);
 			enemyNode->setCharacterController(pxChar);
