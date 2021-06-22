@@ -64,14 +64,25 @@ void Enemy::move(float forward, float strafeLeft, float dt) {
 	_pxChar->move(physx::PxVec3(addX, 0.0f, addY), 0.001f, dt, physx::PxControllerFilters());
 
 	this->setPosition(_pxChar->getPosition());
+
 }
+
+void Enemy::updateBoundingBox(glm::vec3 posDelta) {
+	for (int i = 0; i < this->_meshes.size(); i++) {
+		this->_meshes[i]->updateBoundingBox(posDelta);
+	}
+}
+
 void Enemy::move2(glm::vec3 dir, float speed, float dt) {
 	float addX = speed * dir.x; 
 	float addZ = speed * dir.z;
+	glm::vec3 oldPos = this->getPosition();
 
 	_pxChar->move(physx::PxVec3(addX, -98.0f, addZ) * dt, 0.001f, dt, physx::PxControllerFilters());
 	//_pxChar->getActor()->addForce(physx::PxVec3(addX, -0.0f, addZ));
 	this->setPosition(_pxChar->getPosition());
+	glm::vec3 currentPos = this->getPosition();
+	updateBoundingBox(currentPos - oldPos);
 }
 
 void Enemy::updateRotation(float value) {

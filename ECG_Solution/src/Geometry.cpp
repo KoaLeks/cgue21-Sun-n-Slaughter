@@ -113,9 +113,44 @@ Geometry::~Geometry()
 	}
 }
 
+void Geometry::updateBoundingBox(glm::vec3 posDelta) {
+	for (int i = 0; i < _boudingBox->size(); i++) {
+		_boudingBox->at(i) += posDelta;
+	}
+}
+
+void Geometry::drawDebug(glm::mat4 matrix, std::string name)
+{
+	glm::mat4 accumModel = matrix * _transformMatrix * _modelMatrix;
+
+	if (_isCharacter || _viewFrustum->boxInFrustumDebug(_boudingBox, name) != FrustumG::OUTSIDE) {
+		if (!_isEmpty) {
+			Shader* shader = _material->getShader();
+			shader->use();
+
+			shader->setUniform("modelMatrix", accumModel);
+			shader->setUniform("normalMatrix", glm::mat3(glm::transpose(glm::inverse(accumModel))));
+			_material->setUniforms();
+
+			glBindVertexArray(_vao);
+			glDrawElements(GL_TRIANGLES, _elements, GL_UNSIGNED_INT, 0);
+			glBindVertexArray(0);
+			(*_drawnObjects)++;
+			shader->unuse();
+
+		}
+	}
+
+	for (size_t i = 0; i < _children.size(); i++) {
+		_children[i]->draw(accumModel);
+	}
+
+}
+
 void Geometry::draw(glm::mat4 matrix)
 {
 	glm::mat4 accumModel = matrix * _transformMatrix * _modelMatrix;
+
 	if (_isCharacter || _viewFrustum->boxInFrustum(_boudingBox) != FrustumG::OUTSIDE) {
 		if (!_isEmpty) {
 			Shader* shader = _material->getShader();

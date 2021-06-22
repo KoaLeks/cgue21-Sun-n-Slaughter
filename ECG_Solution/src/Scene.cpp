@@ -193,6 +193,7 @@ void Scene::processMesh(aiMesh* mesh, const aiScene* scene, bool cookMesh, bool 
 
 		physx::PxTransform floorPos = physx::PxTransform(position.x, position.y, position.z);
 		meshActor = _physics->createRigidStatic(floorPos);
+		meshActor->setName("cook");
 		physx::PxTriangleMeshGeometry geom(triangleMesh, physx::PxMeshScale(scale));
 		physx::PxShape* floorShape = physx::PxRigidActorExt::createExclusiveShape(*meshActor, geom, *_material);
 		_scene->addActor(*meshActor);
@@ -213,6 +214,7 @@ void Scene::processMesh(aiMesh* mesh, const aiScene* scene, bool cookMesh, bool 
 		
 		pxChar = _manager->createController(bDesc);
 		meshActor = pxChar->getActor();
+		pxChar->getActor()->setName("enemy");
 		if (isEnemy) {
 			std::shared_ptr<Enemy> enemyNode = std::static_pointer_cast<Enemy>(newNode);
 			enemyNode->setCharacterController(pxChar);
@@ -222,14 +224,14 @@ void Scene::processMesh(aiMesh* mesh, const aiScene* scene, bool cookMesh, bool 
 	}
 	std::shared_ptr<std::vector<glm::vec3>> boundingBox = std::make_shared<std::vector<glm::vec3>>();
 	lenVec = lenVec / 2.0f;
-	boundingBox->push_back(middlePos + glm::vec3(lenVec.x, lenVec.y, lenVec.z));
-	boundingBox->push_back(middlePos + glm::vec3(lenVec.x, lenVec.y, -lenVec.z));
-	boundingBox->push_back(middlePos + glm::vec3(lenVec.x, -lenVec.y, lenVec.z));
-	boundingBox->push_back(middlePos + glm::vec3(lenVec.x, -lenVec.y, -lenVec.z));
-	boundingBox->push_back(middlePos + glm::vec3(-lenVec.x, lenVec.y, lenVec.z));
-	boundingBox->push_back(middlePos + glm::vec3(-lenVec.x, lenVec.y, -lenVec.z));
-	boundingBox->push_back(middlePos + glm::vec3(-lenVec.x, -lenVec.y, lenVec.z));
-	boundingBox->push_back(middlePos + glm::vec3(-lenVec.x, -lenVec.y, -lenVec.z));
+	boundingBox->push_back(middlePos + glm::vec3(lenVec.x,   lenVec.y - lenVec.y/2, lenVec.z));
+	boundingBox->push_back(middlePos + glm::vec3(lenVec.x,   lenVec.y - lenVec.y/2, -lenVec.z));
+	boundingBox->push_back(middlePos + glm::vec3(lenVec.x,  -lenVec.y - lenVec.y/2, lenVec.z));
+	boundingBox->push_back(middlePos + glm::vec3(lenVec.x,  -lenVec.y - lenVec.y/2, -lenVec.z));
+	boundingBox->push_back(middlePos + glm::vec3(-lenVec.x,  lenVec.y - lenVec.y/2, lenVec.z));
+	boundingBox->push_back(middlePos + glm::vec3(-lenVec.x,  lenVec.y - lenVec.y/2, -lenVec.z));
+	boundingBox->push_back(middlePos + glm::vec3(-lenVec.x, -lenVec.y - lenVec.y/2, lenVec.z));
+	boundingBox->push_back(middlePos + glm::vec3(-lenVec.x, -lenVec.y - lenVec.y/2, -lenVec.z));
 
 	newNode->addMesh(std::make_shared<Geometry>(glm::mat4(1.0f), data, mat, meshActor, pxChar, boundingBox, _viewFrustum, &_drawnObjects));
 }

@@ -46,6 +46,7 @@ public:
 
 	void move(float forward, float strafeLeft);
 	void setPosition(physx::PxExtendedVec3 pos);
+	glm::vec3 getPosition();
 	void yaw(float angle);
 	std::shared_ptr<Node> getChildWithName(std::string name);
 };

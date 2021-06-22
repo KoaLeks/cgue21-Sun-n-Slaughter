@@ -40,7 +40,7 @@ void main() {
 	//vec3 n = normalize(vert.normal_world);
 	//vec3 v = normalize(camera_world - vert.position_world);
 	
-	vec3 texColor = vec3(1, 1, 1);//texture(diffuseTexture, vert.uv).rgb;
+	vec3 texColor = vec3(1, 0, 0);//texture(diffuseTexture, vert.uv).rgb;
 
 	color = vec4(texColor, 1); // ambient
 	

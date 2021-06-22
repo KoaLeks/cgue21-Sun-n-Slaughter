@@ -90,6 +90,7 @@ public:
 	void transform(glm::mat4 transformation);
 	void setTransformMatrix(glm::mat4 transformMatrix);
 	void resetModelMatrix();
-
+	void updateBoundingBox(glm::vec3 posDelta);
+	void drawDebug(glm::mat4 matrix, std::string name);
 	Geometry* addChild(std::shared_ptr<Geometry> child);
 };

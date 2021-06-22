@@ -297,6 +297,7 @@ int main(int argc, char** argv)
 	cDesc.material = mMaterial;
 	//cDesc.reportCallback = simulationCallback;
 	PxController* pxChar = gManager->createController(cDesc);
+	pxChar->getActor()->setName("larry");
 
 	/* GAMEPLAY END */
 
@@ -345,7 +346,7 @@ int main(int argc, char** argv)
 		std::shared_ptr<MeshMaterial> material = std::make_shared<MeshMaterial>(textureShader, glm::vec3(0.3f, 0.8f, 0.0f), 8.0f);
 		std::shared_ptr<MeshMaterial> depth = std::make_shared<MeshMaterial>(shadowMapDepthShader, glm::vec3(0.5f, 0.7f, 0.3f), 8.0f);
 
-		Mesh frust = Mesh(glm::translate(glm::mat4(1), glm::vec3(0)), Mesh::createCubeMesh(10, 10, 10), debug);
+		Mesh frust = Mesh(glm::translate(glm::mat4(1), glm::vec3(0)), Mesh::createCubeMesh(1, 1, 1), debug);
 
 		// Tree positions
 		PossionDiskSampling treePositions = PossionDiskSampling(terrainPlaneSize, treeMaskPath, heightMapPath, terrainHeight, 80, 10);
@@ -414,6 +415,7 @@ int main(int argc, char** argv)
 		// Initialize camera
 		PlayerCamera playerCamera(_fov, float(window_width) / float(window_height), nearZ, farZ);
 		std::shared_ptr<FrustumG> viewFrustum = std::make_shared<FrustumG>();
+		viewFrustum->setDebugMesh(frust);
 		viewFrustum->setCamInternals(_fov, float(window_width) / float(window_height), nearZ, farZ);
 		glm::mat4 camModel = playerCamera.getModel();
 		viewFrustum->setCamDef(getWorldPosition(camModel), getLookVector(camModel), getUpVector(camModel));
@@ -439,10 +441,19 @@ int main(int argc, char** argv)
 		level.addStaticObject("assets/models/sunbed.obj", PxExtendedVec3(375, getYPosition(375, -220) - 5, -220), 3);
 
 		// TEST ENEMY
-		level.addEnemy(physx::PxExtendedVec3(500, getYPosition(500, -500) - 5, -500), 10, simulationCallback);
+		level.addEnemy(physx::PxExtendedVec3(500, getYPosition(500, -500), -500), 10, simulationCallback);
+		level.addEnemy(physx::PxExtendedVec3(550, getYPosition(550, -500), -500), 10, simulationCallback);
+		level.addEnemy(physx::PxExtendedVec3(450, getYPosition(450, -500), -500), 10, simulationCallback);
+		level.addEnemy(physx::PxExtendedVec3(300, getYPosition(300, -500), -500), 10, simulationCallback);
+		// bot left, top left, top right, bot right
+		level.addEnemy(physx::PxExtendedVec3(50, getYPosition(50, -50)    + 5, -50)   , 10, simulationCallback);
+		level.addEnemy(physx::PxExtendedVec3(950, getYPosition(950, -50)  + 5, -50) , 10, simulationCallback);
+		level.addEnemy(physx::PxExtendedVec3(950, getYPosition(950, -950) + 5, -950), 10, simulationCallback);
+		level.addEnemy(physx::PxExtendedVec3(50, getYPosition(50, -950)   + 5, -950) , 10, simulationCallback);
 
 		// Init character
 		GLuint animateShader = getComputeShader("assets/shader/animator.comp");
+		
 		Character character(textureShader, "assets/models/main_char_animated_larry_4.obj", gPhysicsSDK, gCooking, gScene, mMaterial, pxChar, &playerCamera, gManager, animateShader, viewFrustum);
 
 		// Adjust character to 3d person cam
