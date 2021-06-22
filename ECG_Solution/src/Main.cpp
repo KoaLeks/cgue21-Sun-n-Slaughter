@@ -634,7 +634,7 @@ int main(int argc, char** argv)
 				hud->RenderText("You got slaughtered!", window_width / 2 - 300, window_height / 2 - 100.0f, 2.0f, glm::vec3(1, 0, 0));
 				hud->RenderText("Highscore: " + std::to_string(highscore), 10.0f, 40.0f, 1.0f, glm::vec3(1, 0, 0));
 				showHighscores(hud, glm::vec3(1.0f, 0.0f, 0.0f));
-				brightness -= dt / 3;
+				brightness -= dt / 4;
 
 				if (brightness <= -1.0f) {
 					glfwSetWindowShouldClose(window, true);
@@ -809,16 +809,17 @@ void showHelp(TextRenderer* hud, glm::vec3 color) {
 	float width = window_width / 2 + 400.0f;
 	hud->RenderText("Instructions:", width, 100.0f, 1.0f, color);
 	hud->RenderText("F1: Help", width, 150.0f, 0.8f, color);
-	hud->RenderText("F2: FPS Limiter ON/OFF", width, 190.0f, 0.8f, color);
-	hud->RenderText("F3: Wireframe ON/OFF", width, 230.0f, 0.8f, color);
-	hud->RenderText("F4: Shadows ON/OFF", width, 270.0f, 0.8f, color);
-	hud->RenderText("F8: View Frustum Culling ON/OFF", width, 310.0f, 0.8f, color);
-	hud->RenderText("F9: Backface Culling ON/OFF", width, 350.0f, 0.8f, color);
-	hud->RenderText("Esc: Exit Game", width, 390.0f, 0.8f, color);
-	hud->RenderText("---------------------------", width, 430.0f, 0.8f, color);
-	hud->RenderText("WASD: Move Player", width, 470.0f, 0.8f, color);
-	hud->RenderText("LMB: Standard Attack", width, 510.0f, 0.8f, color);
-	hud->RenderText("RMB: Dash Attack", width, 550.0f, 0.8f, color);
+	hud->RenderText("F2: FPS Limiter " + std::string((checkFPSLimit) ? "(ON)/OFF" : "ON/(OFF)"), width, 190.0f, 0.8f, color);
+	hud->RenderText("F3: Wireframe " + std::string((checkWireframe) ? "(ON)/OFF" : "ON/(OFF)"), width, 230.0f, 0.8f, color);
+	hud->RenderText("F4: Shadows " + std::string((checkShadows) ? "(ON)/OFF" : "ON/(OFF)"), width, 270.0f, 0.8f, color);
+	hud->RenderText("F5: Textures " + std::string((!disableTextures) ? "(ON)/OFF" : "ON/(OFF)"), width, 310.0f, 0.8f, color);
+	hud->RenderText("F8: View Frustum Culling " + std::string((checkVFC) ? "(ON)/OFF" : "ON/(OFF)"), width, 350.0f, 0.8f, color);
+	hud->RenderText("F9: Backface Culling " + std::string((checkBackCulling) ? "(ON)/OFF" : "ON/(OFF)"), width, 390.0f, 0.8f, color);
+	hud->RenderText("Esc: Exit Game", width, 430.0f, 0.8f, color);
+	hud->RenderText("---------------------------", width, 470.0f, 0.8f, color);
+	hud->RenderText("WASD: Move Player", width, 510.0f, 0.8f, color);
+	hud->RenderText("LMB: Standard Attack", width, 550.0f, 0.8f, color);
+	hud->RenderText("RMB: Dash Attack", width, 590.0f, 0.8f, color);
 
 	hud->RenderText("Made by Aleksander Marinkovic & Sebastian Karall",
 		window_width / 2 - 350, window_height - 30.0f, 1.0f, color);
