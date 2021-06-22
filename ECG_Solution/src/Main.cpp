@@ -90,6 +90,8 @@ float dashDuration = 0.5f;
 float dashCoolDown = 0.0f; //Max 10.0f
 bool enemiesHitByDash[4] = { false };
 
+bool attack = false;
+
 
 bool disableTextures = false;
 float brightness = 1.0;
@@ -554,7 +556,14 @@ int main(int argc, char** argv)
 			// update all enemy positions and deaths
 			for (size_t i = 0; i < level.enemies.size(); i++) {
 				level.enemies[i]->chase(character.getPosition(), enemySpeed, dt);
+
+				if (attack) {
+					//BLAHBLAHBLA
+					std::cout << "ATTACK!" << std::endl;
+					
+				}
 			}
+			attack = false; //Eigentlich wollt ich das ins if(attack) aber das ist ja ein einer Schleife und nicht verkehrt, sollt trotzdem passen
 
 			if (dashInProgress && enemyDetection >= 0) {
 				if (!enemiesHitByDash[enemyDetection]) {
@@ -868,8 +877,6 @@ void setPerFrameUniforms(TerrainShader* shader, PlayerCamera& camera, PointLight
 }
 
 bool move_character(GLFWwindow* window, Character* character, PlayerCamera* playerCamera, float deltaMovement) {
-	//float forward = 0;
-	//float leftStrafe = 0;
 	bool updateForward = false;
 	bool updateStrafe = false;
 
@@ -930,24 +937,6 @@ bool move_character(GLFWwindow* window, Character* character, PlayerCamera* play
 		updateStrafe = true;
 	}
 
-	//if (holdingForward == GLFW_PRESS) {
-	//	forward += deltaMovement;
-	//	updateForward = true;
-	//}
-	//if (holdingBackward == GLFW_PRESS) {
-	//	forward -= deltaMovement;
-	//	updateForward = true;
-	//}
-	//
-	//if (holdingLeftStrafe == GLFW_PRESS) {
-	//	leftStrafe += deltaMovement;
-	//	updateStrafe = true;
-	//}
-	//if (holdingRightStrafe == GLFW_PRESS) {
-	//	leftStrafe -= deltaMovement;
-	//	updateStrafe = true;
-	//}
-	//
 	if (updateForward || updateStrafe) {
 		if (!updateStrafe) {
 			directionForward *= 1.414f;
@@ -967,7 +956,7 @@ bool move_character(GLFWwindow* window, Character* character, PlayerCamera* play
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
-
+		attack = true;
 	}
 	else if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
 		dashInProgress = (dashCoolDown > 0.0) ? false : true;
