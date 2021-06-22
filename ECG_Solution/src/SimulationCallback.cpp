@@ -5,8 +5,10 @@ void SimulationCallback::onShapeHit(const physx::PxControllerShapeHit& hit) {
 }
 
 void SimulationCallback::onControllerHit(const physx::PxControllersHit& hit) {
-	*hitDetection = true;
-	std::cout << hit.other->getActor()->getName() << std::endl;
+	if (std::strcmp(hit.other->getActor()->getName(), "larry") == 0) {
+		*hitDetection = true;
+	}	
+	//std::cout << hit.other->getActor()->getName() << std::endl;
 }
 
 void SimulationCallback::onObstacleHit(const physx::PxControllerObstacleHit& hit) {
