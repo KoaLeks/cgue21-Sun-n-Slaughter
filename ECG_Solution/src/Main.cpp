@@ -83,6 +83,7 @@ int selectedFPS = 60;
 
 
 bool hitDetection = false;
+int enemyDetection = -1;
 
 bool dashInProgress = false;
 float dashDuration = 0.5f;
@@ -275,7 +276,7 @@ int main(int argc, char** argv)
 		EXIT_WITH_ERROR("Failed to init cooking")
 	}
 
-	SimulationCallback* simulationCallback = new SimulationCallback(&hitDetection);
+	SimulationCallback* simulationCallback = new SimulationCallback(&hitDetection, &enemyDetection, &dashInProgress);
 	PxScene* gScene = nullptr;
 	PxSceneDesc sceneDesc(gPhysicsSDK->getTolerancesScale());
 	sceneDesc.gravity = PxVec3(0.0f, -9.8f, 0.0f);

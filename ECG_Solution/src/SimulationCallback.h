@@ -9,11 +9,13 @@ class SimulationCallback : public physx::PxUserControllerHitReport {
 private:
 
 	bool* hitDetection;
+	int* enemyDetection;
+	bool* dashInProgress;
 
 public:
 
-	SimulationCallback(bool* _hitDetection)
-		: hitDetection(_hitDetection) {
+	SimulationCallback(bool* _hitDetection, int* _enemyDetection, bool* _dashInProgress)
+		: hitDetection(_hitDetection), enemyDetection(_enemyDetection), dashInProgress(_dashInProgress) {
 	}
 	~SimulationCallback() {
 	}

@@ -5,7 +5,7 @@ void SimulationCallback::onShapeHit(const physx::PxControllerShapeHit& hit) {
 }
 
 void SimulationCallback::onControllerHit(const physx::PxControllersHit& hit) {
-	if (std::strcmp(hit.other->getActor()->getName(), "larry") == 0) {
+	if (std::strcmp(hit.other->getActor()->getName(), "larry") == 0 && !*dashInProgress) {
 		*hitDetection = true;
 
 		std::cout << getIntFromCString(hit.controller->getActor()->getName()) << std::endl;
