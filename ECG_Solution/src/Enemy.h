@@ -25,6 +25,7 @@ public:
 	void setCharacterController(physx::PxController* pxChar);
 	physx::PxController* getCharacterController();
 	void move(float forward, float strafeLeft, float dt);
+	void updateBoundingBox(glm::vec3 posDelta);
 	void move2(glm::vec3 dir, float speed, float dt);
 	void updateRotation(float angle);
 	void updateCharacter(float dt);

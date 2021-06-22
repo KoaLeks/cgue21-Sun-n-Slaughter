@@ -344,7 +344,7 @@ int main(int argc, char** argv)
 		std::shared_ptr<MeshMaterial> material = std::make_shared<MeshMaterial>(textureShader, glm::vec3(0.3f, 0.8f, 0.0f), 8.0f);
 		std::shared_ptr<MeshMaterial> depth = std::make_shared<MeshMaterial>(shadowMapDepthShader, glm::vec3(0.5f, 0.7f, 0.3f), 8.0f);
 
-		Mesh frust = Mesh(glm::translate(glm::mat4(1), glm::vec3(0)), Mesh::createCubeMesh(10, 10, 10), debug);
+		Mesh frust = Mesh(glm::translate(glm::mat4(1), glm::vec3(0)), Mesh::createCubeMesh(1, 1, 1), debug);
 
 		// Tree positions
 		PossionDiskSampling treePositions = PossionDiskSampling(terrainPlaneSize, treeMaskPath, heightMapPath, terrainHeight, 80, 10);
@@ -413,6 +413,7 @@ int main(int argc, char** argv)
 		// Initialize camera
 		PlayerCamera playerCamera(_fov, float(window_width) / float(window_height), nearZ, farZ);
 		std::shared_ptr<FrustumG> viewFrustum = std::make_shared<FrustumG>();
+		viewFrustum->setDebugMesh(frust);
 		viewFrustum->setCamInternals(_fov, float(window_width) / float(window_height), nearZ, farZ);
 		glm::mat4 camModel = playerCamera.getModel();
 		viewFrustum->setCamDef(getWorldPosition(camModel), getLookVector(camModel), getUpVector(camModel));

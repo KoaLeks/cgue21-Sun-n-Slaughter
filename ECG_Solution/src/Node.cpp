@@ -81,6 +81,10 @@ void Node::setPosition(physx::PxExtendedVec3 pos) {
 
 }
 
+glm::vec3 Node::getPosition() {
+	return _position;
+}
+
 void Node::yaw(float angle) {
 	_angle = angle;
 }

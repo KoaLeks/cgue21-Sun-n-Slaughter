@@ -222,14 +222,14 @@ void Scene::processMesh(aiMesh* mesh, const aiScene* scene, bool cookMesh, bool 
 	}
 	std::shared_ptr<std::vector<glm::vec3>> boundingBox = std::make_shared<std::vector<glm::vec3>>();
 	lenVec = lenVec / 2.0f;
-	boundingBox->push_back(middlePos + glm::vec3(lenVec.x, lenVec.y, lenVec.z));
-	boundingBox->push_back(middlePos + glm::vec3(lenVec.x, lenVec.y, -lenVec.z));
-	boundingBox->push_back(middlePos + glm::vec3(lenVec.x, -lenVec.y, lenVec.z));
-	boundingBox->push_back(middlePos + glm::vec3(lenVec.x, -lenVec.y, -lenVec.z));
-	boundingBox->push_back(middlePos + glm::vec3(-lenVec.x, lenVec.y, lenVec.z));
-	boundingBox->push_back(middlePos + glm::vec3(-lenVec.x, lenVec.y, -lenVec.z));
-	boundingBox->push_back(middlePos + glm::vec3(-lenVec.x, -lenVec.y, lenVec.z));
-	boundingBox->push_back(middlePos + glm::vec3(-lenVec.x, -lenVec.y, -lenVec.z));
+	boundingBox->push_back(middlePos + glm::vec3(lenVec.x,   lenVec.y - lenVec.y/2, lenVec.z));
+	boundingBox->push_back(middlePos + glm::vec3(lenVec.x,   lenVec.y - lenVec.y/2, -lenVec.z));
+	boundingBox->push_back(middlePos + glm::vec3(lenVec.x,  -lenVec.y - lenVec.y/2, lenVec.z));
+	boundingBox->push_back(middlePos + glm::vec3(lenVec.x,  -lenVec.y - lenVec.y/2, -lenVec.z));
+	boundingBox->push_back(middlePos + glm::vec3(-lenVec.x,  lenVec.y - lenVec.y/2, lenVec.z));
+	boundingBox->push_back(middlePos + glm::vec3(-lenVec.x,  lenVec.y - lenVec.y/2, -lenVec.z));
+	boundingBox->push_back(middlePos + glm::vec3(-lenVec.x, -lenVec.y - lenVec.y/2, lenVec.z));
+	boundingBox->push_back(middlePos + glm::vec3(-lenVec.x, -lenVec.y - lenVec.y/2, -lenVec.z));
 
 	newNode->addMesh(std::make_shared<Geometry>(glm::mat4(1.0f), data, mat, meshActor, pxChar, boundingBox, _viewFrustum, &_drawnObjects));
 }
