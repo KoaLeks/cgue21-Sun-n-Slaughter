@@ -109,11 +109,14 @@ void Enemy::chase(glm::vec3& playerPos, float speed, float dt) {
 
 void Enemy::respawn(physx::PxExtendedVec3 position, float scale)
 {
+
+	glm::vec3 oldPos = this->getPosition();
 	_pxChar->setPosition(position);
 	//node->setPosition(_pxChar->getPosition());
 	setPosition(_pxChar->getPosition());
 	_enabled = true;
-
+	glm::vec3 currentPos = getPosition();
+	updateBoundingBox(currentPos - oldPos);
 	//More modifications?
 	_hp = _maxHp;
 }
