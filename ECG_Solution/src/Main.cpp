@@ -470,15 +470,6 @@ int main(int argc, char** argv)
 		character.relocate(physx::PxExtendedVec3(370, 104, -223));
 
 
-		///* --------------------------------------------- */
-		//// Init Particle Sahder
-		///* --------------------------------------------- */
-		//GLuint renderProgram = getParticleShader("assets/shader/particle.vert", "assets/shader/particle.geom", "assets/shader/particle.frag");
-		//GLuint computeShader = getComputeShader("assets/shader/particle.comp");
-		//Particle particleShader(computeShader, renderProgram, camera.getProjection());
-		//particleShader.init();
-		/* GAMEPLAY END */
-
 
 		/* GAMEPLAY */
 		double xpos = 0;

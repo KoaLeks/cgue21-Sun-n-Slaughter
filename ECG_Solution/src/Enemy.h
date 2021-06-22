@@ -10,6 +10,7 @@ protected:
 	int _maxHp;
 	int _damage;
 	glm::vec3 _position;
+	physx::PxExtendedVec3 _spawnPosition;
 	physx::PxController* _pxChar;
 
 public:
@@ -30,4 +31,7 @@ public:
 	void updateRotation(float angle);
 	void updateCharacter(float dt);
 	void chase(glm::vec3& playerPos, float speed, float dt);
+	void respawn(physx::PxExtendedVec3 position, float scale);
+	void setSpawnPosition(physx::PxExtendedVec3 position);
+
 };

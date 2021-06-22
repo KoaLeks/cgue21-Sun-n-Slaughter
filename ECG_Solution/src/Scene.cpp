@@ -235,6 +235,8 @@ void Scene::processMesh(aiMesh* mesh, const aiScene* scene, bool cookMesh, bool 
 		enemyNode->setCharacterController(pxChar);
 		enemyNode->setPosition(bDesc.position);
 		enemyNode->_startingPosition = -middlePos;
+
+		enemyNode->setSpawnPosition(bDesc.position);
 	}
 	std::shared_ptr<std::vector<glm::vec3>> boundingBox = std::make_shared<std::vector<glm::vec3>>();
 	lenVec = lenVec / 2.0f;

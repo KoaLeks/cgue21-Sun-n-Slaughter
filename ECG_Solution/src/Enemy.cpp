@@ -25,6 +25,7 @@ bool Enemy::hasActor(physx::PxRigidActor* actor) {
 bool Enemy::isDead() {
 	if (_hp <= 0) {
 		_enabled = false;
+		respawn(_spawnPosition, 1.0f);
 		return true;
 	} else {
 		return false;
@@ -104,4 +105,20 @@ void Enemy::chase(glm::vec3& playerPos, float speed, float dt) {
 	this->updateRotation(glm::degrees(angle));
 	//this->move(2 * -direction.x, 2 * direction.z, dt);
 	this->move2(direction, speed, dt);
+}
+
+void Enemy::respawn(physx::PxExtendedVec3 position, float scale)
+{
+	_pxChar->setPosition(position);
+	//node->setPosition(_pxChar->getPosition());
+	setPosition(_pxChar->getPosition());
+	_enabled = true;
+
+	//More modifications?
+	_hp = _maxHp;
+}
+
+void Enemy::setSpawnPosition(physx::PxExtendedVec3 position)
+{
+	_spawnPosition = position;
 }
