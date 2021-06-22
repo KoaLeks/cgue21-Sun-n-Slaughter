@@ -292,6 +292,21 @@ void Character::move2(glm::vec3 dir, float speed, float dt) {
 	float addX = speed * dir.x;
 	float addZ = speed * dir.z;
 
+	glm::vec3 currentPos = getPosition();
+
+	if (currentPos.x + addX > 900) {
+		addX = 900 - currentPos.x;
+	}
+	else if (currentPos.x + addX < 100) {
+		addX = 100 - currentPos.x;
+	}
+	if (currentPos.z + addZ < -900) {
+		addZ = -900 - currentPos.z;
+	}
+	else if (currentPos.z + addZ > -100) {
+		addZ = -100 - currentPos.z;
+	}
+
 	_pxController->move(physx::PxVec3(addX, -98.0f, addZ) * dt, 0.001f, dt, physx::PxControllerFilters());
 	//std::cout << "x: " << _pxController->getPosition().x << ", y: " << _pxController->getPosition().y << ", z: " << _pxController->getPosition().z << std::endl;
 	for (unsigned int i = 0; i < nodes.size(); i++) {
