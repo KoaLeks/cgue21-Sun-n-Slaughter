@@ -8,6 +8,7 @@
 
 #include "INIReader.h"
 #include <iostream>
+#include <sstream>
 #include <memory>
 #include <GL\glew.h>
 #include <GLFW\glfw3.h>
@@ -70,6 +71,8 @@ void disableBlendMode();
 glm::vec3 getLookVector(glm::mat4 modelView);
 glm::vec3 getUpVector(glm::mat4 modelView);
 glm::vec3 getWorldPosition(glm::mat4 modelView);
+
+int getIntFromCString(const char* str);
 /* GAMEPLAY END */
 
 /* --------------------------------------------- */

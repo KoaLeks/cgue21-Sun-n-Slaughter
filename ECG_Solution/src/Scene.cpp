@@ -24,7 +24,7 @@ void Scene::drawDepth(Shader* shader) {
 std::shared_ptr<Node> Scene::loadScene(string path) {
 	Assimp::Importer import;
 	const aiScene* scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
-	
+
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
 		std::cout << "ERROR::ASSIMP::" << import.GetErrorString() << std::endl;
 		return nullptr;
@@ -45,7 +45,7 @@ std::shared_ptr<Node> Scene::loadScene(string path, float scale, physx::PxExtend
 	return processNode(scene->mRootNode, scene, 0, true, scale, position, nullptr);
 }
 
-std::shared_ptr<Node> Scene::processNode(aiNode* node, const aiScene* scene, int level, bool transformation, 
+std::shared_ptr<Node> Scene::processNode(aiNode* node, const aiScene* scene, int level, bool transformation,
 	float scale, physx::PxExtendedVec3 position, SimulationCallback* simulationCallback) {
 	// process all the node's meshes (if any)
 	std::string tmpnam = node->mName.C_Str();
@@ -73,7 +73,7 @@ std::shared_ptr<Node> Scene::processNode(aiNode* node, const aiScene* scene, int
 
 	for (unsigned int i = 0; i < node->mNumMeshes; i++) {
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-		
+
 		processMesh(mesh, scene, cookMesh, isEnemy, newNode, scale, position, simulationCallback);
 	}
 
@@ -93,12 +93,12 @@ std::shared_ptr<Node> Scene::processNode(aiNode* node, const aiScene* scene, int
 }
 
 
-void Scene::processMesh(aiMesh* mesh, const aiScene* scene, bool cookMesh, bool isEnemy, std::shared_ptr<Node> newNode, 
+void Scene::processMesh(aiMesh* mesh, const aiScene* scene, bool cookMesh, bool isEnemy, std::shared_ptr<Node> newNode,
 	float scale, physx::PxExtendedVec3 position, SimulationCallback* simulationCallback) {
 	GeometryData data;
 	glm::vec3 maxVert(-1500.0f, -1500.0f, -1500.0f);
 	glm::vec3 minVert(1500.0f, 1500.0f, 1500.0f);
-	
+
 
 	for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
 		glm::vec4 vector;
@@ -156,7 +156,7 @@ void Scene::processMesh(aiMesh* mesh, const aiScene* scene, bool cookMesh, bool 
 		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 		mat = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
 		aiColor3D colorA, colorD, colorS, alpha;
-		
+
 		material->Get(AI_MATKEY_COLOR_AMBIENT, colorA);
 		material->Get(AI_MATKEY_COLOR_DIFFUSE, colorD);
 		material->Get(AI_MATKEY_COLOR_SPECULAR, colorS);
@@ -210,28 +210,42 @@ void Scene::processMesh(aiMesh* mesh, const aiScene* scene, bool cookMesh, bool 
 		bDesc.upDirection = physx::PxVec3(0, 1, 0);
 		bDesc.material = _material;
 		bDesc.reportCallback = simulationCallback;
-		
-		
+
+
 		pxChar = _manager->createController(bDesc);
 		meshActor = pxChar->getActor();
-		pxChar->getActor()->setName("enemy");
-		if (isEnemy) {
-			std::shared_ptr<Enemy> enemyNode = std::static_pointer_cast<Enemy>(newNode);
-			enemyNode->setCharacterController(pxChar);
-			enemyNode->setPosition(bDesc.position);
-			enemyNode->_startingPosition = -middlePos;
+		//std::string eNameStr = std::to_string(enemies.size());
+		//const char* eName = eNameStr.c_str();
+
+		//HARDCODING FROM HELL
+		if (enemies.size() == 0) {
+			pxChar->getActor()->setName("0");
 		}
+		else if (enemies.size() == 1) {
+			pxChar->getActor()->setName("1");
+		}
+		else if (enemies.size() == 2) {
+			pxChar->getActor()->setName("2");
+		}
+		else if (enemies.size() == 3) {
+			pxChar->getActor()->setName("3");
+		}
+
+		std::shared_ptr<Enemy> enemyNode = std::static_pointer_cast<Enemy>(newNode);
+		enemyNode->setCharacterController(pxChar);
+		enemyNode->setPosition(bDesc.position);
+		enemyNode->_startingPosition = -middlePos;
 	}
 	std::shared_ptr<std::vector<glm::vec3>> boundingBox = std::make_shared<std::vector<glm::vec3>>();
 	lenVec = lenVec / 2.0f;
-	boundingBox->push_back(middlePos + glm::vec3(lenVec.x,   lenVec.y - lenVec.y/2, lenVec.z));
-	boundingBox->push_back(middlePos + glm::vec3(lenVec.x,   lenVec.y - lenVec.y/2, -lenVec.z));
-	boundingBox->push_back(middlePos + glm::vec3(lenVec.x,  -lenVec.y - lenVec.y/2, lenVec.z));
-	boundingBox->push_back(middlePos + glm::vec3(lenVec.x,  -lenVec.y - lenVec.y/2, -lenVec.z));
-	boundingBox->push_back(middlePos + glm::vec3(-lenVec.x,  lenVec.y - lenVec.y/2, lenVec.z));
-	boundingBox->push_back(middlePos + glm::vec3(-lenVec.x,  lenVec.y - lenVec.y/2, -lenVec.z));
-	boundingBox->push_back(middlePos + glm::vec3(-lenVec.x, -lenVec.y - lenVec.y/2, lenVec.z));
-	boundingBox->push_back(middlePos + glm::vec3(-lenVec.x, -lenVec.y - lenVec.y/2, -lenVec.z));
+	boundingBox->push_back(middlePos + glm::vec3(lenVec.x, lenVec.y - lenVec.y / 2, lenVec.z));
+	boundingBox->push_back(middlePos + glm::vec3(lenVec.x, lenVec.y - lenVec.y / 2, -lenVec.z));
+	boundingBox->push_back(middlePos + glm::vec3(lenVec.x, -lenVec.y - lenVec.y / 2, lenVec.z));
+	boundingBox->push_back(middlePos + glm::vec3(lenVec.x, -lenVec.y - lenVec.y / 2, -lenVec.z));
+	boundingBox->push_back(middlePos + glm::vec3(-lenVec.x, lenVec.y - lenVec.y / 2, lenVec.z));
+	boundingBox->push_back(middlePos + glm::vec3(-lenVec.x, lenVec.y - lenVec.y / 2, -lenVec.z));
+	boundingBox->push_back(middlePos + glm::vec3(-lenVec.x, -lenVec.y - lenVec.y / 2, lenVec.z));
+	boundingBox->push_back(middlePos + glm::vec3(-lenVec.x, -lenVec.y - lenVec.y / 2, -lenVec.z));
 
 	newNode->addMesh(std::make_shared<Geometry>(glm::mat4(1.0f), data, mat, meshActor, pxChar, boundingBox, _viewFrustum, &_drawnObjects));
 }
@@ -422,14 +436,14 @@ void Scene::addStaticObject(string path, physx::PxExtendedVec3 position, float s
 
 void Scene::addEnemy(physx::PxExtendedVec3 position, float scale, SimulationCallback* simulationCallback) {
 	//if (enemyMaster == nullptr) {
-		Assimp::Importer import;
-		const aiScene* enemyMasterX = import.ReadFile("assets/models/Cubex_notMob.obj", aiProcess_Triangulate | aiProcess_FlipUVs);
+	Assimp::Importer import;
+	const aiScene* enemyMasterX = import.ReadFile("assets/models/Cubex_notMob.obj", aiProcess_Triangulate | aiProcess_FlipUVs);
 
-		if (!enemyMasterX || enemyMasterX->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !enemyMasterX->mRootNode) {
-			std::cout << "ERROR::ASSIMP::" << import.GetErrorString() << std::endl;
-			return;
-		}
-//	}
+	if (!enemyMasterX || enemyMasterX->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !enemyMasterX->mRootNode) {
+		std::cout << "ERROR::ASSIMP::" << import.GetErrorString() << std::endl;
+		return;
+	}
+	//	}
 
 	processNode(enemyMasterX->mRootNode, enemyMasterX, 0, true, scale, position, simulationCallback);
 }

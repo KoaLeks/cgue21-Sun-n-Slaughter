@@ -441,10 +441,12 @@ int main(int argc, char** argv)
 		level.addStaticObject("assets/models/sunbed.obj", PxExtendedVec3(375, getYPosition(375, -220) - 5, -220), 3);
 
 		// TEST ENEMY
-		level.addEnemy(physx::PxExtendedVec3(500, getYPosition(500, -500), -500), 10, simulationCallback);
-		level.addEnemy(physx::PxExtendedVec3(550, getYPosition(550, -500), -500), 10, simulationCallback);
-		level.addEnemy(physx::PxExtendedVec3(450, getYPosition(450, -500), -500), 10, simulationCallback);
-		level.addEnemy(physx::PxExtendedVec3(300, getYPosition(300, -500), -500), 10, simulationCallback);
+		//level.addEnemy(physx::PxExtendedVec3(500, getYPosition(500, -500), -500), 10, simulationCallback);
+		//level.addEnemy(physx::PxExtendedVec3(550, getYPosition(550, -500), -500), 10, simulationCallback);
+		//level.addEnemy(physx::PxExtendedVec3(450, getYPosition(450, -500), -500), 10, simulationCallback);
+		//level.addEnemy(physx::PxExtendedVec3(300, getYPosition(300, -500), -500), 10, simulationCallback);
+		
+		//Add enemys
 		// bot left, top left, top right, bot right
 		level.addEnemy(physx::PxExtendedVec3(50, getYPosition(50, -50)    + 5, -50)   , 10, simulationCallback);
 		level.addEnemy(physx::PxExtendedVec3(950, getYPosition(950, -50)  + 5, -50) , 10, simulationCallback);

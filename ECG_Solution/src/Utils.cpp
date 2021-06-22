@@ -255,3 +255,14 @@ glm::vec3 getWorldPosition(glm::mat4 modelView) {
 	glm::vec3 retVec = -d * rotMat;
 	return retVec;
 }
+
+int getIntFromCString(const char* str)
+{
+	std::stringstream streamer;
+	streamer << str;
+
+	int intValue;
+	streamer >> intValue;
+
+	return intValue;
+}
