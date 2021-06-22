@@ -8,12 +8,12 @@ class SimulationCallback : public physx::PxUserControllerHitReport {
 	
 private:
 
-	bool* _hitDetection;
+	bool* hitDetection;
 
 public:
 
-	SimulationCallback(bool* hitDetection)
-		: _hitDetection(hitDetection) {
+	SimulationCallback(bool* _hitDetection)
+		: hitDetection(_hitDetection) {
 	}
 	~SimulationCallback() {
 	}

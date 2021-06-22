@@ -71,23 +71,24 @@ static char* treeMaskPath = "assets/terrain/mask1.png";
 /* GAMEPLAY */
 static bool checkWireframe = false;
 static bool checkBackCulling = true;
-static bool _dragging = true; //= false;
-static bool _draggingCamOnly = false;
-static bool _mouseSelect = false;
-static bool _doBasicAttack = false;
-static bool _doStrongAttack = false;
-static bool _doAreacAttack = false;
 static bool checkVFC = true;
 static bool help = false;
+bool checkShadows = true;
+static bool checkFPSLimit = false;
+
 static float _fov = 60.0f;
 double lastxpos = 0;
 double lastypos = 0;
 int selectedFPS = 60;
-static bool checkFPSLimit = false;
 
-bool _hitDetection = false;
 
-bool checkShadows = true;
+bool hitDetection = false;
+
+bool dashInProgress = false;
+float dashDuration = 0.5f;
+float dashCoolDown = 0.0f; //Max 10.0f
+
+
 bool disableTextures = false;
 float brightness = 1.0;
 int imgWidth, imgHeight, nrChannels;
@@ -99,9 +100,9 @@ int terrainPlaneSize = 1024;
 int terrainHeight = 250;
 
 std::string playerName;
-int highscore = 6666;
+long long highscore = 0;
 std::string highscoresN[5];
-int highscores[5];
+long long highscores[5];
 bool isSaved = false;
 /* GAMEPLAY END */
 
@@ -274,7 +275,7 @@ int main(int argc, char** argv)
 		EXIT_WITH_ERROR("Failed to init cooking")
 	}
 
-	SimulationCallback* simulationCallback = new SimulationCallback(&_hitDetection);
+	SimulationCallback* simulationCallback = new SimulationCallback(&hitDetection);
 	PxScene* gScene = nullptr;
 	PxSceneDesc sceneDesc(gPhysicsSDK->getTolerancesScale());
 	sceneDesc.gravity = PxVec3(0.0f, -9.8f, 0.0f);
@@ -338,7 +339,7 @@ int main(int argc, char** argv)
 		PointLight pointL(glm::vec3(.5f), glm::vec3(-900, 1020, -1500), glm::vec3(0.08f, 0.03f, 0.01f));
 
 		// Shadow Map
-		ShadowMap shadowMap = ShadowMap(shadowMapDepthShader.get(), pointL.position, nearZ, farZ, 400.0f, glm::vec3(terrainPlaneSize/2, 0, -terrainPlaneSize/2));
+		ShadowMap shadowMap = ShadowMap(shadowMapDepthShader.get(), pointL.position, nearZ, farZ, 400.0f, glm::vec3(terrainPlaneSize / 2, 0, -terrainPlaneSize / 2));
 
 		std::shared_ptr<MeshMaterial> debug = std::make_shared<MeshMaterial>(debugShader, glm::vec3(0.5f, 0.7f, 0.3f), 8.0f);
 		std::shared_ptr<MeshMaterial> material = std::make_shared<MeshMaterial>(textureShader, glm::vec3(0.3f, 0.8f, 0.0f), 8.0f);
@@ -481,9 +482,6 @@ int main(int argc, char** argv)
 		PxReal timeStep = 1.0f / 60.0f;
 		float timeStepFloat = 1.0f / 60.0f;
 		std::shared_ptr<Enemy> selectedEnemy = nullptr;
-		float strongCD = 0.0f;
-		float areaCD = 0.0f;
-		float topRightScreen = window_width - (window_width / 5.0f);
 		std::string info = "";
 		float infoTime = 0.0f;
 		int fps = 0;
@@ -509,7 +507,7 @@ int main(int argc, char** argv)
 			// Update camera
 			playerCamera.updateZoom(_fov);
 
-			if (_dragging || _draggingCamOnly) {
+			if (/*_dragging || _draggingCamOnly*/true) {
 				glfwGetCursorPos(window, &xpos, &ypos);
 				xRotate = (xpos - lastxpos) * 0.3333f;
 				yRotate = (ypos - lastypos) * 0.5f;
@@ -518,7 +516,7 @@ int main(int argc, char** argv)
 				lastypos = ypos;
 
 				playerCamera.rotate(-xRotate, -yRotate);
-				if (!_draggingCamOnly) {
+				if (/*!_draggingCamOnly*/true) {
 					character.updateRotation(playerCamera.getYaw());
 				}
 				//this is the main thing that keeps it from leaving the screen
@@ -552,10 +550,25 @@ int main(int argc, char** argv)
 				level.enemies[i]->chase(character.getPosition(), enemySpeed, dt);
 			}
 
-			// _hitDetection from physx callback -> locked on 60 fps
-			if (_hitDetection) {
+			//dash attack
+			if (dashInProgress) {
+				dashCoolDown = 10.0f;
+				dashDuration -= dt;
+				if (dashDuration < 0.0f) {
+					dashInProgress = false;
+					dashDuration = 1.0f;
+				}
+			}
+			else {
+				if (dashCoolDown > 0.0f) {
+					dashCoolDown -= dt;
+				}
+			}
+
+			// hitDetection from physx callback -> locked on 60 fps
+			if (hitDetection) {
 				character.inflictDamage(1);
-				_hitDetection = false;
+				hitDetection = false;
 			}
 
 			/* GAMEPLAY END */
@@ -632,7 +645,8 @@ int main(int argc, char** argv)
 					isSaved = true;
 				}
 				hud->RenderText("You got slaughtered!", window_width / 2 - 300, window_height / 2 - 100.0f, 2.0f, glm::vec3(1, 0, 0));
-				hud->RenderText("Highscore: " + std::to_string(highscore), 10.0f, 40.0f, 1.0f, glm::vec3(1, 0, 0));
+				hud->RenderText("Highscore: " + std::to_string(highscore), 
+					window_width - (170 + 16 * std::to_string(highscore).length()), 15.0f, 1.0f, glm::vec3(1, 0, 0));
 				showHighscores(hud, glm::vec3(1.0f, 0.0f, 0.0f));
 				brightness -= dt / 4;
 
@@ -642,16 +656,17 @@ int main(int argc, char** argv)
 			}
 			else {
 				// draw HUD
-				hud->RenderText("HP: " + std::to_string(character.getHP()), 10.0f, 10.0f, 1.0f);
-				hud->RenderText("Highscore: " + std::to_string(highscore), 10.0f, 40.0f, 1.0f);
+				hud->RenderText("HP: " + std::to_string(character.getHP()), 15.0f, 15.0f, 1.0f, (character.getHP() < 25) ? glm::vec3(1, 0, 0) : glm::vec3(1));
+				hud->RenderText("Dash: " + std::to_string(int(10.0 - dashCoolDown)) + "/10", 15.0f, 55.0f, 1.0f, (dashCoolDown > 0.0) ? glm::vec3(1, 0, 0) : glm::vec3(1));
+				hud->RenderText("Highscore: " + std::to_string(highscore), window_width - (170 + 16 * std::to_string(highscore).length()), 15.0f, 1.0f);
 
 				if (help) {
 					showHighscores(hud);
 					showHelp(hud);
 				}
 
-				hud->RenderText("FPS: " + std::to_string(fps), 10.0f, window_height - 30.0f, 1.0f);
-				hud->RenderText("Objects: " + std::to_string(level.getDrawnObjects()), 10.0f, window_height - 60.0f, 1.0f);
+				hud->RenderText("FPS: " + std::to_string(fps), 15.0f, window_height - 35.0f, 1.0f);
+				hud->RenderText("Objects: " + std::to_string(level.getDrawnObjects()), 15.0f, window_height - 75.0f, 1.0f);
 			}
 
 			/* GAMEPLAY */
@@ -716,37 +731,6 @@ float getYPosition(float x, float z) {
 	return redChannel * terrainHeight;
 }
 
-// renderQuad() renders a 1x1 XY quad in NDC
-// -----------------------------------------
-unsigned int quadVAO = 0;
-unsigned int quadVBO;
-void renderQuad()
-{
-	if (quadVAO == 0)
-	{
-		float quadVertices[] = {
-			// positions        // texture Coords
-			-1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
-			-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
-			 1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
-			 1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
-		};
-		// setup plane VAO
-		glGenVertexArrays(1, &quadVAO);
-		glGenBuffers(1, &quadVBO);
-		glBindVertexArray(quadVAO);
-		glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-	}
-	glBindVertexArray(quadVAO);
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-	glBindVertexArray(0);
-}
-
 void loadHighscores() {
 	// Create a text string, which is used to output the text file
 	std::string line;
@@ -798,28 +782,28 @@ void showHighscores(TextRenderer* hud, glm::vec3 color)
 {
 	std::string line = "";
 
-	hud->RenderText("Highscores:", 10.0f, 100.f, 1.0f, color);
+	hud->RenderText("Highscores:", 15.0f, window_height / 2 - 200.0f, 1.0f, color);
 	for (int i = 0; i < 5; i++) {
 		line = std::to_string(i + 1) + ". " + highscoresN[i] + "..." + std::to_string(highscores[i]);
-		hud->RenderText(line, 10.0f, 150 + 40 * i, 0.8f, color);
+		hud->RenderText(line, 15.0f, (window_height / 2 - 150.0f) + 40 * i, 0.8f, color);
 	}
 }
 
 void showHelp(TextRenderer* hud, glm::vec3 color) {
 	float width = window_width / 2 + 400.0f;
-	hud->RenderText("Instructions:", width, 100.0f, 1.0f, color);
-	hud->RenderText("F1: Help", width, 150.0f, 0.8f, color);
-	hud->RenderText("F2: FPS Limiter " + std::string((checkFPSLimit) ? "(ON)/OFF" : "ON/(OFF)"), width, 190.0f, 0.8f, color);
-	hud->RenderText("F3: Wireframe " + std::string((checkWireframe) ? "(ON)/OFF" : "ON/(OFF)"), width, 230.0f, 0.8f, color);
-	hud->RenderText("F4: Shadows " + std::string((checkShadows) ? "(ON)/OFF" : "ON/(OFF)"), width, 270.0f, 0.8f, color);
-	hud->RenderText("F5: Textures " + std::string((!disableTextures) ? "(ON)/OFF" : "ON/(OFF)"), width, 310.0f, 0.8f, color);
-	hud->RenderText("F8: View Frustum Culling " + std::string((checkVFC) ? "(ON)/OFF" : "ON/(OFF)"), width, 350.0f, 0.8f, color);
-	hud->RenderText("F9: Backface Culling " + std::string((checkBackCulling) ? "(ON)/OFF" : "ON/(OFF)"), width, 390.0f, 0.8f, color);
-	hud->RenderText("Esc: Exit Game", width, 430.0f, 0.8f, color);
-	hud->RenderText("---------------------------", width, 470.0f, 0.8f, color);
-	hud->RenderText("WASD: Move Player", width, 510.0f, 0.8f, color);
-	hud->RenderText("LMB: Standard Attack", width, 550.0f, 0.8f, color);
-	hud->RenderText("RMB: Dash Attack", width, 590.0f, 0.8f, color);
+	hud->RenderText("Instructions:", width, 150.0f, 1.0f, color);
+	hud->RenderText("F1: Help", width, 200.0f, 0.8f, color);
+	hud->RenderText("F2: FPS Limiter " + std::string((checkFPSLimit) ? "(ON)/OFF" : "ON/(OFF)"), width, 240.0f, 0.8f, color);
+	hud->RenderText("F3: Wireframe " + std::string((checkWireframe) ? "(ON)/OFF" : "ON/(OFF)"), width, 280.0f, 0.8f, color);
+	hud->RenderText("F4: Shadows " + std::string((checkShadows) ? "(ON)/OFF" : "ON/(OFF)"), width, 320.0f, 0.8f, color);
+	hud->RenderText("F5: Textures " + std::string((!disableTextures) ? "(ON)/OFF" : "ON/(OFF)"), width, 360.0f, 0.8f, color);
+	hud->RenderText("F8: View Frustum Culling " + std::string((checkVFC) ? "(ON)/OFF" : "ON/(OFF)"), width, 400.0f, 0.8f, color);
+	hud->RenderText("F9: Backface Culling " + std::string((checkBackCulling) ? "(ON)/OFF" : "ON/(OFF)"), width, 440.0f, 0.8f, color);
+	hud->RenderText("Esc: Exit Game", width, 480.0f, 0.8f, color);
+	hud->RenderText("---------------------------", width, 520.0f, 0.8f, color);
+	hud->RenderText("WASD: Move Player", width, 560.0f, 0.8f, color);
+	hud->RenderText("LMB: Standard Attack", width, 600.0f, 0.8f, color);
+	hud->RenderText("RMB: Dash Attack", width, 640.0f, 0.8f, color);
 
 	hud->RenderText("Made by Aleksander Marinkovic & Sebastian Karall",
 		window_width / 2 - 350, window_height - 30.0f, 1.0f, color);
@@ -865,7 +849,7 @@ void setPerFrameUniforms(TerrainShader* shader, PlayerCamera& camera, PointLight
 	shader->unuse();
 }
 
-bool move_character(GLFWwindow * window, Character * character, PlayerCamera * playerCamera, float deltaMovement) {
+bool move_character(GLFWwindow* window, Character* character, PlayerCamera* playerCamera, float deltaMovement) {
 	//float forward = 0;
 	//float leftStrafe = 0;
 	bool updateForward = false;
@@ -885,45 +869,45 @@ bool move_character(GLFWwindow * window, Character * character, PlayerCamera * p
 	glm::vec3 directionRight(0);
 
 
-	if (holdingForward == GLFW_PRESS) {
+	if (holdingForward == GLFW_PRESS || dashInProgress) {
 		directionForward = dirF;
 		updateForward = true;
 	}
-	else if (holdingForward == GLFW_PRESS && holdingLeftStrafe == GLFW_PRESS) {
+	else if (holdingForward == GLFW_PRESS && holdingLeftStrafe == GLFW_PRESS && !dashInProgress) {
 		directionForward = dirF;
 		directionRight = glm::normalize(glm::cross(directionForward, -up));
 		updateForward = true;
 		updateStrafe = true;
 	}
-	else if (holdingForward == GLFW_PRESS && holdingRightStrafe == GLFW_PRESS) {
+	else if (holdingForward == GLFW_PRESS && holdingRightStrafe == GLFW_PRESS && !dashInProgress) {
 		directionForward = dirF;
 		directionRight = glm::normalize(glm::cross(directionForward, up));
 		updateForward = true;
 		updateStrafe = true;
 	}
 
-	if (holdingBackward == GLFW_PRESS) {
+	if (holdingBackward == GLFW_PRESS && !dashInProgress) {
 		directionForward = -dirF;
 		updateForward = true;
 	}
-	else if (holdingBackward == GLFW_PRESS && holdingLeftStrafe == GLFW_PRESS) {
+	else if (holdingBackward == GLFW_PRESS && holdingLeftStrafe == GLFW_PRESS && !dashInProgress) {
 		directionForward = -dirF;
 		directionRight = glm::normalize(glm::cross(-directionForward, -up));
 		updateForward = true;
 		updateStrafe = true;
 	}
-	else if (holdingBackward == GLFW_PRESS && holdingRightStrafe == GLFW_PRESS) {
+	else if (holdingBackward == GLFW_PRESS && holdingRightStrafe == GLFW_PRESS && !dashInProgress) {
 		directionForward = -dirF;
 		directionRight = glm::normalize(glm::cross(-directionForward, up));
 		updateForward = true;
 		updateStrafe = true;
 	}
 
-	if (holdingLeftStrafe == GLFW_PRESS) {
+	if (holdingLeftStrafe == GLFW_PRESS && !dashInProgress) {
 		directionRight = glm::normalize(glm::cross(dirF, -up));
 		updateStrafe = true;
 	}
-	else if (holdingRightStrafe == GLFW_PRESS) {
+	else if (holdingRightStrafe == GLFW_PRESS && !dashInProgress) {
 		directionRight = glm::normalize(glm::cross(dirF, up));
 		updateStrafe = true;
 	}
@@ -955,7 +939,7 @@ bool move_character(GLFWwindow * window, Character * character, PlayerCamera * p
 		}
 
 		//character->move(-forward * playerSpeed, -leftStrafe * playerSpeed, deltaMovement);
-		character->move2((directionForward + directionRight), playerSpeed, deltaMovement);
+		character->move2((directionForward + directionRight), (dashInProgress) ? playerSpeed * 3 : playerSpeed, deltaMovement);
 
 		return true;
 	}
@@ -969,9 +953,12 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 	//	_draggingCamOnly = true;
 	//	_mouseSelect = true;
 	//}
-	//else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
-	//	_draggingCamOnly = false;
-	//}
+	//else 
+	if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
+		//_draggingCamOnly = false;
+		//std::cout << "PRESS" << std::endl;
+		dashInProgress = (dashCoolDown > 0.0) ? false : true;
+	}
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
@@ -1134,4 +1121,35 @@ static std::string FormatDebugOutput(GLenum source, GLenum type, GLuint id, GLen
 	stringStream << ", ID = " << id << "]";
 
 	return stringStream.str();
+}
+
+// renderQuad() renders a 1x1 XY quad in NDC
+// -----------------------------------------
+unsigned int quadVAO = 0;
+unsigned int quadVBO;
+void renderQuad()
+{
+	if (quadVAO == 0)
+	{
+		float quadVertices[] = {
+			// positions        // texture Coords
+			-1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
+			-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+			 1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
+			 1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+		};
+		// setup plane VAO
+		glGenVertexArrays(1, &quadVAO);
+		glGenBuffers(1, &quadVBO);
+		glBindVertexArray(quadVAO);
+		glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	}
+	glBindVertexArray(quadVAO);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glBindVertexArray(0);
 }
