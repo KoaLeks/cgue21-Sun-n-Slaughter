@@ -591,6 +591,7 @@ int main(int argc, char** argv)
 					enemiesHitByDash[2] = false;
 					enemiesHitByDash[3] = false;
 					dashDuration = 1.0f;
+					//_fov = 60.0f;
 				}
 			}
 			else {
@@ -651,7 +652,13 @@ int main(int argc, char** argv)
 
 			/* GAMEPLAY */
 			level.draw();
-			character.animate(animationStep);
+			if (dashInProgress) {
+				character.animate(animationStep, 3);
+			}
+			else {
+				character.animate(animationStep);
+			}
+			
 			/* GAMEPLAY END*/
 
 			// Render flares
@@ -712,8 +719,7 @@ int main(int argc, char** argv)
 			if (animationStepBuffer >= timeStepFloat) {
 				animationStepBuffer = timeStepFloat - animationStepBuffer;
 				if (is_moving) {
-					animationStep = (animationStep + 1); // % 60;
-					std::cout << animationStep << std::endl;
+					animationStep = (animationStep + 1);
 				}
 				else {
 					animationStep = 0;
@@ -785,7 +791,6 @@ void loadHighscores() {
 		if (std::getline(file, line)) {
 			highscores[place] = std::atoi(line.c_str());
 		}
-		//std::cout << highscoresN[place] << ": " << highscores[place] << std::endl;
 		place++;
 	}
 
@@ -977,7 +982,10 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 		attack = true;
 	}
 	else if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
-		dashInProgress = (dashCoolDown > 0.0) ? false : true;
+		if (dashCoolDown <= 0.0) {
+			dashInProgress = true;
+			//_fov = 90.0f;
+		}
 	}
 }
 

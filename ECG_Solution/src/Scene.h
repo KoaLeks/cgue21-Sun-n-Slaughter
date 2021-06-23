@@ -123,7 +123,7 @@ public:
 		return hp;
 	}
 
-	void animate(int step);
+	void animate(int step, int pose = -1);
 
 	void setPosition(physx::PxExtendedVec3 pos) {
 		_position.x = pos.x;
