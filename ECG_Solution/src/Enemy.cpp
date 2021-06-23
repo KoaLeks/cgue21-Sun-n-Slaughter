@@ -2,9 +2,10 @@
 #include "Enemy.h"
 
 Enemy::Enemy(glm::mat4 modelMatrix) : Node(modelMatrix) {
-	_hp = 50;
-	_maxHp = 50;
-	_damage = 5;
+	hp = 50;
+	maxHp = 50;
+	damage = 5;
+	speed = 20;
 	_angle = 0;
 }
 
@@ -23,7 +24,7 @@ bool Enemy::hasActor(physx::PxRigidActor* actor) {
 }
 
 bool Enemy::isDead() {
-	if (_hp <= 0) {
+	if (hp <= 0) {
 		_enabled = false;
 		respawn(_spawnPosition, 1.0f);
 		return true;
@@ -33,21 +34,21 @@ bool Enemy::isDead() {
 }
 
 int Enemy::hitWithDamage(int damage) {
-	_hp -= damage;
+	hp -= damage;
 	isDead();
-	return _hp;
+	return hp;
 }
 
 int Enemy::getDamage() {
-	return _damage;
+	return damage;
 }
 
 int Enemy::getHp() {
-	return _hp;
+	return hp;
 }
 
 int Enemy::getMaxHp() {
-	return _maxHp;
+	return maxHp;
 }
 
 void Enemy::setCharacterController(physx::PxController* pxChar) {
@@ -97,7 +98,7 @@ void Enemy::updateCharacter(float dt) {
 	this->move(1.8f * dt, 0.0f, dt);
 }
 
-void Enemy::chase(glm::vec3& playerPos, float speed, float dt) {
+void Enemy::chase(glm::vec3& playerPos, float dt) {
 	glm::vec3 enemyPos = glm::vec3(_pxChar->getPosition().x, _pxChar->getPosition().y, _pxChar->getPosition().z);
 	glm::vec3 direction = glm::normalize(playerPos - enemyPos);
 	float angle = std::atan2(-direction.z, direction.x);;
@@ -118,7 +119,7 @@ void Enemy::respawn(physx::PxExtendedVec3 position, float scale)
 	glm::vec3 currentPos = getPosition();
 	updateBoundingBox(currentPos - oldPos);
 	//More modifications?
-	_hp = _maxHp;
+	hp = maxHp;
 }
 
 void Enemy::setSpawnPosition(physx::PxExtendedVec3 position)

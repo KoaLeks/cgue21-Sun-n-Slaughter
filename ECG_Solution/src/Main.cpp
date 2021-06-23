@@ -99,7 +99,6 @@ float brightness = 1.0;
 int imgWidth, imgHeight, nrChannels;
 unsigned char* data;
 float playerSpeed = 30.f;
-float enemySpeed = 20.f;
 
 int terrainPlaneSize = 1024;
 int terrainHeight = 250;
@@ -556,7 +555,7 @@ int main(int argc, char** argv)
 
 			// update all enemy positions, deaths and player hits
 			for (size_t i = 0; i < level.enemies.size(); i++) {
-				level.enemies[i]->chase(character.getPosition(), enemySpeed, dt);
+				level.enemies[i]->chase(character.getPosition(), dt);
 
 				if (attack) {
 					glm::vec3 enemyPos = level.enemies[i]->getPosition();
@@ -602,7 +601,6 @@ int main(int argc, char** argv)
 
 			// hitDetection from physx callback -> locked on 60 fps
 			if (hitDetection && fpsCnt % 25 == 0 && enemyDetection >= 0) {
-				std::cout << "ENEMY Nr." << enemyDetection << std::endl;
 				character.inflictDamage(level.enemies[enemyDetection]->getDamage());
 				hitDetection = false;
 				enemyDetection = -1;
