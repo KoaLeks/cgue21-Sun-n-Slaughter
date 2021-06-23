@@ -464,10 +464,10 @@ int main(int argc, char** argv)
 		level.addEnemy(physx::PxExtendedVec3(100, getYPosition(100, -900) + 15, -900), 10, simulationCallback);
 
 		// half diagonal pos
-		level.addEnemy(physx::PxExtendedVec3(350, getYPosition(350, -350) + 5, -350), 10, simulationCallback);
-		level.addEnemy(physx::PxExtendedVec3(650, getYPosition(650, -350) + 5, -350), 10, simulationCallback);
-		level.addEnemy(physx::PxExtendedVec3(650, getYPosition(650, -650) + 5, -650), 10, simulationCallback);
-		level.addEnemy(physx::PxExtendedVec3(350, getYPosition(350, -650) + 5, -650), 10, simulationCallback);
+		level.addEnemy(physx::PxExtendedVec3(350, getYPosition(350, -350) + 15, -350), 10, simulationCallback);
+		level.addEnemy(physx::PxExtendedVec3(650, getYPosition(650, -350) + 15, -350), 10, simulationCallback);
+		level.addEnemy(physx::PxExtendedVec3(650, getYPosition(650, -650) + 15, -650), 10, simulationCallback);
+		level.addEnemy(physx::PxExtendedVec3(350, getYPosition(350, -650) + 15, -650), 10, simulationCallback);
 
 		// mid pos
 		level.addEnemy(physx::PxExtendedVec3(terrainPlaneSize / 2, getYPosition(terrainPlaneSize / 2, -terrainPlaneSize / 2) + 5, -terrainPlaneSize / 2), 10, simulationCallback);
@@ -788,8 +788,8 @@ int main(int argc, char** argv)
 	gScene->release();
 	gPhysicsSDK->release();
 	gFoundation->release();
-	pvd->release();
-	transport->release();
+	//pvd->release();
+	//transport->release();
 	FreeImage_DeInitialise();
 	soundEngine->drop();
 

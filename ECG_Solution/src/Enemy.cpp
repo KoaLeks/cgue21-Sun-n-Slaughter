@@ -148,8 +148,8 @@ void Enemy::respawn(physx::PxExtendedVec3 position, glm::vec3 playerPos)
 {
 	_knockBackForce = glm::vec3(0);
 	glm::vec3 oldPos = this->getPosition();
-	if (glm::distance(glm::vec3(position.x, position.y, position.z), playerPos) < 50) {
-		_pxChar->setPosition(physx::PxExtendedVec3(position.x - 70, position.y, position.z - 70));
+	if (glm::distance(glm::vec3(position.x, 0, position.z), glm::vec3(playerPos.x, 0, playerPos.z)) < 50) {
+		_pxChar->setPosition(physx::PxExtendedVec3(position.x - 70, position.y + 15, position.z - 70));
 	}
 	else {
 		_pxChar->setPosition(position);
