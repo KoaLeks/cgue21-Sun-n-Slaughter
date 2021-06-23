@@ -461,7 +461,7 @@ int main(int argc, char** argv)
 		// Init character
 		GLuint animateShader = getComputeShader("assets/shader/animator.comp");
 		
-		Character character(textureShader, "assets/models/main_char_animated_larry_4.obj", gPhysicsSDK, gCooking, gScene, mMaterial, pxChar, &playerCamera, gManager, animateShader, viewFrustum);
+		Character character(textureShader, "assets/models/larry_final.obj", gPhysicsSDK, gCooking, gScene, mMaterial, pxChar, &playerCamera, gManager, animateShader, viewFrustum);
 
 		// Adjust character to 3d person cam
 		for (int i = 0; i < character.nodes.size(); i++) {
@@ -570,7 +570,7 @@ int main(int argc, char** argv)
 					}
 				}
 			}
-			attack = false; //Eigentlich wollt ich das ins if(attack) aber das ist ja ein einer Schleife und nicht verkehrt, sollt trotzdem passen
+			attack = false; 
 
 			if (dashInProgress && enemyDetection >= 0) {
 				if (!enemiesHitByDash[enemyDetection]) {
@@ -678,7 +678,8 @@ int main(int argc, char** argv)
 					saveHighscore();
 					isSaved = true;
 				}
-				hud->RenderText("You got slaughtered!", window_width / 2 - 300, window_height / 2 - 100.0f, 2.0f, glm::vec3(1, 0, 0));
+				hud->RenderText("You got slaughtered!", 
+					window_width / 2 - 300, window_height / 2 - 100.0f, 2.0f, glm::vec3(1, 0, 0));
 				hud->RenderText("Highscore: " + std::to_string(highscore), 
 					window_width - (170 + 16 * std::to_string(highscore).length()), 15.0f, 1.0f, glm::vec3(1, 0, 0));
 				showHighscores(hud, glm::vec3(1.0f, 0.0f, 0.0f));
@@ -690,9 +691,12 @@ int main(int argc, char** argv)
 			}
 			else {
 				// draw HUD
-				hud->RenderText("HP: " + std::to_string(character.getHP()), 15.0f, 15.0f, 1.0f, (character.getHP() < 25) ? glm::vec3(1, 0, 0) : glm::vec3(1));
-				hud->RenderText("Dash: " + std::to_string(int(20.0 - dashCoolDown)) + "/20", 15.0f, 55.0f, 1.0f, (dashCoolDown > 0.0) ? glm::vec3(1, 0, 0) : glm::vec3(1));
-				hud->RenderText("Highscore: " + std::to_string(highscore), window_width - (170 + 16 * std::to_string(highscore).length()), 15.0f, 1.0f);
+				hud->RenderText("HP: " + std::to_string(character.getHP()), 
+					15.0f, 15.0f, 1.0f, (character.getHP() < 25) ? glm::vec3(1, 0, 0) : glm::vec3(1));
+				hud->RenderText("Dash: " + std::to_string(int(20.0 - dashCoolDown)) + "/20", 
+					15.0f, 55.0f, 1.0f, (dashCoolDown > 0.0) ? glm::vec3(1, 0, 0) : glm::vec3(1));
+				hud->RenderText("Highscore: " + std::to_string(highscore), 
+					window_width - (170 + 16 * std::to_string(highscore).length()), 15.0f, 1.0f);
 
 				if (help) {
 					showHighscores(hud);
@@ -709,6 +713,7 @@ int main(int argc, char** argv)
 				animationStepBuffer = timeStepFloat - animationStepBuffer;
 				if (is_moving) {
 					animationStep = (animationStep + 1); // % 60;
+					std::cout << animationStep << std::endl;
 				}
 				else {
 					animationStep = 0;

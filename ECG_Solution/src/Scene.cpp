@@ -391,7 +391,7 @@ void Character::init() {
 	index_pos = nodes[0]->_meshes[0]->_vboIndices;
 	nodes[0]->_meshes[0]->_isCharacter = true;
 
-	for (int i = 0; i < 3; i++) {
+	for (int i = 0; i < 4; i++) {
 		pos_vbos[i] = nodes[i]->_meshes[0]->_vboPositions;
 		norm_vbos[i] = nodes[i]->_meshes[0]->_vboNormals;
 	}
