@@ -1,8 +1,9 @@
 #include "FlareManager.h"
 
-FlareManager::FlareManager(Shader* shader, float _spacing, std::vector<GuiTexture> _flares) 
+FlareManager::FlareManager(Shader* shader, float _spacing, std::vector<GuiTexture> _flares, int windowWidth) 
 	: spacing(_spacing), flares(_flares) {
 	this->renderer.setShader(shader);
+	this->renderer.setWindowWidth(windowWidth);
 }
 
 FlareManager::~FlareManager() {}
