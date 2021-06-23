@@ -31,14 +31,15 @@ protected:
 	float _angle = 0.0f;
 	std::shared_ptr<FrustumG> _viewFrustum;
 	unsigned int _drawnObjects;
+	irrklang::ISoundEngine* _soundEngine;
 
 	long long* highscore;
 
 public:
 	Scene(std::shared_ptr<Shader> shader, char *path, physx::PxPhysics* physics, physx::PxCooking* cooking, physx::PxScene* scene, 
-		physx::PxMaterial* material, physx::PxControllerManager* manager, std::shared_ptr<FrustumG> viewFrustum, long long* _highscore)
+		physx::PxMaterial* material, physx::PxControllerManager* manager, std::shared_ptr<FrustumG> viewFrustum, long long* _highscore, irrklang::ISoundEngine* soundEngine)
 		: _shader(shader), _physics(physics), _cooking(cooking), _scene(scene), 
-		_material(material), _manager(manager), _viewFrustum(viewFrustum), highscore(_highscore) {
+		_material(material), _manager(manager), _viewFrustum(viewFrustum), highscore(_highscore), _soundEngine(soundEngine) {
 		_missingMaterial = std::make_shared<TextureMaterial>(_shader, glm::vec3(1.0f, 0.0f, 0.0f), 1.0f, "assets/textures/snow.jpg"/*"assets/textures/missing.png"*/);
 		_directory = "assets/textures/";
 		_drawnObjects = 0;
@@ -90,12 +91,13 @@ protected:
 	GLuint vector_size;
 	int order[4];
 	int hp = 100;
+	bool soundIsPlaying = false;
 
 public:
 	Character(std::shared_ptr<Shader> shader, char *path, physx::PxPhysics* physics, physx::PxCooking* cooking, 
 		physx::PxScene* scene, physx::PxMaterial* material, physx::PxController* c, PlayerCamera* camera, 
-		physx::PxControllerManager* manager, GLuint animationShader, std::shared_ptr<FrustumG> viewFrustum)
-		: Scene(shader, path, physics, cooking, scene, material, manager, viewFrustum, nullptr), _pxController(c), 
+		physx::PxControllerManager* manager, GLuint animationShader, std::shared_ptr<FrustumG> viewFrustum, irrklang::ISoundEngine* soundEngine)
+		: Scene(shader, path, physics, cooking, scene, material, manager, viewFrustum, nullptr, soundEngine), _pxController(c), 
 		_camera(camera), _animationShader(animationShader), order{ 2, 0, 2, 1 } 
 	{
 		move(0.0f, 0.0f, 0.0f);	
@@ -119,10 +121,17 @@ public:
 	}
 
 	int inflictDamage(int damage) {
+
 		hp -= damage;
 
 		if (hp < 0) {
 			hp = 0;
+		}
+		else if(!soundIsPlaying){
+			soundIsPlaying = true;
+			_soundEngine->play2D("assets/audio/mixkit-man-in-pain.mp3", false);
+		} else{
+			soundIsPlaying = false;
 		}
 		return hp;
 	}

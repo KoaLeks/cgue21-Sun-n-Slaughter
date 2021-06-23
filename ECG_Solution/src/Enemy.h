@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Node.h"
-#include "glm/gtx/quaternion.hpp"
+#include "irrklang/irrKlang.h"
 
 class Enemy : public Node
 {
@@ -16,11 +16,12 @@ protected:
 	glm::vec3 _position;
 	physx::PxExtendedVec3 _spawnPosition;
 	physx::PxController* _pxChar;
+	irrklang::ISoundEngine* _soundEngine;// = irrklang::createIrrKlangDevice();
 
 	long long* highscore;
 
 public:
-	Enemy(long long* _highscore, glm::mat4 modelMatrix = glm::mat4(1.0f));
+	Enemy(long long* _highscore, irrklang::ISoundEngine* soundEngine, glm::mat4 modelMatrix = glm::mat4(1.0f));
 
 	~Enemy();
 	

@@ -31,6 +31,8 @@
 #include "Scene.h"
 #include "FrustumG.h"
 #include "TextRenderer.h"
+#include "irrklang/irrKlang.h"
+
 using namespace physx;
 /* GAMEPLAY END */
 
@@ -111,6 +113,7 @@ long long highscore = 0;
 std::string highscoresN[5];
 long long highscores[5];
 bool isSaved = false;
+irrklang::ISoundEngine* soundEngine = irrklang::createIrrKlangDevice();
 /* GAMEPLAY END */
 
 /* --------------------------------------------- */
@@ -428,7 +431,7 @@ int main(int argc, char** argv)
 		viewFrustum->setCamDef(getWorldPosition(camModel), getLookVector(camModel), getUpVector(camModel));
 
 		//std::shared_ptr<Shader> textureShader = std::make_shared<Shader>("texture.vert", "texture.frag");
-		Scene level(textureShader, "assets/models/cook_map_detailed.obj", gPhysicsSDK, gCooking, gScene, mMaterial, gManager, viewFrustum, &highscore);
+		Scene level(textureShader, "assets/models/cook_map_detailed.obj", gPhysicsSDK, gCooking, gScene, mMaterial, gManager, viewFrustum, &highscore, soundEngine);
 
 		// Load heightmap
 		data = stbi_load(heightMapPath, &imgWidth, &imgHeight, &nrChannels, 4);
@@ -472,7 +475,7 @@ int main(int argc, char** argv)
 		// Init character
 		GLuint animateShader = getComputeShader("assets/shader/animator.comp");
 		
-		Character character(textureShader, "assets/models/larry_final_final.obj", gPhysicsSDK, gCooking, gScene, mMaterial, pxChar, &playerCamera, gManager, animateShader, viewFrustum);
+		Character character(textureShader, "assets/models/larry_final_final.obj", gPhysicsSDK, gCooking, gScene, mMaterial, pxChar, &playerCamera, gManager, animateShader, viewFrustum, soundEngine);
 
 		// Adjust character to 3d person cam
 		for (int i = 0; i < character.nodes.size(); i++) {
@@ -601,7 +604,7 @@ int main(int argc, char** argv)
 
 			//dash attack
 			if (dashInProgress) {
-				dashCoolDown = 1.0f;
+				dashCoolDown = 20.0f;
 				dashDuration -= dt;
 				if (dashDuration < 0.0f) {
 					dashInProgress = false;
@@ -708,6 +711,7 @@ int main(int argc, char** argv)
 			//win or rather lose condition
 			if (character.getHP() <= 0) {
 				if (!isSaved) { 
+					soundEngine->play2D("assets/audio/mixkit-game-over-trombone.wav", false);
 					saveHighscore();
 					isSaved = true;
 				}
@@ -780,6 +784,7 @@ int main(int argc, char** argv)
 	pvd->release();
 	transport->release();
 	FreeImage_DeInitialise();
+	soundEngine->drop();
 
 	/* GAMEPLAY END */
 	destroyFramework();
@@ -1007,6 +1012,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
 		if (attackDuration == 0.3f) {
 			attackInProgress = true;
+			soundEngine->play2D("assets/audio/mixkit-punch-with-a-hard-whistle.wav", false);
 		}
 		//else {
 		//	std::cout << "NO" << std::endl;
@@ -1014,6 +1020,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 	}
 	else if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
 		if (dashCoolDown <= 0.0) {
+			soundEngine->play2D("assets/audio/mixkit-flying-fast-swoosh.mp3", false);
 			dashInProgress = true;
 		}
 	}

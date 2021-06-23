@@ -1,7 +1,7 @@
 
 #include "Enemy.h"
 
-Enemy::Enemy(long long* _highscore, glm::mat4 modelMatrix) : Node(modelMatrix), highscore(_highscore) {
+Enemy::Enemy(long long* _highscore, irrklang::ISoundEngine* soundEngine, glm::mat4 modelMatrix) : Node(modelMatrix), highscore(_highscore) {
 	hp = 50;
 	maxHp = 50;
 	damage = 5;
@@ -9,11 +9,11 @@ Enemy::Enemy(long long* _highscore, glm::mat4 modelMatrix) : Node(modelMatrix), 
 	knockBackFactor = 3;
 	_angle = 0;
 	_knockBackForce = glm::vec3(0); 
+	_soundEngine = soundEngine;
 	knockBackDecay = 1;
 }
 
 Enemy::~Enemy() {
-
 }
 
 bool Enemy::hasActor(physx::PxRigidActor* actor) {
@@ -28,7 +28,7 @@ bool Enemy::hasActor(physx::PxRigidActor* actor) {
 
 bool Enemy::isDead() {
 	if (hp <= 0) {
-
+		_soundEngine->play2D("assets/audio/mixkit-mythical-beast-growl.wav", false);
 		//Add highscore
 		*highscore += ((100 * damage) - 400);
 
