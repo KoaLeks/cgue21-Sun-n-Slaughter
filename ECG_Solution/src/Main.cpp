@@ -601,9 +601,11 @@ int main(int argc, char** argv)
 			}
 
 			// hitDetection from physx callback -> locked on 60 fps
-			if (hitDetection && fpsCnt % 25 == 0) {
-				character.inflictDamage(5);
+			if (hitDetection && fpsCnt % 25 == 0 && enemyDetection >= 0) {
+				std::cout << "ENEMY Nr." << enemyDetection << std::endl;
+				character.inflictDamage(level.enemies[enemyDetection]->getDamage());
 				hitDetection = false;
+				enemyDetection = -1;
 			}
 
 			/* GAMEPLAY END */
