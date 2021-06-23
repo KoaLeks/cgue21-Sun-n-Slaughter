@@ -22,8 +22,6 @@
 #include "GUI/GuiRenderer.h"
 #include "Flare/FlareManager.h"
 #include "PoissonDiskSampling.h"
-
-/* GAMEPLAY */
 #include <PxPhysicsAPI.h>
 #include <FreeImagePlus.h>
 #include "SimulationCallback.h"
@@ -31,10 +29,10 @@
 #include "Scene.h"
 #include "FrustumG.h"
 #include "TextRenderer.h"
+#include "ParticleRenderer.h";
 #include "irrklang/irrKlang.h"
 
 using namespace physx;
-/* GAMEPLAY END */
 
 
 /* --------------------------------------------- */
@@ -98,6 +96,7 @@ bool attackInProgress = false;
 float attackDuration = 0.3f;
 int attackOrder[] = { 2, 3, 2, 3 };
 
+bool rendering = false;
 
 bool disableTextures = false;
 float brightness = 1.0;
@@ -486,6 +485,11 @@ int main(int argc, char** argv)
 		//Relocate the character & camera
 		character.relocate(physx::PxExtendedVec3(370, 104, -223));
 
+		//particle renderer
+		GLuint renderProgram = getParticleShader("assets/shader/particle.vert", "assets/shader/particle.geom", "assets/shader/particle.frag");
+		GLuint computeShader = getComputeShader("assets/shader/particle.comp");
+		ParticleRenderer particleRenderer(computeShader, renderProgram, playerCamera.getProjection());
+		particleRenderer.init();
 
 
 		/* GAMEPLAY */
@@ -622,6 +626,8 @@ int main(int argc, char** argv)
 					enemiesHitByDash[7] = false;
 					enemiesHitByDash[8] = false;
 					dashDuration = 1.0f;
+
+					particleRenderer.reset(); //For smoke/dust "cloud" upon dash attack
 				}
 			}
 			else {
@@ -684,6 +690,13 @@ int main(int argc, char** argv)
 
 			/* GAMEPLAY */
 			level.draw();
+
+			if (dashInProgress) {
+				//Make smoke/dust "cloud" with doing a dash 
+				particleRenderer.calculate(dt);
+				particleRenderer.draw(playerCamera.getModel() * glm::translate(glm::mat4(1.0f), character.getPosition()));
+			}
+
 			if (dashInProgress) {
 				character.animate(animationStep, dashOrder);
 			} else if (attackInProgress) {
@@ -745,7 +758,7 @@ int main(int argc, char** argv)
 					showHelp(hud);
 				}
 
-				hud->RenderText("Frame Time: " + std::to_string(dt), 15.0f, window_height - 55.0f, 1.0f);
+				//hud->RenderText("Frame Time: " + std::to_string(dt), 15.0f, window_height - 55.0f, 1.0f);
 				hud->RenderText("FPS: " + std::to_string(fps), 15.0f, window_height - 35.0f, 1.0f);
 				hud->RenderText("Objects: " + std::to_string(level.getDrawnObjects()), 15.0f, window_height - 75.0f, 1.0f);
 			}

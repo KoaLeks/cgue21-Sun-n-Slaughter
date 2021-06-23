@@ -231,13 +231,18 @@ char* filetobuf(char *file) {
 }
 
 void enableBlendMode() {
-	glDepthMask(GL_FALSE);
-	glBlendEquation(GL_MAX);
+	//glDepthMask(GL_FALSE);
+	//glBlendEquation(GL_MAX);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glDisable(GL_DEPTH_TEST);
 }
 
 void disableBlendMode() {
-	glDepthMask(GL_TRUE);
-	glBlendEquation(GL_FUNC_ADD);
+	//glDepthMask(GL_TRUE);
+	//glBlendEquation(GL_FUNC_ADD);
+	glDisable(GL_BLEND);
+	glEnable(GL_DEPTH_TEST);
 }
 
 glm::vec3 getLookVector(glm::mat4 modelView) {

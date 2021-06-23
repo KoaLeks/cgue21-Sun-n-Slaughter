@@ -1,0 +1,50 @@
+#version 430
+
+layout (local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
+
+layout (std430, binding = 0) buffer Pos1 {
+    vec4 Position_In[];
+};
+layout (std430, binding = 1) buffer Vel1 {
+    vec4 Velocity_In[];
+};
+layout (std430, binding = 2) buffer Pos2 {
+    vec4 Position_Out[];
+};
+layout (std430, binding = 3) buffer Vel2 {
+    vec4 Velocity_Out[];
+};
+
+layout (binding = 4, offset = 0) uniform atomic_uint Count;
+
+uniform uint LastCount;
+uniform uint MaximumCount;
+uniform float DeltaT;
+
+void addParticleToOutputList(vec3 pos, vec3 vel, float TTL) {
+    uint nr = atomicCounterIncrement(Count);
+    if (nr >= MaximumCount) {
+        atomicCounterDecrement(Count);
+        return;
+    }
+
+    Position_Out[nr] = vec4(pos, TTL);
+    Velocity_Out[nr] = vec4(vel, 0.0f);
+}
+
+void main() {
+    uint idx = gl_GlobalInvocationID.x + gl_GlobalInvocationID.y * gl_NumWorkGroups.x * gl_WorkGroupSize.x;
+    if (idx >= LastCount) {
+        return;
+    }
+
+    float TTL = Position_In[idx].w - DeltaT;
+    vec3 velocity = Velocity_In[idx].xyz;
+    vec3 pos = Position_In[idx].xyz + (velocity * DeltaT * 8);
+
+    if (TTL > 0) {
+        addParticleToOutputList(pos, velocity, TTL);
+    }
+
+}
+

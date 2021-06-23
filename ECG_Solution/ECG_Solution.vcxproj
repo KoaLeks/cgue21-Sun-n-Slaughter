@@ -9,6 +9,7 @@
     <ClCompile Include="src\Mesh.cpp" />
     <ClCompile Include="src\MeshMaterial.cpp" />
     <ClCompile Include="src\Node.cpp" />
+    <ClCompile Include="src\ParticleRenderer.cpp" />
     <ClCompile Include="src\PlayerCamera.cpp" />
     <ClCompile Include="src\PoissonDiskSampling.cpp" />
     <ClCompile Include="src\Query.cpp" />
@@ -38,6 +39,7 @@
     <ClInclude Include="src\Mesh.h" />
     <ClInclude Include="src\MeshMaterial.h" />
     <ClInclude Include="src\Node.h" />
+    <ClInclude Include="src\ParticleRenderer.h" />
     <ClInclude Include="src\PlayerCamera.h" />
     <ClInclude Include="src\PoissonDiskSampling.h" />
     <ClInclude Include="src\Query.h" />
