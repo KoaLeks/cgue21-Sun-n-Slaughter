@@ -417,19 +417,21 @@ void Character::init() {
 }
 
 
-void Character::animate(int step, int pose) {
+void Character::animate(int step, int _order[4]) {
 	glUseProgram(_animationShader);
 
 	glUniform1ui(vector_sizePos, vector_size);
 	glUniform1f(factorPos, float(step % 15) / 15.0f);
 
-	int input = pose;
-	int output = pose;
+	int input = order[(step / 15) % 4];
+	int output = order[((step / 15) + 1) % 4];
 
-	if (pose < 0) {
-		input = order[(step / 15) % 4];
-		output = order[((step / 15) + 1) % 4];
-	}	
+	if (_order != nullptr) {
+		input = _order[(step / 5) % 4];
+		output = _order[((step / 5) + 1) % 4];
+	}
+
+
 
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, pos_vbos[input]);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, norm_vbos[input]);

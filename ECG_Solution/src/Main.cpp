@@ -90,8 +90,11 @@ bool dashInProgress = false;
 float dashDuration = 0.5f;
 float dashCoolDown = 0.0f; //Max 10.0f
 bool enemiesHitByDash[4] = { false };
+int dashOrder[] = { 3, 3, 3, 3 };
 
-bool attack = false;
+bool attackInProgress = false;
+float attackDuration = 0.3f;
+int attackOrder[] = { 2, 3, 2, 3 };
 
 
 bool disableTextures = false;
@@ -557,7 +560,7 @@ int main(int argc, char** argv)
 			for (size_t i = 0; i < level.enemies.size(); i++) {
 				level.enemies[i]->chase(character.getPosition(), dt);
 
-				if (attack) {
+				if (attackInProgress && attackDuration == 0.3f) {
 					glm::vec3 enemyPos = level.enemies[i]->getPosition();
 					glm::vec3 dirToEnemy = glm::normalize( enemyPos - character.getPosition());
 					glm::vec3 viewDir = getViewDirection(playerCamera.getYaw());
@@ -569,7 +572,7 @@ int main(int argc, char** argv)
 					}
 				}
 			}
-			attack = false; 
+			//attackInProgress = false; 
 
 			if (dashInProgress && enemyDetection >= 0) {
 				if (!enemiesHitByDash[enemyDetection]) {
@@ -578,6 +581,17 @@ int main(int argc, char** argv)
 				}
 				enemyDetection = -1;
 			}
+
+			//attack
+			if (attackInProgress) {
+				attackDuration -= dt;
+				if (attackDuration < 0.0f) {
+					attackInProgress = false;
+					attackDuration = 0.3f;
+					animationStep = 0; //Sonst führt er eine falsche Animation aus dem Gang aus
+				}
+			}
+
 
 			//dash attack
 			if (dashInProgress) {
@@ -590,7 +604,6 @@ int main(int argc, char** argv)
 					enemiesHitByDash[2] = false;
 					enemiesHitByDash[3] = false;
 					dashDuration = 1.0f;
-					//_fov = 60.0f;
 				}
 			}
 			else {
@@ -598,6 +611,7 @@ int main(int argc, char** argv)
 					dashCoolDown -= dt;
 				}
 			}
+
 
 			// hitDetection from physx callback -> locked on 60 fps
 			if (hitDetection && fpsCnt % 25 == 0 && enemyDetection >= 0) {
@@ -653,9 +667,10 @@ int main(int argc, char** argv)
 			/* GAMEPLAY */
 			level.draw();
 			if (dashInProgress) {
-				character.animate(animationStep, 3);
-			}
-			else {
+				character.animate(animationStep, dashOrder);
+			} else if (attackInProgress) {
+				character.animate(animationStep, attackOrder);
+			} else {
 				character.animate(animationStep);
 			}
 			
@@ -718,7 +733,7 @@ int main(int argc, char** argv)
 			animationStepBuffer += dt;
 			if (animationStepBuffer >= timeStepFloat) {
 				animationStepBuffer = timeStepFloat - animationStepBuffer;
-				if (is_moving) {
+				if (is_moving || attackInProgress) {
 					animationStep = (animationStep + 1);
 				}
 				else {
@@ -979,12 +994,16 @@ bool move_character(GLFWwindow* window, Character* character, PlayerCamera* play
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
-		attack = true;
+		if (attackDuration == 0.3f) {
+			attackInProgress = true;
+		}
+		//else {
+		//	std::cout << "NO" << std::endl;
+		//}
 	}
 	else if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
 		if (dashCoolDown <= 0.0) {
 			dashInProgress = true;
-			//_fov = 90.0f;
 		}
 	}
 }
