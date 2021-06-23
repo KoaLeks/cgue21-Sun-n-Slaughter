@@ -13,14 +13,15 @@ private:
 	glm::mat4 transformationMatrix;
 	Query query;
 	const float scale = 1;
-	// total pixels = (scale / 16 * 1600)^2 * 4; (4x Multisample)
-	const float total_samples = pow(scale * 100, 2) * 4;
+	int windowWidth;
+	float total_samples;
 	float occlusionFactor;
 public:
 	GuiRenderer(Shader* shader);
 	GuiRenderer();
 	~GuiRenderer();
 	void initQuery();
+	void setWindowWidth(int width);
 	void setShader(Shader* shader);
 	void render(std::vector<GuiTexture> guis, float brightness);
 	void doOcclusionTest(glm::vec2 sunPos);

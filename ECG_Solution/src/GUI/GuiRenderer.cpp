@@ -38,10 +38,14 @@ void GuiRenderer::render(std::vector<GuiTexture> guis, float brightness) {
 	shader->unuse();
 };
 
+void GuiRenderer::setWindowWidth(int width) {
+	total_samples = pow((scale / 16) * width, 2) * 4;
+}
+
 void GuiRenderer::doOcclusionTest(glm::vec2 sunScreenPos) {
 	if (query.isResultReady()) {
 		int visibleSamples = query.getResult();
-		occlusionFactor = min(visibleSamples / total_samples, 1.0f);  //TODO: switched min to glm::min and then back (13.6.) haha
+		occlusionFactor = min(visibleSamples / total_samples, 1.0f); 
 	}
 	if (!query.isInUse()) {
 		glColorMask(false, false, false, false);
@@ -58,6 +62,7 @@ void GuiRenderer::doOcclusionTest(glm::vec2 sunScreenPos) {
 }
 
 void GuiRenderer::renderFlares(std::vector<GuiTexture> guis, float brightness, glm::vec2 sunScreenPos) {
+
 	shader->use();
 	glBindVertexArray(quad.getVaoID());
 	this->doOcclusionTest(sunScreenPos);

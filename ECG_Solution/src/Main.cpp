@@ -22,6 +22,7 @@
 #include "GUI/GuiRenderer.h"
 #include "Flare/FlareManager.h"
 #include "PoissonDiskSampling.h"
+
 #include <PxPhysicsAPI.h>
 #include <FreeImagePlus.h>
 #include "SimulationCallback.h"
@@ -44,9 +45,7 @@ static std::string FormatDebugOutput(GLenum source, GLenum type, GLuint id, GLen
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
-/* GAMEPLAY */
 bool move_character(GLFWwindow* window, Character* character, PlayerCamera* playerCamera, float deltaMovement);
-/* GAMEPLAY END */
 void setPerFrameUniformsNormal(Shader* shader, PlayerCamera& camera, PointLight& pointL, ShadowMap& shadowMap);
 void setPerFrameUniforms(TerrainShader* shader, PlayerCamera& camera, PointLight& pointL, ShadowMap& shadowMap);
 int main(int argc, char** argv);
@@ -63,13 +62,12 @@ glm::vec3 getViewDirection(float yaw);
 // Global variables
 /* --------------------------------------------- */
 
-static int window_width = 1600;
-static int window_height = 900;
+static int window_width;
+static int window_height;
 
 static char* heightMapPath = "assets/terrain/hm3.png";
 static char* treeMaskPath = "assets/terrain/mask1.png";
 
-/* GAMEPLAY */
 static bool checkWireframe = false;
 static bool checkBackCulling = true;
 static bool checkVFC = true;
@@ -88,7 +86,7 @@ int enemyDetection = -1;
 
 bool dashInProgress = false;
 float dashDuration = 0.5f;
-float dashCoolDown = 0.0f; //Max 10.0f
+float dashCoolDown = 0.0f; 
 bool enemiesHitByDash[9] = { false };
 int dashOrder[] = { 3, 3, 3, 3 };
 
@@ -113,7 +111,7 @@ std::string highscoresN[5];
 long long highscores[5];
 bool isSaved = false;
 irrklang::ISoundEngine* soundEngine = irrklang::createIrrKlangDevice();
-/* GAMEPLAY END */
+
 
 /* --------------------------------------------- */
 // Main
@@ -124,7 +122,6 @@ int main(int argc, char** argv)
 	/* --------------------------------------------- */
 	// Load settings.ini
 	/* --------------------------------------------- */
-
 	INIReader reader("assets/settings.ini");
 
 	window_width = reader.GetInteger("window", "width", 1600);
@@ -136,20 +133,11 @@ int main(int argc, char** argv)
 	float nearZ = float(reader.GetReal("camera", "near", 0.1f));
 	float farZ = float(reader.GetReal("camera", "far", 100000.0f));
 	brightness = float(reader.GetReal("window", "brightness", 1.0));
-
-	/* GAMEPLAY */
 	selectedFPS = reader.GetInteger("window", "fps", 60);
-
 	playerName = reader.Get("player", "name", "Unknown");
-	/* GAMEPLAY END */
 
 	//Load highscores
 	loadHighscores();
-
-	//TEST
-	//highscore = 99;
-	//saveHighscore();
-
 
 	/* --------------------------------------------- */
 	// Create context
@@ -174,18 +162,16 @@ int main(int argc, char** argv)
 	// Open window
 	GLFWmonitor* monitor = nullptr;
 
-	if (fullscreen)
+	if (fullscreen) {
 		monitor = glfwGetPrimaryMonitor();
-
+	}
 	GLFWwindow* window = glfwCreateWindow(window_width, window_height, window_title.c_str(), monitor, nullptr);
 
 	if (!window) {
 		EXIT_WITH_ERROR("Failed to create window");
 	}
 
-	/* GAMEPLAY */
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
-	/* GAMEPLAY END */
 
 	// This function makes the context of the specified window current on the calling thread. 
 	glfwMakeContextCurrent(window);
@@ -210,11 +196,9 @@ int main(int argc, char** argv)
 		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 	}
 
-	/* GAMEPLAY */
 	// for HUD overlay
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	/* GAMEPLAY END */
 
 
 
@@ -227,24 +211,19 @@ int main(int argc, char** argv)
 		EXIT_WITH_ERROR("Failed to init framework");
 	}
 
-	/* GAMEPLAY */
 	FreeImage_Initialise(true);
-	/* GAMEPLAY END */
 
 	// set callbacks
 	glfwSetKeyCallback(window, key_callback);
 	glfwSetMouseButtonCallback(window, mouse_button_callback);
 	glfwSetScrollCallback(window, scroll_callback);
-	/* GAMEPLAY */
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, 1);
-	/* GAMEPLAY END */
 
 	// set GL defaults
 	glClearColor(1, 1, 1, 1);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 
-	/* GAMEPLAY */
 
 	/* --------------------------------------------- */
 	// Init HUD / Text / SPLASHSCREEN
@@ -308,7 +287,6 @@ int main(int argc, char** argv)
 	PxController* pxChar = gManager->createController(cDesc);
 	pxChar->getActor()->setName("larry");
 
-	/* GAMEPLAY END */
 
 
 	/* --------------------------------------------- */
@@ -339,13 +317,7 @@ int main(int argc, char** argv)
 		// Create Skybox
 		Skybox skybox = Skybox(skyboxShader.get());
 
-		// Initialize camera
-		//Camera camera(fov, float(window_width) / float(window_height), nearZ, farZ);
-		//camera.update(window_width, window_height, false, false, false);
-
-		// Initialize lights
-		//PointLight pointL(glm::vec3(.5f), glm::vec3(50000, lightDistance, 0), glm::vec3(0.08f, 0.03f, 0.01f));
-		//PointLight pointL(glm::vec3(.5f), glm::vec3(-1500, 1700, -2500), glm::vec3(0.08f, 0.03f, 0.01f));
+		// Initialize light
 		PointLight pointL(glm::vec3(.5f), glm::vec3(-900, 1020, -1500), glm::vec3(0.08f, 0.03f, 0.01f));
 
 		// Shadow Map
@@ -361,22 +333,7 @@ int main(int argc, char** argv)
 		PossionDiskSampling treePositions = PossionDiskSampling(terrainPlaneSize, treeMaskPath, heightMapPath, terrainHeight, 80, 10);
 		std::vector<glm::vec3> points = treePositions.getPoints();
 
-		// GUI
-		//std::vector<GuiTexture> guis;
-		//Texture heart = Texture("assets/heart.png", true);
-		//float scaleFactor = 50.0f;
-		//glm::vec2 scale = glm::vec2(scaleFactor * heart.getAspectRatio() / window_width, scaleFactor / window_height);
-		//GuiTexture gui1 = GuiTexture(heart.getTextureId(), glm::vec2(-0.95f, 0.9f), scale);
-		//GuiTexture gui2 = GuiTexture(heart.getTextureId(), glm::vec2(-0.88f, 0.9f), scale);
-		//GuiTexture gui3 = GuiTexture(heart.getTextureId(), glm::vec2(-0.81f, 0.9f), scale);
-		//GuiTexture gui4 = GuiTexture(heart.getTextureId(), glm::vec2(-0.74f, 0.9f), scale);
-		//guis.push_back(gui1);
-		//guis.push_back(gui2);
-		//guis.push_back(gui3);
-		//guis.push_back(gui4);
-		//GuiRenderer guiRenderer = GuiRenderer(guiShader.get());
-
-		// Flare
+		// Flares
 		std::vector<GuiTexture> flares;
 		Texture flare1 = Texture("assets/flares/tex1.png", true);
 		Texture flare2 = Texture("assets/flares/tex2.png", true);
@@ -414,12 +371,7 @@ int main(int argc, char** argv)
 		flares.push_back(GuiTexture(flare4.getTextureId(), glm::vec2(0.0f), glm::vec2(0.4f)));
 		flares.push_back(GuiTexture(flare8.getTextureId(), glm::vec2(0.0f), glm::vec2(0.6f)));
 
-		FlareManager flareMangaer = FlareManager(guiShader.get(), 0.15f, flares);
-
-		/* GAMEPLAY */
-		/* --------------------------------------------- */
-		// Init Light mapping
-		/* --------------------------------------------- */
+		FlareManager flareMangaer = FlareManager(guiShader.get(), 0.15f, flares, window_width);
 
 		// Initialize camera
 		PlayerCamera playerCamera(_fov, float(window_width) / float(window_height), nearZ, farZ);
@@ -429,15 +381,10 @@ int main(int argc, char** argv)
 		glm::mat4 camModel = playerCamera.getModel();
 		viewFrustum->setCamDef(getWorldPosition(camModel), getLookVector(camModel), getUpVector(camModel));
 
-		//std::shared_ptr<Shader> textureShader = std::make_shared<Shader>("texture.vert", "texture.frag");
 		Scene level(textureShader, "assets/models/cook_map_detailed.obj", gPhysicsSDK, gCooking, gScene, mMaterial, gManager, viewFrustum, &highscore, soundEngine);
 
 		// Load heightmap
 		data = stbi_load(heightMapPath, &imgWidth, &imgHeight, &nrChannels, 4);
-
-		// Frustum TEST
-		//level.addStaticObject("assets/models/trees/palmTree.obj", PxExtendedVec3(-4054, 1430, -559), 20); // top left
-		//level.addStaticObject("assets/models/trees/palmTree.obj", PxExtendedVec3(3429, 1468, 3323), 20); // bottom right
 
 		// Load trees
 		for (glm::vec3 pos : points)
@@ -448,12 +395,6 @@ int main(int argc, char** argv)
 
 		// Load sunbed
 		level.addStaticObject("assets/models/sunbed.obj", PxExtendedVec3(375, getYPosition(375, -220) - 5, -220), 3);
-
-		// TEST ENEMY
-		//level.addEnemy(physx::PxExtendedVec3(500, getYPosition(500, -500), -500), 10, simulationCallback);
-		//level.addEnemy(physx::PxExtendedVec3(550, getYPosition(550, -500), -500), 10, simulationCallback);
-		//level.addEnemy(physx::PxExtendedVec3(450, getYPosition(450, -500), -500), 10, simulationCallback);
-		//level.addEnemy(physx::PxExtendedVec3(300, getYPosition(300, -500), -500), 10, simulationCallback);
 		
 		//Add enemys
 		// bot left, top left, top right, bot right
@@ -516,57 +457,42 @@ int main(int argc, char** argv)
 		float animationStepBuffer = 0.0f;
 		int animationStep = 0;
 		bool is_moving = false;
-		/* GAMEPLAY END */
 
+		// Background Music
 		irrklang::ISound* bgm = soundEngine->play2D("assets/audio/Komiku_-_07_-_Last_Boss__Lets_see_what_we_got.mp3", true, false, true, irrklang::ESM_AUTO_DETECT, false);
-
 
 		while (!glfwWindowShouldClose(window)) {
 			// Clear backbuffer
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-			/* GAMEPLAY */
 			gScene->simulate(timeStep);
 			gScene->fetchResults(true);
 
 			// Update camera
 			playerCamera.updateZoom(_fov);
+			
+			glfwGetCursorPos(window, &xpos, &ypos);
+			xRotate = (xpos - lastxpos) * 0.3333f;
+			yRotate = (ypos - lastypos) * 0.5f;
 
-			if (/*_dragging || _draggingCamOnly*/true) {
-				glfwGetCursorPos(window, &xpos, &ypos);
-				xRotate = (xpos - lastxpos) * 0.3333f;
-				yRotate = (ypos - lastypos) * 0.5f;
+			lastxpos = xpos;
+			lastypos = ypos;
 
-				lastxpos = xpos;
-				lastypos = ypos;
-
-				playerCamera.rotate(-xRotate, -yRotate);
-				if (/*!_draggingCamOnly*/true) {
-					character.updateRotation(playerCamera.getYaw());
-				}
-				//this is the main thing that keeps it from leaving the screen
-				if (xpos < 100 || xpos > window_width - 100) {
-					lastxpos = window_width / 2;
-					lastypos = window_height / 2;
-					glfwSetCursorPos(window, lastxpos, lastypos);
-				}
-				else if (ypos < 100 || ypos > window_height - 100) {
-					lastxpos = window_width / 2;
-					lastypos = window_height / 2;
-					glfwSetCursorPos(window, lastxpos, lastypos);
-				}
+			playerCamera.rotate(-xRotate, -yRotate);
+			character.updateRotation(playerCamera.getYaw());
+			//keep cursor in screen
+			if (xpos < 100 || xpos > window_width - 100) {
+				lastxpos = window_width / 2;
+				lastypos = window_height / 2;
+				glfwSetCursorPos(window, lastxpos, lastypos);
 			}
-			/* GAMEPLAY END */
+			else if (ypos < 100 || ypos > window_height - 100) {
+				lastxpos = window_width / 2;
+				lastypos = window_height / 2;
+				glfwSetCursorPos(window, lastxpos, lastypos);
+			}
+			
 
-			// Update camera
-			//glfwGetCursorPos(window, &mouse_x, &mouse_y);
-			//camera.update(int(mouse_x), int(mouse_y), _zoom, _dragging, _strafing);
-
-			// Set per-frame uniforms
-			setPerFrameUniformsNormal(textureShader.get(), playerCamera, pointL, shadowMap);
-			setPerFrameUniformsNormal(debugShader.get(), playerCamera, pointL, shadowMap);
-
-			/* GAMEPLAY */
 			// update character and camera position
 			is_moving = move_character(window, &character, &playerCamera, dt);
 
@@ -609,7 +535,6 @@ int main(int argc, char** argv)
 				}
 			}
 
-
 			//dash attack
 			if (dashInProgress) {
 				dashCoolDown = 20.0f;
@@ -636,7 +561,6 @@ int main(int argc, char** argv)
 				}
 			}
 
-
 			// hitDetection from physx callback -> locked on 60 fps
 			if (hitDetection && fpsCnt % 25 == 0 && enemyDetection >= 0) {
 				character.inflictDamage(level.enemies[enemyDetection]->getDamage());
@@ -644,29 +568,26 @@ int main(int argc, char** argv)
 				enemyDetection = -1;
 			}
 
-			/* GAMEPLAY END */
-
+			// Set per-frame uniforms
 			setPerFrameUniforms(tessellationShader.get(), playerCamera, pointL, shadowMap);
-
+			setPerFrameUniformsNormal(textureShader.get(), playerCamera, pointL, shadowMap);
+			//setPerFrameUniformsNormal(debugShader.get(), playerCamera, pointL, shadowMap);
 
 			// 1. render depth of scene to texture (from light's perspective)
 			// --------------------------------------------------------------
 			if (checkShadows) {
 				shadowMap.updateLightPos(pointL.position * glm::vec3(0.5));
-
-				//glCullFace(GL_FRONT);
 				shadowMap.draw();
 				character.drawDepth(shadowMapDepthShader.get());
 				level.drawDepth(shadowMapDepthShader.get());
-				//glCullFace(GL_BACK);
 				planeShadow.draw(shadowMapDepthShader.get());
-
 				shadowMap.unbindFBO();
 
 				// reset viewport
 				glViewport(0, 0, window_width, window_height);
 				glClearColor(0, 0, 0, 1);
 				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 				// debug: render shadowMap on screen 
 				//shadowMap.drawDebug(shadowMapDebugShader.get());
 				//renderQuad();
@@ -682,13 +603,11 @@ int main(int argc, char** argv)
 
 			// 2. Render Scene
 			// --------------------------------------------------------------
-			// Render Skybox
+			// Skybox
 			skybox.draw(playerCamera, brightness);
-
-			// Render terrain
+			// terrain
 			plane.draw(tessellationShader.get(), playerCamera, shadowMap, brightness);
-
-			/* GAMEPLAY */
+			// scene
 			level.draw();
 
 			if (dashInProgress) {
@@ -704,26 +623,8 @@ int main(int argc, char** argv)
 			} else {
 				character.animate(animationStep);
 			}
-			
-			/* GAMEPLAY END*/
-
-			// Render flares
+			// flares
 			flareMangaer.render(playerCamera.getViewProjectionMatrix(), pointL.position, brightness);
-
-			// Compute frame time
-			dt = t;
-			t = float(glfwGetTime());
-			dt = t - dt;
-			t_sum += dt;
-
-
-			fpsCnt++;
-			fps_delta += dt;
-			if (fps_delta > 1.0 / fps_update) {
-				fps = int(fpsCnt / fps_delta);
-				fpsCnt = 0;
-				fps_delta = 0;// -= 1.0 / fps_update;
-			}
 
 			//win or rather lose condition
 			if (character.getHP() <= 0) {
@@ -763,7 +664,6 @@ int main(int argc, char** argv)
 				hud->RenderText("Objects: " + std::to_string(level.getDrawnObjects()), 15.0f, window_height - 75.0f, 1.0f);
 			}
 
-			/* GAMEPLAY */
 			animationStepBuffer += dt;
 			if (animationStepBuffer >= timeStepFloat) {
 				animationStepBuffer = timeStepFloat - animationStepBuffer;
@@ -782,10 +682,23 @@ int main(int argc, char** argv)
 				}
 			}
 
+			fpsCnt++;
+			fps_delta += dt;
+			if (fps_delta > 1.0 / fps_update) {
+				fps = int(fpsCnt / fps_delta);
+				fpsCnt = 0;
+				fps_delta = 0;// -= 1.0 / fps_update;
+			}
+
+			// Compute frame time
+			dt = t;
+			t = float(glfwGetTime());
+			dt = t - dt;
+			t_sum += dt;
+
+
 			// Poll events
 			glfwPollEvents();
-			/* GAMEPLAY END */
-
 			// Swap buffers
 			glfwSwapBuffers(window);
 		}
