@@ -612,6 +612,7 @@ int main(int argc, char** argv)
 
 			if (dashInProgress) {
 				//Make smoke/dust "cloud" with doing a dash 
+				particleRenderer.updateVelocities(getViewDirection(playerCamera.getYaw()));
 				particleRenderer.calculate(dt);
 				particleRenderer.draw(playerCamera.getModel() * glm::translate(glm::mat4(1.0f), character.getPosition()));
 			}

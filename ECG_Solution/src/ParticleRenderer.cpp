@@ -29,7 +29,7 @@ void ParticleRenderer::init() {
 	float angleParticle = 0;
 	for (int i = 0; i < MAX_PARTICLES; i++) {
 		positions.push_back(glm::vec4(0.0f, 0.0f, 0.0f, TTL));
-		velocities.push_back(glm::vec4(glm::cos(glm::radians(angleParticle)) + glm::sin(-glm::radians(angleParticle)), 0.0f, glm::sin(glm::radians(angleParticle)) + glm::cos(-glm::radians(angleParticle)), 0.0f));
+		velocities.push_back(glm::vec4(0.0f, 0.0f, 0.0f, 0.0f));
 		angleParticle += anglePerStep;
 	}
 
@@ -75,6 +75,21 @@ void ParticleRenderer::init() {
 	glUseProgram(0);
 }
 
+void ParticleRenderer::updateVelocities(glm::vec3 viewDir) {
+	for (int i = 0; i < MAX_PARTICLES; i++) {
+		velocities[i] = glm::vec4(i/10) * glm::vec4(viewDir.x, 0.0f, viewDir.z, 0.0f);
+	}
+
+	glUseProgram(_computeShader);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo_vel[0]);
+	glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, particle_count * sizeof(velocities[0]), &velocities[0]);
+
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo_vel[1]);
+	glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, particle_count * sizeof(velocities[0]), &velocities[0]);
+
+	glUseProgram(0);
+}
+
 void ParticleRenderer::calculate(float deltaT) {
 	glUseProgram(_computeShader);
 
@@ -96,8 +111,8 @@ void ParticleRenderer::calculate(float deltaT) {
 
 	GLuint buffer_value;
 	glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomicCounter);
-	glGetBufferSubData(GL_ATOMIC_COUNTER_BUFFER, 0, sizeof(GLuint), &buffer_value);
-	particle_count = buffer_value;
+	//glGetBufferSubData(GL_ATOMIC_COUNTER_BUFFER, 0, sizeof(GLuint), &buffer_value);
+	//particle_count = buffer_value;
 	glBufferSubData(GL_ATOMIC_COUNTER_BUFFER, 0, sizeof(GLuint), &atomic_value);
 
 	glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, 0);

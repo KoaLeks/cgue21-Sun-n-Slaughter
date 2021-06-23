@@ -38,6 +38,7 @@ public:
 		: _computeShader(computeShader), _renderProgram(renderProgram), _perspective(perspectice) {
 	}
 	void init();
+	void updateVelocities(glm::vec3 viewDir);
 	void calculate(float deltaT);
 	void draw(glm::mat4 modelView);
 	void reset();
