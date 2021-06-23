@@ -463,7 +463,7 @@ int main(int argc, char** argv)
 		// Init character
 		GLuint animateShader = getComputeShader("assets/shader/animator.comp");
 		
-		Character character(textureShader, "assets/models/larry_final.obj", gPhysicsSDK, gCooking, gScene, mMaterial, pxChar, &playerCamera, gManager, animateShader, viewFrustum);
+		Character character(textureShader, "assets/models/larry_final_final.obj", gPhysicsSDK, gCooking, gScene, mMaterial, pxChar, &playerCamera, gManager, animateShader, viewFrustum);
 
 		// Adjust character to 3d person cam
 		for (int i = 0; i < character.nodes.size(); i++) {
