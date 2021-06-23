@@ -1,7 +1,7 @@
 
 #include "Enemy.h"
 
-Enemy::Enemy(glm::mat4 modelMatrix) : Node(modelMatrix) {
+Enemy::Enemy(long long* _highscore, glm::mat4 modelMatrix) : Node(modelMatrix), highscore(_highscore) {
 	hp = 50;
 	maxHp = 50;
 	damage = 5;
@@ -25,6 +25,10 @@ bool Enemy::hasActor(physx::PxRigidActor* actor) {
 
 bool Enemy::isDead() {
 	if (hp <= 0) {
+
+		//Add highscore
+		*highscore += ((100 * damage) - 400);
+
 		_enabled = false;
 		respawn(_spawnPosition, 1.0f);
 		return true;
@@ -118,7 +122,12 @@ void Enemy::respawn(physx::PxExtendedVec3 position, float scale)
 	_enabled = true;
 	glm::vec3 currentPos = getPosition();
 	updateBoundingBox(currentPos - oldPos);
-	//More modifications?
+
+	//Modifications
+	maxHp += 5;
+	damage++;
+	speed += 0.2f;
+
 	hp = maxHp;
 }
 

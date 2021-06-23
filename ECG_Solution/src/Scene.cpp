@@ -54,7 +54,7 @@ std::shared_ptr<Node> Scene::processNode(aiNode* node, const aiScene* scene, int
 
 	if (!tmpnam.compare(0, enemyPrefix.size(), enemyPrefix)) {
 		isEnemy = true;
-		newNode = std::make_shared<Enemy>();
+		newNode = std::make_shared<Enemy>(highscore);
 	}
 	else {
 		newNode = std::make_shared<Node>();

@@ -14,8 +14,11 @@ protected:
 	physx::PxExtendedVec3 _spawnPosition;
 	physx::PxController* _pxChar;
 
+	long long* highscore;
+
 public:
-	Enemy(glm::mat4 modelMatrix = glm::mat4(1.0f));
+	Enemy(long long* _highscore, glm::mat4 modelMatrix = glm::mat4(1.0f));
+
 	~Enemy();
 	
 	bool hasActor(physx::PxRigidActor* actor);

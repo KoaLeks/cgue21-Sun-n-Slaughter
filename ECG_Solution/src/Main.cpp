@@ -425,7 +425,7 @@ int main(int argc, char** argv)
 		viewFrustum->setCamDef(getWorldPosition(camModel), getLookVector(camModel), getUpVector(camModel));
 
 		//std::shared_ptr<Shader> textureShader = std::make_shared<Shader>("texture.vert", "texture.frag");
-		Scene level(textureShader, "assets/models/cook_map_detailed.obj", gPhysicsSDK, gCooking, gScene, mMaterial, gManager, viewFrustum);
+		Scene level(textureShader, "assets/models/cook_map_detailed.obj", gPhysicsSDK, gCooking, gScene, mMaterial, gManager, viewFrustum, &highscore);
 
 		// Load heightmap
 		data = stbi_load(heightMapPath, &imgWidth, &imgHeight, &nrChannels, 4);
