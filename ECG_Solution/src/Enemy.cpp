@@ -1,5 +1,6 @@
 
 #include "Enemy.h"
+#include <assimp\color4.h>
 
 Enemy::Enemy(long long* _highscore, irrklang::ISoundEngine* soundEngine, glm::mat4 modelMatrix) : Node(modelMatrix), highscore(_highscore) {
 	hp = 50;
@@ -26,14 +27,14 @@ bool Enemy::hasActor(physx::PxRigidActor* actor) {
 	return false;
 }
 
-bool Enemy::isDead() {
+bool Enemy::isDead(glm::vec3 playerPos) {
 	if (hp <= 0) {
 		_soundEngine->play2D("assets/audio/mixkit-mythical-beast-growl.wav", false);
 		//Add highscore
 		*highscore += ((100 * damage) - 400);
 
 		_enabled = false;
-		respawn(_spawnPosition, 1.0f);
+		respawn(_spawnPosition, playerPos);
 		return true;
 	} else {
 		return false;
@@ -56,7 +57,6 @@ int Enemy::hitWithDamage(int damage, glm::vec3 dir, float dt, bool hitByDash) {
 		knockBackFactor = 3;
 		knockBack(dir, dt);
 	}
-	isDead();
 	return hp;
 }
 
@@ -144,11 +144,16 @@ void Enemy::chase(glm::vec3& playerPos, float dt) {
 	this->move2(direction, speed, dt);
 }
 
-void Enemy::respawn(physx::PxExtendedVec3 position, float scale)
+void Enemy::respawn(physx::PxExtendedVec3 position, glm::vec3 playerPos)
 {
 	_knockBackForce = glm::vec3(0);
 	glm::vec3 oldPos = this->getPosition();
-	_pxChar->setPosition(position);
+	if (glm::distance(glm::vec3(position.x, position.y, position.z), playerPos) < 50) {
+		_pxChar->setPosition(physx::PxExtendedVec3(position.x - 70, position.y, position.z - 70));
+	}
+	else {
+		_pxChar->setPosition(position);
+	}
 	//node->setPosition(_pxChar->getPosition());
 	setPosition(_pxChar->getPosition());
 	_enabled = true;

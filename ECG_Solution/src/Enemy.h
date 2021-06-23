@@ -26,7 +26,7 @@ public:
 	~Enemy();
 	
 	bool hasActor(physx::PxRigidActor* actor);
-	bool isDead();
+	bool isDead(glm::vec3 playerPos);
 	void knockBack(glm::vec3 dir, float dt);
 	int hitWithDamage(int damage, glm::vec3 dir, float dt, bool hitByDash);
 	int getDamage();
@@ -40,7 +40,7 @@ public:
 	void updateRotation(float angle);
 	void updateCharacter(float dt);
 	void chase(glm::vec3& playerPos, float dt);
-	void respawn(physx::PxExtendedVec3 position, float scale);
+	void respawn(physx::PxExtendedVec3 position, glm::vec3 playerPos);
 	void setSpawnPosition(physx::PxExtendedVec3 position);
 
 };

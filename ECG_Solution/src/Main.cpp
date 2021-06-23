@@ -458,10 +458,10 @@ int main(int argc, char** argv)
 		
 		//Add enemys
 		// bot left, top left, top right, bot right
-		level.addEnemy(physx::PxExtendedVec3(50, getYPosition(50, -50) + 5, -50), 10, simulationCallback);
-		level.addEnemy(physx::PxExtendedVec3(950, getYPosition(950, -50) + 5, -50), 10, simulationCallback);
-		level.addEnemy(physx::PxExtendedVec3(950, getYPosition(950, -950) + 5, -950), 10, simulationCallback);
-		level.addEnemy(physx::PxExtendedVec3(50, getYPosition(50, -950) + 5, -950), 10, simulationCallback);
+		level.addEnemy(physx::PxExtendedVec3(100, getYPosition(100, -100) + 15, -100), 10, simulationCallback);
+		level.addEnemy(physx::PxExtendedVec3(900, getYPosition(900, -100) + 15, -100), 10, simulationCallback);
+		level.addEnemy(physx::PxExtendedVec3(900, getYPosition(900, -900) + 15, -900), 10, simulationCallback);
+		level.addEnemy(physx::PxExtendedVec3(100, getYPosition(100, -900) + 15, -900), 10, simulationCallback);
 
 		// half diagonal pos
 		level.addEnemy(physx::PxExtendedVec3(350, getYPosition(350, -350) + 5, -350), 10, simulationCallback);
@@ -513,6 +513,8 @@ int main(int argc, char** argv)
 		int animationStep = 0;
 		bool is_moving = false;
 		/* GAMEPLAY END */
+
+		irrklang::ISound* bgm = soundEngine->play2D("assets/audio/Komiku_-_07_-_Last_Boss__Lets_see_what_we_got.mp3", true, false, true, irrklang::ESM_AUTO_DETECT, false);
 
 
 		while (!glfwWindowShouldClose(window)) {
@@ -572,11 +574,11 @@ int main(int argc, char** argv)
 					glm::vec3 enemyPos = level.enemies[i]->getPosition();
 					glm::vec3 dirToEnemy = glm::normalize( enemyPos - character.getPosition());
 					glm::vec3 viewDir = getViewDirection(playerCamera.getYaw());
-					float angle = M_PI - glm::acos(glm::dot(viewDir, dirToEnemy));
+					float angle = M_PI - glm::acos(glm::dot(glm::vec3(viewDir.x, 0, viewDir.z), glm::vec3(dirToEnemy.x, 0, dirToEnemy.z)));
 					
 					if (glm::degrees(angle) <= 45 && glm::distance(character.getPosition(), enemyPos) <= 30) {
 						level.enemies[i]->hitWithDamage(20, dirToEnemy, dt, false);
-						//std::cout << level.enemies[i]->getCharacterController()->getActor()->getName() << " HIT " << std::endl;
+						level.enemies[i]->isDead(character.getPosition());
 					}
 				}
 			}
@@ -586,6 +588,8 @@ int main(int argc, char** argv)
 				if (!enemiesHitByDash[enemyDetection]) {
 					glm::vec3 dirToEnemy = glm::normalize(level.enemies[enemyDetection]->getPosition() - character.getPosition());
 					level.enemies[enemyDetection]->hitWithDamage(50, dirToEnemy, dt, true);
+					level.enemies[enemyDetection]->isDead(character.getPosition());
+					
 					enemiesHitByDash[enemyDetection] = true;
 				}
 				enemyDetection = -1;
@@ -711,6 +715,7 @@ int main(int argc, char** argv)
 			//win or rather lose condition
 			if (character.getHP() <= 0) {
 				if (!isSaved) { 
+					bgm->stop();
 					soundEngine->play2D("assets/audio/mixkit-game-over-trombone.wav", false);
 					saveHighscore();
 					isSaved = true;
@@ -771,6 +776,8 @@ int main(int argc, char** argv)
 			// Swap buffers
 			glfwSwapBuffers(window);
 		}
+
+		bgm->drop();
 	}
 
 
