@@ -235,7 +235,7 @@ int main(int argc, char** argv)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	hud->RenderText(window_title,
 		window_width / 2 - 225, window_height / 2 - 100.0f, 2.0f, glm::vec3(1, 0, 0));
-	hud->RenderText("Is loading ...", window_width / 2 - 100, window_height / 2 - 35.0f, 0.8f, glm::vec3(0, 0, 0));
+	hud->RenderText("Is loading ...", window_width / 2 - 90, window_height / 2 - 35.0f, 0.8f, glm::vec3(0, 0, 0));
 	showHighscores(hud, glm::vec3(0.0));
 	showHelp(hud, glm::vec3(0.0));
 	glfwSwapBuffers(window);
@@ -391,7 +391,7 @@ int main(int argc, char** argv)
 		for (glm::vec3 pos : points)
 		{
 			pos.z -= terrainPlaneSize;
-			level.addStaticObject("assets/models/trees/palmTreeNew.obj", PxExtendedVec3(pos.x, pos.y, pos.z), 5);
+			level.addStaticObject("assets/models/palmTree.obj", PxExtendedVec3(pos.x, pos.y, pos.z), 5);
 		}
 
 		// Load sunbed
@@ -651,7 +651,7 @@ int main(int argc, char** argv)
 				// draw HUD
 				hud->RenderText("HP: " + std::to_string(character.getHP()), 
 					15.0f, 15.0f, 1.0f, (character.getHP() < 25) ? glm::vec3(1, 0, 0) : glm::vec3(1));
-				hud->RenderText("Dash: " + std::to_string(int(15.0 - dashCoolDown)) + "/20", 
+				hud->RenderText("Dash: " + std::to_string(int(15.0 - dashCoolDown)) + "/15", 
 					15.0f, 55.0f, 1.0f, (dashCoolDown > 0.0) ? glm::vec3(1, 0, 0) : glm::vec3(1));
 				hud->RenderText("Highscore: " + std::to_string(highscore), 
 					window_width - (170 + 16 * std::to_string(highscore).length()), 15.0f, 1.0f);

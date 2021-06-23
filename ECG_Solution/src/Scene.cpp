@@ -476,7 +476,7 @@ void Scene::addStaticObject(string path, physx::PxExtendedVec3 position, float s
 void Scene::addEnemy(physx::PxExtendedVec3 position, float scale, SimulationCallback* simulationCallback) {
 	//if (enemyMaster == nullptr) {
 	Assimp::Importer import;
-	const aiScene* enemyMasterX = import.ReadFile("assets/models/Cubex_notMob.obj", aiProcess_Triangulate | aiProcess_FlipUVs);
+	const aiScene* enemyMasterX = import.ReadFile("assets/models/enemy.obj", aiProcess_Triangulate | aiProcess_FlipUVs);
 
 	if (!enemyMasterX || enemyMasterX->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !enemyMasterX->mRootNode) {
 		std::cout << "ERROR::ASSIMP::" << import.GetErrorString() << std::endl;
