@@ -641,7 +641,7 @@ int main(int argc, char** argv)
 					showHelp(hud);
 				}
 
-				hud->RenderText("Frame Time: " + std::to_string(dt), 15.0f, window_height - 55.0f, 1.0f);
+				//hud->RenderText("Frame Time: " + std::to_string(dt), 15.0f, window_height - 55.0f, 1.0f);
 				hud->RenderText("FPS: " + std::to_string(fps), 15.0f, window_height - 35.0f, 1.0f);
 				hud->RenderText("Objects: " + std::to_string(level.getDrawnObjects()), 15.0f, window_height - 75.0f, 1.0f);
 			}
