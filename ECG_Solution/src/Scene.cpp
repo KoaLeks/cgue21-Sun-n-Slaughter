@@ -230,6 +230,21 @@ void Scene::processMesh(aiMesh* mesh, const aiScene* scene, bool cookMesh, bool 
 		else if (enemies.size() == 3) {
 			pxChar->getActor()->setName("3");
 		}
+		else if (enemies.size() == 4) {
+			pxChar->getActor()->setName("4");
+		}
+		else if (enemies.size() == 5) {
+			pxChar->getActor()->setName("5");
+		}
+		else if (enemies.size() == 6) {
+			pxChar->getActor()->setName("6");
+		}
+		else if (enemies.size() == 7) {
+			pxChar->getActor()->setName("7");
+		}
+		else if (enemies.size() == 8) {
+			pxChar->getActor()->setName("8");
+		}
 
 		std::shared_ptr<Enemy> enemyNode = std::static_pointer_cast<Enemy>(newNode);
 		enemyNode->setCharacterController(pxChar);

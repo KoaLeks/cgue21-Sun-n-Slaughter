@@ -89,7 +89,7 @@ int enemyDetection = -1;
 bool dashInProgress = false;
 float dashDuration = 0.5f;
 float dashCoolDown = 0.0f; //Max 10.0f
-bool enemiesHitByDash[4] = { false };
+bool enemiesHitByDash[9] = { false };
 int dashOrder[] = { 3, 3, 3, 3 };
 
 bool attackInProgress = false;
@@ -455,10 +455,19 @@ int main(int argc, char** argv)
 		
 		//Add enemys
 		// bot left, top left, top right, bot right
-		level.addEnemy(physx::PxExtendedVec3(50, getYPosition(50, -50)    + 5, -50)   , 10, simulationCallback);
-		level.addEnemy(physx::PxExtendedVec3(950, getYPosition(950, -50)  + 5, -50) , 10, simulationCallback);
+		level.addEnemy(physx::PxExtendedVec3(50, getYPosition(50, -50) + 5, -50), 10, simulationCallback);
+		level.addEnemy(physx::PxExtendedVec3(950, getYPosition(950, -50) + 5, -50), 10, simulationCallback);
 		level.addEnemy(physx::PxExtendedVec3(950, getYPosition(950, -950) + 5, -950), 10, simulationCallback);
-		level.addEnemy(physx::PxExtendedVec3(50, getYPosition(50, -950)   + 5, -950) , 10, simulationCallback);
+		level.addEnemy(physx::PxExtendedVec3(50, getYPosition(50, -950) + 5, -950), 10, simulationCallback);
+
+		// half diagonal pos
+		level.addEnemy(physx::PxExtendedVec3(350, getYPosition(350, -350) + 5, -350), 10, simulationCallback);
+		level.addEnemy(physx::PxExtendedVec3(650, getYPosition(650, -350) + 5, -350), 10, simulationCallback);
+		level.addEnemy(physx::PxExtendedVec3(650, getYPosition(650, -650) + 5, -650), 10, simulationCallback);
+		level.addEnemy(physx::PxExtendedVec3(350, getYPosition(350, -650) + 5, -650), 10, simulationCallback);
+
+		// mid pos
+		level.addEnemy(physx::PxExtendedVec3(terrainPlaneSize / 2, getYPosition(terrainPlaneSize / 2, -terrainPlaneSize / 2) + 5, -terrainPlaneSize / 2), 10, simulationCallback);
 
 		// Init character
 		GLuint animateShader = getComputeShader("assets/shader/animator.comp");
@@ -482,13 +491,12 @@ int main(int argc, char** argv)
 		double xRotate = 0;
 		double yRotate = 0;
 		float t = float(glfwGetTime());
-		float t2 = t;
 		float dt = 0.0f;
 		float t_sum = 0.0f;
 		float fps_start = 0.0f;
 		float fps_current = 0.0f;
 		float fps_delta = 0.0f;
-		float fps_update = 5.0f; // 5 updates per second
+		float fps_update = 4.0f; // 4 updates per second
 		int waitingMS = 0;
 		PxReal timeStep = 1.0f / 60.0f;
 		float timeStepFloat = 1.0f / 60.0f;
@@ -507,9 +515,6 @@ int main(int argc, char** argv)
 		while (!glfwWindowShouldClose(window)) {
 			// Clear backbuffer
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-			// Poll events -> move to end (GAMEPLAY)
-			//glfwPollEvents();
 
 			/* GAMEPLAY */
 			gScene->simulate(timeStep);
@@ -558,8 +563,8 @@ int main(int argc, char** argv)
 
 			// update all enemy positions, deaths and player hits
 			for (size_t i = 0; i < level.enemies.size(); i++) {
-				level.enemies[i]->chase(character.getPosition(), dt);
 
+				level.enemies[i]->chase(character.getPosition(), dt);
 				if (attackInProgress && attackDuration == 0.3f) {
 					glm::vec3 enemyPos = level.enemies[i]->getPosition();
 					glm::vec3 dirToEnemy = glm::normalize( enemyPos - character.getPosition());
@@ -567,7 +572,7 @@ int main(int argc, char** argv)
 					float angle = M_PI - glm::acos(glm::dot(viewDir, dirToEnemy));
 					
 					if (glm::degrees(angle) <= 45 && glm::distance(character.getPosition(), enemyPos) <= 30) {
-						level.enemies[i]->hitWithDamage(20);
+						level.enemies[i]->hitWithDamage(20, dirToEnemy, dt, false);
 						//std::cout << level.enemies[i]->getCharacterController()->getActor()->getName() << " HIT " << std::endl;
 					}
 				}
@@ -576,7 +581,8 @@ int main(int argc, char** argv)
 
 			if (dashInProgress && enemyDetection >= 0) {
 				if (!enemiesHitByDash[enemyDetection]) {
-					level.enemies[enemyDetection]->hitWithDamage(50);
+					glm::vec3 dirToEnemy = glm::normalize(level.enemies[enemyDetection]->getPosition() - character.getPosition());
+					level.enemies[enemyDetection]->hitWithDamage(50, dirToEnemy, dt, true);
 					enemiesHitByDash[enemyDetection] = true;
 				}
 				enemyDetection = -1;
@@ -595,7 +601,7 @@ int main(int argc, char** argv)
 
 			//dash attack
 			if (dashInProgress) {
-				dashCoolDown = 20.0f;
+				dashCoolDown = 1.0f;
 				dashDuration -= dt;
 				if (dashDuration < 0.0f) {
 					dashInProgress = false;
@@ -603,6 +609,11 @@ int main(int argc, char** argv)
 					enemiesHitByDash[1] = false;
 					enemiesHitByDash[2] = false;
 					enemiesHitByDash[3] = false;
+					enemiesHitByDash[4] = false;
+					enemiesHitByDash[5] = false;
+					enemiesHitByDash[6] = false;
+					enemiesHitByDash[7] = false;
+					enemiesHitByDash[8] = false;
 					dashDuration = 1.0f;
 				}
 			}
@@ -691,7 +702,7 @@ int main(int argc, char** argv)
 			if (fps_delta > 1.0 / fps_update) {
 				fps = int(fpsCnt / fps_delta);
 				fpsCnt = 0;
-				fps_delta -= 1.0 / fps_update;
+				fps_delta = 0;// -= 1.0 / fps_update;
 			}
 
 			//win or rather lose condition
@@ -725,6 +736,7 @@ int main(int argc, char** argv)
 					showHelp(hud);
 				}
 
+				hud->RenderText("Frame Time: " + std::to_string(dt), 15.0f, window_height - 55.0f, 1.0f);
 				hud->RenderText("FPS: " + std::to_string(fps), 15.0f, window_height - 35.0f, 1.0f);
 				hud->RenderText("Objects: " + std::to_string(level.getDrawnObjects()), 15.0f, window_height - 75.0f, 1.0f);
 			}
@@ -742,11 +754,10 @@ int main(int argc, char** argv)
 
 			}
 			if (checkFPSLimit) {
-				waitingMS = (1000 / selectedFPS) - (t - t2) * 1000;
+				waitingMS = (1000 / selectedFPS) - dt * 1000;
 				if (waitingMS > 0) {
 					Sleep(waitingMS);
 				}
-				t2 = float(glfwGetTime());
 			}
 
 			// Poll events

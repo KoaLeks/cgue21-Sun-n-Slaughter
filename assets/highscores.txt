@@ -1,10 +1,10 @@
 Max
 500000
+Yami
+14700
 Sebi
 12000
+Yami
+10400
 Lisa
 10000
-Peter
-3000
-King
-99

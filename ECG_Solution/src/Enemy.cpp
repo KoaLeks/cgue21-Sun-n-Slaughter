@@ -6,7 +6,10 @@ Enemy::Enemy(long long* _highscore, glm::mat4 modelMatrix) : Node(modelMatrix), 
 	maxHp = 50;
 	damage = 5;
 	speed = 20;
+	knockBackFactor = 3;
 	_angle = 0;
+	_knockBackForce = glm::vec3(0); 
+	knockBackDecay = 1;
 }
 
 Enemy::~Enemy() {
@@ -37,8 +40,22 @@ bool Enemy::isDead() {
 	}
 }
 
-int Enemy::hitWithDamage(int damage) {
+void Enemy::knockBack(glm::vec3 dir, float dt) {
+	float addX = knockBackFactor * speed * dir.x;
+	float addZ = knockBackFactor * speed * dir.z;
+	_knockBackForce = glm::vec3(addX, 0, addZ);
+}
+
+
+int Enemy::hitWithDamage(int damage, glm::vec3 dir, float dt, bool hitByDash) {
 	hp -= damage;
+	if (hitByDash) {
+		knockBackFactor = 10;
+		knockBack(dir, dt);
+	} else {
+		knockBackFactor = 3;
+		knockBack(dir, dt);
+	}
 	isDead();
 	return hp;
 }
@@ -80,11 +97,26 @@ void Enemy::updateBoundingBox(glm::vec3 posDelta) {
 }
 
 void Enemy::move2(glm::vec3 dir, float speed, float dt) {
-	float addX = speed * dir.x; 
-	float addZ = speed * dir.z;
+	float addX = speed * dir.x + _knockBackForce.x;
+	float addZ = speed * dir.z + _knockBackForce.z;
 	glm::vec3 oldPos = this->getPosition();
 
-	_pxChar->move(physx::PxVec3(addX, -98.0f, addZ) * dt, 0.001f, dt, physx::PxControllerFilters());
+	if (oldPos.x + addX > 1000) {
+		addX = 1000 - oldPos.x;
+	}
+	else if (oldPos.x + addX < 10) {
+		addX = 10 - oldPos.x;
+	}
+	if (oldPos.z + addZ < -1000) {
+		addZ = -1000 - oldPos.z;
+	}
+	else if (oldPos.z + addZ > -10) {
+		addZ = -10 - oldPos.z;
+	}
+
+	_knockBackForce = _knockBackForce + (knockBackDecay * dt) * (glm::vec3(0) - _knockBackForce);
+
+	_pxChar->move(physx::PxVec3(addX , -98.0f, addZ ) * dt, 0.001f, dt, physx::PxControllerFilters());
 	//_pxChar->getActor()->addForce(physx::PxVec3(addX, -0.0f, addZ));
 	this->setPosition(_pxChar->getPosition());
 	glm::vec3 currentPos = this->getPosition();
@@ -114,7 +146,7 @@ void Enemy::chase(glm::vec3& playerPos, float dt) {
 
 void Enemy::respawn(physx::PxExtendedVec3 position, float scale)
 {
-
+	_knockBackForce = glm::vec3(0);
 	glm::vec3 oldPos = this->getPosition();
 	_pxChar->setPosition(position);
 	//node->setPosition(_pxChar->getPosition());

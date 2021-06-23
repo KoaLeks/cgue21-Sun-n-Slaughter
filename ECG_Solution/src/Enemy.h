@@ -10,6 +10,9 @@ protected:
 	int maxHp;
 	int damage;
 	int speed;
+	float knockBackDecay;
+	float knockBackFactor;
+	glm::vec3 _knockBackForce;
 	glm::vec3 _position;
 	physx::PxExtendedVec3 _spawnPosition;
 	physx::PxController* _pxChar;
@@ -23,7 +26,8 @@ public:
 	
 	bool hasActor(physx::PxRigidActor* actor);
 	bool isDead();
-	int hitWithDamage(int damage);
+	void knockBack(glm::vec3 dir, float dt);
+	int hitWithDamage(int damage, glm::vec3 dir, float dt, bool hitByDash);
 	int getDamage();
 	int getHp();
 	int getMaxHp();
