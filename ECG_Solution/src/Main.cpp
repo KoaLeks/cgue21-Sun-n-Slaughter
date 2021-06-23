@@ -235,6 +235,7 @@ int main(int argc, char** argv)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	hud->RenderText(window_title,
 		window_width / 2 - 225, window_height / 2 - 100.0f, 2.0f, glm::vec3(1, 0, 0));
+	hud->RenderText("Is loading ...", window_width / 2 - 100, window_height / 2 - 35.0f, 0.8f, glm::vec3(0, 0, 0));
 	showHighscores(hud, glm::vec3(0.0));
 	showHelp(hud, glm::vec3(0.0));
 	glfwSwapBuffers(window);
@@ -517,7 +518,7 @@ int main(int argc, char** argv)
 			if (dashInProgress && enemyDetection >= 0) {
 				if (!enemiesHitByDash[enemyDetection]) {
 					glm::vec3 dirToEnemy = glm::normalize(level.enemies[enemyDetection]->getPosition() - character.getPosition());
-					level.enemies[enemyDetection]->hitWithDamage(50, dirToEnemy, dt, true);
+					level.enemies[enemyDetection]->hitWithDamage(100, dirToEnemy, dt, true);
 					level.enemies[enemyDetection]->isDead(character.getPosition());
 					
 					enemiesHitByDash[enemyDetection] = true;
@@ -537,7 +538,7 @@ int main(int argc, char** argv)
 
 			//dash attack
 			if (dashInProgress) {
-				dashCoolDown = 20.0f;
+				dashCoolDown = 15.0f;
 				dashDuration -= dt;
 				if (dashDuration < 0.0f) {
 					dashInProgress = false;
@@ -650,7 +651,7 @@ int main(int argc, char** argv)
 				// draw HUD
 				hud->RenderText("HP: " + std::to_string(character.getHP()), 
 					15.0f, 15.0f, 1.0f, (character.getHP() < 25) ? glm::vec3(1, 0, 0) : glm::vec3(1));
-				hud->RenderText("Dash: " + std::to_string(int(20.0 - dashCoolDown)) + "/20", 
+				hud->RenderText("Dash: " + std::to_string(int(15.0 - dashCoolDown)) + "/20", 
 					15.0f, 55.0f, 1.0f, (dashCoolDown > 0.0) ? glm::vec3(1, 0, 0) : glm::vec3(1));
 				hud->RenderText("Highscore: " + std::to_string(highscore), 
 					window_width - (170 + 16 * std::to_string(highscore).length()), 15.0f, 1.0f);
